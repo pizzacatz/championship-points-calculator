@@ -147,15 +147,16 @@
       "unavailable": true
     }
   },
-  "ladderAssumptions": {
-    "note": "Assumed field size for a PLANNED local, used ONLY to decide how deep the ladder may ask you to finish. Never applied to a result the player entered: a placement whose band depends on an unmet kicker still asks for the CP.",
+  "assumedLocalField": {
+    "note": "Assumed turnout at a Cup or Challenge, used both to decide how deep the ladder may ask you to finish and to score a placement entered without a CP. Entering the CP is the evidence that overrides it.",
+    "caveat": "A Cup at 32 behaves exactly as one at 17: the next band up (9th-16th) needs 48 entrants, so neither figure unlocks it.",
     "league-challenge": {
-      "attendance": 8,
-      "deepestAsk": "top 4"
+      "attendance": 16,
+      "deepestPaying": "5th-8th"
     },
     "league-cup": {
-      "attendance": 17,
-      "deepestAsk": "top 8"
+      "attendance": 32,
+      "deepestPaying": "5th-8th"
     }
   }
 }

@@ -74,8 +74,8 @@ export type AttendanceBaselines = {
   provenance: string;
   onlineEvents: string;
   observations: Record<string, Record<string, { events: number; min: number; max: number }>>;
-  /** Assumed field size for planned locals. Ladder only — never scores a result. */
-  ladderAssumptions?: Record<string, { attendance: number; deepestAsk: string }>;
+  /** Assumed turnout at a Cup or Challenge, for the ladder and for scoring. */
+  assumedLocalField?: Record<string, { attendance: number; deepestPaying: string }>;
   baselines: Record<Game, {
     zones: Partial<Record<RatingZoneId, ZoneBaseline>>;
     internationals: Record<string, IcBaseline>;

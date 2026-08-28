@@ -42,13 +42,37 @@ describe('completed local results', () => {
     expect(r.attendanceSource).toBe('implied-by-award');
   });
 
-  it('asks for the CP when a local has no field size to resolve its kicker', () => {
-    // Cups and Challenges are unlisted, so nothing can settle a 9-16 finish
-    // except the CP itself. The form never asks for attendance.
+  it('scores a local placement from the assumed turnout', () => {
+    // Cups and Challenges are unlisted, so a turnout is assumed rather than
+    // looked up — 32 at a Cup. A 9th-16th finish needs 48 entrants, so at that
+    // assumption it genuinely pays nothing.
     const e = ev({ eventTypeId: 'league-cup', placement: 13 });
     const r = evaluateResult(e, rules, path([e]), baselines);
-    expect(r.reason).toBe('unverified-attendance');
-    expect(r.explanation).toMatch(/Enter the CP you were awarded/);
+    expect(r.reason).toBe('below-kicker');
+    expect(r.rawPoints).toBe(0);
+  });
+
+  it('pays a local placement the assumed turnout does reach', () => {
+    const e = ev({ eventTypeId: 'league-cup', placement: 6 });   // 5th-8th, kicker 17
+    expect(evaluateResult(e, rules, path([e]), baselines).rawPoints).toBe(25);
+  });
+
+  it('assumes 16 at a Challenge, which pays down to 8th and no further', () => {
+    const paid = ev({ eventTypeId: 'league-challenge', placement: 7 });   // kicker 14
+    const unpaid = ev({ eventTypeId: 'league-challenge', placement: 12 }); // kicker 25
+    expect(evaluateResult(paid, rules, path([paid]), baselines).rawPoints).toBe(8);
+    expect(evaluateResult(unpaid, rules, path([unpaid]), baselines).rawPoints).toBe(0);
+  });
+
+  it('lets an entered CP override the assumption', () => {
+    // The evidence that the turnout was bigger than assumed is the award itself.
+    const e = ev({ eventTypeId: 'league-cup', awardedPoints: 20 });   // a 9th-16th
+    expect(evaluateResult(e, rules, path([e]), baselines).rawPoints).toBe(20);
+  });
+
+  it('scores an online placement, since its kickers are assumed met', () => {
+    const e = ev({ eventTypeId: 'vgc-global-challenge', placement: 20 });
+    expect(evaluateResult(e, rules, path([e]), baselines).rawPoints).toBe(13);
   });
 
   it('resolves a placement at a major from the projected field', () => {
@@ -269,20 +293,10 @@ describe('planning target', () => {
   });
 });
 
-describe('the ladder assumption never scores a real result', () => {
-  it('asks for the CP rather than guessing a local field size', () => {
-    // The ladder assumes a Cup holds 17 players so it will not demand a top 16.
-    // Applying that to a placement the player entered would score a genuine
-    // 20 CP finish at a 60-player Cup as 0.
-    const e = ev({ eventTypeId: 'league-cup', placement: 13 });
-    const r = evaluateResult(e, rules, path([e]), baselines);
-    expect(r.rawPoints).toBe(0);
-    expect(r.reason).toBe('unverified-attendance');
-    expect(r.explanation).toMatch(/Enter the CP you were awarded/);
-  });
-
-  it('scores that same result correctly once the CP is given', () => {
-    const e = ev({ eventTypeId: 'league-cup', awardedPoints: 20 });
-    expect(evaluateResult(e, rules, path([e]), baselines).rawPoints).toBe(20);
+describe('the ladder and scoring share one assumption', () => {
+  it('asks only for finishes that the same assumption would actually pay', () => {
+    // If the ladder says "top 8 at a Cup", a top-8 entered at that Cup must score.
+    const e = ev({ eventTypeId: 'league-cup', placement: 8 });
+    expect(evaluateResult(e, rules, path([e]), baselines).rawPoints).toBeGreaterThan(0);
   });
 });

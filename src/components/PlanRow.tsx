@@ -1,14 +1,14 @@
 import type { EvaluatedResult, EventTypeRule, PlannedEvent } from '../domain/types';
-import { bandLabel } from '../domain/calculate';
 
 /**
- * Only exceptions get a badge. "Counts" was on nearly every row, and a badge that
- * is almost always present carries no information — its absence is the signal.
+ * Only what the row cannot otherwise say.
+ *
+ * "Excluded by BFL" is dropped because the row already carries `BFL –/4`, in the
+ * same vocabulary as every other row's `BFL 2/4`. "Needs the CP" is gone because
+ * a local placement is now scored from an assumed turnout rather than refused.
  */
 const BADGE: Partial<Record<EvaluatedResult['reason'], { text: string; cls: string }>> = {
-  'excluded-by-bfl': { text: 'Excluded by BFL', cls: 'muted' },
   'below-kicker': { text: 'Below kicker', cls: 'warn' },
-  'unverified-attendance': { text: 'Needs the CP', cls: 'warn' },
   'invalid': { text: 'Check this', cls: 'danger' },
 };
 
@@ -101,13 +101,10 @@ export function PlanRow({
         </p>
       )}
 
-      {/* Only what the row cannot already show: the band, and any real displacement. */}
-      {!overdue && result.band && result.rawPoints > 0 && (
-        <p className="plan-explain">
-          {bandLabel(result.band)} band
-          {displacement && <> · {displacement}</>}
-        </p>
-      )}
+      {/* Mapping a finish to a band is the calculator's job; having done it, saying
+          so on every row is the app narrating its own working. Only displacement
+          survives, because the row cannot convey it any other way. */}
+      {!overdue && displacement && <p className="plan-explain">{displacement}</p>}
 
       {result.error && <p className="callout danger row-error" role="alert">{result.error}</p>}
     </li>

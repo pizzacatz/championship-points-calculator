@@ -33,6 +33,12 @@ export const tableFor = (rules: SeasonRules, rule: EventTypeRule): PlacementBand
 export function projectedField(
   baselines: AttendanceBaselines, game: Game, rule: EventTypeRule, path: QualificationPath,
 ): number | null {
+  // Cups and Challenges are unlisted, so a turnout is assumed rather than looked
+  // up. Assuming one lets a placement be scored instead of the app refusing to
+  // and asking for the CP — which the player can still supply as evidence.
+  if (rule.scale === 'local') {
+    return baselines.assumedLocalField?.[rule.id]?.attendance ?? null;
+  }
   if (rule.scale !== 'major') return null;
   const forGame = baselines.baselines[game];
   if (!forGame || forGame.unavailable) return null;
@@ -180,8 +186,17 @@ export function evaluateResult(
         explanation: `${bandText}, worth ${band.points} CP. This band has no kicker.`, error: null,
       };
     }
-    // No attendance entered: fall back to the projected field for this event
-    // type, which is what the form relies on now that attendance is never asked.
+    // Online events publish no field size and assume every kicker is met, so a
+    // placement at one always scores.
+    if (rule.scale === 'online') {
+      return {
+        ...base, band, rawPoints: band.points, directInvite, reason: 'counts',
+        explanation: `${bandText}, worth ${band.points} CP.`, error: null,
+      };
+    }
+
+    // Otherwise fall back to the projected field for this event type — a zone
+    // median for a major, an assumed turnout for a local.
     const known = event.attendance ?? projectedField(baselines, path.game, rule, path);
     if (known == null) {
       return {

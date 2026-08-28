@@ -235,11 +235,46 @@ await check('the version is present but quiet', async () => {
   assert.ok(opacity < 0.8, `version should be subtle, opacity was ${opacity}`);
 });
 
+await check('a local placement scores from the assumed turnout', async () => {
+  const cat = page.locator('section', { has: page.getByRole('heading', { name: 'Events' }) });
+  await cat.getByRole('button', { name: '+ League Cup' }).click();
+  await page.waitForTimeout(400);
+  // An earlier check leaves a dated Cup behind; the new one is undated, so it
+  // sorts last.
+  const row = page.locator('.plan-row', { hasText: 'League Cup' }).last();
+  await row.getByLabel('Place').fill('6');            // 5th-8th, kicker 17
+  await page.waitForTimeout(700);
+  assert.match(await row.innerText(), /25 CP/);
+  assert.doesNotMatch(await row.innerText(), /Needs the CP/);
+});
+
+await check('the band name is not restated on the row', async () => {
+  const row = page.locator('.plan-row', { hasText: 'League Cup' }).last();
+  assert.doesNotMatch(await row.innerText(), /band/i);
+  let asked = false;
+  const d = (x) => { asked = true; x.accept(); };
+  page.on('dialog', d);
+  await row.getByRole('button', { name: /Remove/ }).click();
+  await page.waitForTimeout(500);
+  page.off('dialog', d);
+});
+
+await check('the official sources are back, collapsed', async () => {
+  const det = page.locator('details.sources');
+  assert.equal(await det.count(), 1);
+  assert.equal(await det.evaluate((e) => e.open), false, 'must start closed');
+  await det.locator('summary').click();
+  await page.waitForTimeout(200);
+  assert.match(await det.innerText(), /championships\.pokemon\.com|about\//);
+  await det.locator('summary').click();
+});
+
 await check('the removed v1 sections are gone', async () => {
   const body = await page.locator('main').innerText();
   for (const gone of ['Method, sources and limits', 'Official sources',
                       'Direct invitations', 'Ways to reach your target',
-                      'Projected attendance', 'Add what you can get to']) {
+                      'Projected attendance', 'Add what you can get to',
+                      'Excluded by BFL', 'Needs the CP']) {
     assert.doesNotMatch(body, new RegExp(gone), `"${gone}" should be removed`);
   }
 });

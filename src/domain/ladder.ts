@@ -62,12 +62,11 @@ export function payableBands(
   // leaderboard is ranked globally.
   if (rule.scale === 'online') return { bands: table, field: null, assumed: true };
 
-  // Locals are unlisted, so the ladder works from an assumed field: a Challenge
-  // rarely clears 32 and a Cup 60, so it may ask for a top 4 and a top 8 and no
-  // deeper. This figure is deliberately confined to the ladder — scoring a
-  // placement the player entered against it would silently zero a real result.
+  // Locals are unlisted, so both the ladder and scoring work from an assumed
+  // turnout — the same figure, so what the ladder asks for is what a result of
+  // that shape would actually score.
   if (rule.scale === 'local') {
-    const assumed = baselines.ladderAssumptions?.[rule.id]?.attendance;
+    const assumed = projectedField(baselines, path.game, rule, path);
     if (assumed == null) return { bands: table, field: null, assumed: true };
     return { bands: table.filter((b) => b.kicker <= assumed), field: assumed, assumed: true };
   }

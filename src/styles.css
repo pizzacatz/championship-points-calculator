@@ -340,6 +340,19 @@ table.ladder .idle-note { font-size: 0.8rem; white-space: normal; }
 .plan-actions .danger:hover { background: var(--danger-bg); }
 
 /* the version line: findable, not loud */
+.sources { margin: 2rem 0 0; font-size: 0.82rem; }
+.sources summary {
+  cursor: pointer; color: var(--text-muted); font-weight: 600;
+  padding: 0.35rem 0; list-style: none;
+}
+.sources summary::-webkit-details-marker { display: none; }
+.sources summary::before { content: '▸ '; }
+.sources[open] summary::before { content: '▾ '; }
+.sources summary:hover { color: var(--accent-text); }
+.sources ul { margin: 0.3rem 0 0; padding-left: 1.6rem; }
+.sources li { margin-bottom: 0.2rem; word-break: break-word; }
+.sources .hint { margin: 0.3rem 0 0.5rem; }
+
 .version { margin: 2.5rem 0 0; text-align: center; font-size: 0.7rem; }
 .version a { color: var(--text-muted); opacity: 0.55; text-decoration: none; }
 .version a:hover, .version a:focus-visible { opacity: 1; text-decoration: underline; }

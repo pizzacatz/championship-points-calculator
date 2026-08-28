@@ -360,6 +360,26 @@ export default function App() {
           </div>
         )}
 
+        {/* Removed from the footer in v2 as dead weight, back as a closed block:
+            present for anyone checking a payout, invisible otherwise. */}
+        <details className="sources">
+          <summary>Official rules and payout tables</summary>
+          <p className="hint">
+            Every Championship Point value, Best Finish Limit and direct-invitation rule
+            in this calculator is transcribed from these pages.
+            Rules {rules.rulesVersion}, verified {rules.verifiedAt}.
+          </p>
+          <ul>
+            {rules.sourceUrls.map((u) => (
+              <li key={u}>
+                <a href={u} target="_blank" rel="noreferrer noopener">
+                  {u.replace('https://championships.pokemon.com/en-us/', '')}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+
         <p className="version">
           <a href={VERSION.repository} target="_blank" rel="noreferrer noopener">
             v{VERSION.app} · rules {rules.rulesVersion} · {rules.verifiedAt}
