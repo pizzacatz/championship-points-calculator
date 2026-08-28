@@ -50,11 +50,14 @@ await check('the catalog lists zones collapsed, with counts', async () => {
 
 await check('expand all and collapse all work', async () => {
   const cat = page.locator('section', { has: page.getByRole('heading', { name: 'Events' }) });
+  // Derived, not hard-coded: the number of groups grows as sections are added.
+  const groups = await cat.locator('.zone').count();
+  assert.ok(groups >= 4, `expected several groups, saw ${groups}`);
   await cat.getByRole('button', { name: 'Expand all' }).click();
-  await page.waitForTimeout(250);
-  assert.equal(await cat.locator('.zone-list').count(), 4);
+  await page.waitForTimeout(300);
+  assert.equal(await cat.locator('.zone-list').count(), groups);
   await cat.getByRole('button', { name: 'Collapse all' }).click();
-  await page.waitForTimeout(250);
+  await page.waitForTimeout(300);
   assert.equal(await cat.locator('.zone-list').count(), 0);
 });
 
@@ -156,6 +159,29 @@ await check('an impossible CP value is rejected', async () => {
 await check('a row asks for one number and nothing else', async () => {
   const inputs = await page.locator('.plan-row').first().locator('input').count();
   assert.equal(inputs, 2, `expected CP and Place only, got ${inputs}`);
+});
+
+// --- Global and Grand Challenges -----------------------------------------
+await check('VGC gets a Global & Grand Challenge section, by month', async () => {
+  const gc = page.locator('.zone', { hasText: 'Global & Grand Challenges' });
+  assert.equal(await gc.count(), 1);
+  if (!(await gc.locator('.zone-list').count())) {
+    await gc.locator('.zone-toggle').click();
+    await page.waitForTimeout(300);
+  }
+  const t = await gc.innerText();
+  for (const m of ['September 2026', 'October 2026', 'December 2026',
+                   'January 2027', 'March 2027', 'April 2027']) {
+    assert.match(t, new RegExp(m), `missing ${m}`);
+  }
+});
+
+await check('they are absent from a TCG plan', async () => {
+  await page.getByLabel('Game').selectOption('TCG');
+  await page.waitForTimeout(600);
+  assert.equal(await page.locator('.zone', { hasText: 'Global & Grand Challenges' }).count(), 0);
+  await page.getByLabel('Game').selectOption('VGC');
+  await page.waitForTimeout(600);
 });
 
 // --- overdue events, and not losing typed work ---------------------------

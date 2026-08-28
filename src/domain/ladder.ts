@@ -170,8 +170,10 @@ export function solveLadder(
   });
 
   const notes: string[] = [];
+  // An empty plan is not a shortfall — the panel's own empty state already says
+  // what to do, and a warning on top of it is just noise.
   if (target == null) notes.push('Set a target to see what you need.');
-  else if (!feasible) {
+  else if (!feasible && path.events.length > 0) {
     notes.push(
       `Winning every event you have added reaches ${maxAttainable.toLocaleString()} CP, `
       + `${(target - maxAttainable).toLocaleString()} short of ${target.toLocaleString()}. `

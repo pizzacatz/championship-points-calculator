@@ -44,7 +44,7 @@ export function PlanRow({
   const e = result.event;
   const badge = BADGE[result.reason];
   const title = e.name?.trim() || rule.label;
-  const date = shortDate(e.date);
+  const date = e.displayDate ?? shortDate(e.date);
 
   return (
     <li className={`plan-row ${result.error ? 'invalid' : ''} ${overdue ? 'overdue' : ''}`}>

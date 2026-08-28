@@ -58,6 +58,8 @@ export type PlannedEvent = {
   attendance: number | null;
   /** Set when the row came from the published catalog rather than manual entry. */
   catalogName?: string;
+  /** How the date reads when only a month is published, e.g. "September 2026". */
+  displayDate?: string;
 };
 
 export type ZoneBaseline = { attendance: number; events: number; basis: string };
@@ -85,10 +87,16 @@ export type AttendanceBaselines = {
 export type CatalogEvent = {
   name: string;
   date: string;
+  /** How the date reads when only the month is published, e.g. "September 2026". */
+  displayDate?: string;
+  datePrecision?: 'day' | 'month';
   location?: string;
   country?: string | null;
   zone: RatingZoneId | null;
-  category: 'regional' | 'special' | 'international';
+  category: 'regional' | 'special' | 'international' | 'online';
+  /** Set when the catalog entry names its own event type, as online events do. */
+  eventTypeId?: string;
+  games?: Game[];
   status: 'upcoming' | 'completed';
   rk9?: Partial<Record<Game, string>>;
   game?: Game;
@@ -101,6 +109,7 @@ export type EventsCatalog = {
   sources: Record<string, string>;
   note: string;
   upcoming: CatalogEvent[];
+  online: CatalogEvent[];
   completed: CatalogEvent[];
 };
 

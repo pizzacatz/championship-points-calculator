@@ -1,12 +1,12 @@
 {
   "season": 2027,
-  "retrievedAt": "2026-08-28T15:53:40.816Z",
+  "retrievedAt": "2026-08-28T17:48:19.901Z",
   "sources": {
     "season": "https://championships.pokemon.com/api/events.json",
     "tournamentIds": "https://rk9.gg/events/pokemon",
     "past": "https://limitlessvgc.com/tournaments and https://limitlesstcg.com/tournaments"
   },
-  "note": "rk9 exposes no past-events view, so completed majors come from Limitless, which is only days behind and carries Masters player counts.",
+  "note": "rk9 exposes no past-events view, so completed majors come from Limitless, which is only days behind and carries Masters player counts. Global and Grand Challenges are published by month only and belong to no rating zone.",
   "upcoming": [
     {
       "name": "Baltimore Pokémon Regional Championships",
@@ -24,21 +24,6 @@
       }
     },
     {
-      "name": "Brisbane Pokémon Regional Championships",
-      "date": "2026-09-26",
-      "endDate": "2026-09-27",
-      "displayDate": "Sept. 26–27",
-      "location": "Brisbane, Australia",
-      "zone": "AP",
-      "category": "regional",
-      "status": "upcoming",
-      "rk9": {
-        "GO": "BR003-6CxLSFjQiTHuAh",
-        "TCG": "BR001-5YdU57MmWxTxaY",
-        "VGC": "BR002-IU5yO1W76UpdyA"
-      }
-    },
-    {
       "name": "Frankfurt Pokémon Regional Championships",
       "date": "2026-09-26",
       "endDate": "2026-09-27",
@@ -51,6 +36,21 @@
         "GO": "FR003-metsuLQs6Ef1M3",
         "TCG": "FR001-qWsas6LjddfVxo",
         "VGC": "FR002-fiunEHp9wx4mh4"
+      }
+    },
+    {
+      "name": "Brisbane Pokémon Regional Championships",
+      "date": "2026-09-26",
+      "endDate": "2026-09-27",
+      "displayDate": "Sept. 26–27",
+      "location": "Brisbane, Australia",
+      "zone": "AP",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "BR003-6CxLSFjQiTHuAh",
+        "TCG": "BR001-5YdU57MmWxTxaY",
+        "VGC": "BR002-IU5yO1W76UpdyA"
       }
     },
     {
@@ -385,6 +385,92 @@
       "location": "Chicago, Illinois",
       "zone": "NA",
       "category": "international",
+      "status": "upcoming",
+      "rk9": {}
+    }
+  ],
+  "online": [
+    {
+      "name": "Global Challenge — September 2026",
+      "date": "2026-09-30",
+      "displayDate": "September 2026",
+      "datePrecision": "month",
+      "zone": null,
+      "category": "online",
+      "eventTypeId": "vgc-global-challenge",
+      "games": [
+        "VGC"
+      ],
+      "status": "upcoming",
+      "rk9": {}
+    },
+    {
+      "name": "Global Challenge — October 2026",
+      "date": "2026-10-31",
+      "displayDate": "October 2026",
+      "datePrecision": "month",
+      "zone": null,
+      "category": "online",
+      "eventTypeId": "vgc-global-challenge",
+      "games": [
+        "VGC"
+      ],
+      "status": "upcoming",
+      "rk9": {}
+    },
+    {
+      "name": "Global Challenge — December 2026",
+      "date": "2026-12-31",
+      "displayDate": "December 2026",
+      "datePrecision": "month",
+      "zone": null,
+      "category": "online",
+      "eventTypeId": "vgc-global-challenge",
+      "games": [
+        "VGC"
+      ],
+      "status": "upcoming",
+      "rk9": {}
+    },
+    {
+      "name": "Global Challenge — January 2027",
+      "date": "2027-01-31",
+      "displayDate": "January 2027",
+      "datePrecision": "month",
+      "zone": null,
+      "category": "online",
+      "eventTypeId": "vgc-global-challenge",
+      "games": [
+        "VGC"
+      ],
+      "status": "upcoming",
+      "rk9": {}
+    },
+    {
+      "name": "Global Challenge — March 2027",
+      "date": "2027-03-31",
+      "displayDate": "March 2027",
+      "datePrecision": "month",
+      "zone": null,
+      "category": "online",
+      "eventTypeId": "vgc-global-challenge",
+      "games": [
+        "VGC"
+      ],
+      "status": "upcoming",
+      "rk9": {}
+    },
+    {
+      "name": "Global Challenge — April 2027",
+      "date": "2027-04-30",
+      "displayDate": "April 2027",
+      "datePrecision": "month",
+      "zone": null,
+      "category": "online",
+      "eventTypeId": "vgc-global-challenge",
+      "games": [
+        "VGC"
+      ],
       "status": "upcoming",
       "rk9": {}
     }

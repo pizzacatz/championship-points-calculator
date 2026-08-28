@@ -19,7 +19,10 @@ to, what counts, what gets displaced, and what finishes would put me near my tar
 qualify?*
 
 - **Pick events from a checklist**, grouped by rating zone and collapsed by default.
-  Add a whole zone at once, then uncheck what you cannot reach.
+  Add a whole zone at once, then uncheck what you cannot reach. VGC paths also get
+  a **Global & Grand Challenge** group — those are ranked within your rating zone
+  rather than held anywhere, so they belong to no region, and the official schedule
+  publishes them by month with no dates.
 - **One number per event** — the CP you earned, or your finishing place. Each
   derives the other, because every CP value is unique within its payout table.
   350 at a Regional *is* 1st place, no kicker, direct invitation.

@@ -19,6 +19,8 @@ const UA = 'championship-points-calculator/1.0 (+https://github.com/pizzacatz/ch
 const SEASON = Number(process.argv[process.argv.indexOf('--season') + 1]) || 2027;
 const PAST_CODE = String(SEASON - 2001) + String(SEASON - 2000);   // 2027 -> "2627"
 const OFFICIAL_FEED = 'https://championships.pokemon.com/api/events.json';
+const GLOBAL_CHALLENGE_PAGE =
+  'https://championships.pokemon.com/en-us/about/pokemon-vgc-global-challenge-grand-challenge';
 
 const MONTHS = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6,
                  jul: 7, aug: 8, sep: 9, sept: 9, oct: 10, nov: 11, dec: 12 };
@@ -63,6 +65,58 @@ function parseRange(text, season) {
 
 const OFFICIAL_ZONE = { northamerica: 'NA', europe: 'EU', latinamerica: 'LA',
                         oceania: 'AP', middleeast: 'SO' };
+
+const MONTH_NAMES = ['January','February','March','April','May','June',
+                     'July','August','September','October','November','December'];
+
+/**
+ * VGC Global and Grand Challenges, from the official schedule.
+ *
+ * They are published by **month only** — "September 2026: Global Challenge" — with
+ * no dates, so each is stored against the last day of its month. That sorts it
+ * after the dated majors in the same month, which is the honest ordering when the
+ * day is unknown, and means it only becomes overdue once the month is actually over.
+ *
+ * They are also not regional: points are awarded on ranking within your own rating
+ * zone, so these belong to no zone group and are offered to VGC paths only.
+ */
+async function globalChallenges() {
+  const res = await fetch(GLOBAL_CHALLENGE_PAGE, { headers: { 'user-agent': UA } });
+  if (!res.ok) throw new Error(`${res.status} for ${GLOBAL_CHALLENGE_PAGE}`);
+  const html = await res.text();
+
+  // The page is a JS app; its content ships as a JSON blob in the markup.
+  const blob = /let encodedData = '([\s\S]*?)';\s*\n/.exec(html);
+  if (!blob) throw new Error('Global Challenge page payload not found');
+
+  const decoded = blob[1]
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+  const out = [];
+  const seen = new Set();
+  // "September 2026: Global Challenge" / "... Grand Challenge"
+  for (const m of decoded.matchAll(/([A-Z][a-z]+)\s+(\d{4})\s*:\s*((?:Global|Grand) Challenge)/g)) {
+    const monthIndex = MONTH_NAMES.indexOf(m[1]);
+    const year = Number(m[2]);
+    if (monthIndex < 0) continue;
+    const key = `${year}-${monthIndex}-${m[3]}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const lastDay = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
+    out.push({
+      name: `${m[3]} — ${m[1]} ${year}`,
+      date: `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`,
+      displayDate: `${m[1]} ${year}`,
+      datePrecision: 'month',
+      zone: null,
+      category: 'online',
+      eventTypeId: 'vgc-global-challenge',
+      games: ['VGC'],
+      status: 'upcoming',
+      rk9: {},
+    });
+  }
+  return out.sort((a, b) => a.date.localeCompare(b.date));
+}
 
 /** City, for matching an official event against its rk9 listing. */
 const cityKey = (name) => name
@@ -217,6 +271,12 @@ async function past(game, host, pcol) {
 const main = async () => {
   const official = await officialSeason();
   const listed = await upcoming();
+  let online = [];
+  try {
+    online = await globalChallenges();
+  } catch (err) {
+    console.warn(`  ! Global Challenge schedule unavailable: ${err.message}`);
+  }
   // Attach rk9 tournament ids where that event has been listed there.
   const byCity = new Map(listed.map((e) => [cityKey(e.name), e.rk9]));
   const up = official.map((e) => ({ ...e, rk9: byCity.get(cityKey(e.name)) ?? {} }));
@@ -248,14 +308,17 @@ const main = async () => {
       past: 'https://limitlessvgc.com/tournaments and https://limitlesstcg.com/tournaments',
     },
     note: 'rk9 exposes no past-events view, so completed majors come from Limitless, '
-        + 'which is only days behind and carries Masters player counts.',
+        + 'which is only days behind and carries Masters player counts. Global and '
+        + 'Grand Challenges are published by month only and belong to no rating zone.',
     upcoming: up,
+    online,
     completed: done,
   }, null, 2) + '\n');
   console.log(`upcoming ${up.length}, completed ${done.length} -> ${OUT}`);
   const byZone = {};
   for (const e of up) byZone[e.zone ?? '??'] = (byZone[e.zone ?? '??'] ?? 0) + 1;
   console.log('by zone:', byZone,
-    '| with rk9 ids:', up.filter((e) => Object.keys(e.rk9).length).length);
+    '| with rk9 ids:', up.filter((e) => Object.keys(e.rk9).length).length,
+    '| global challenges:', online.length);
 };
 main().catch((e) => { console.error(e); process.exit(1); });

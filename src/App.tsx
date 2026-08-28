@@ -110,7 +110,12 @@ export default function App() {
   );
 
   function toggleCatalog(event: CatalogEvent, typeId: string, add: boolean) {
-    if (add) store.addEvent({ ...blankEvent(typeId), name: event.name, date: event.date, catalogName: event.name });
+    if (add) {
+      store.addEvent({
+        ...blankEvent(typeId), name: event.name, date: event.date,
+        displayDate: event.displayDate, catalogName: event.name,
+      });
+    }
     else {
       const found = path.events.find((e) => e.catalogName === event.name);
       if (found && confirmDiscard([found.id])) store.removeEvent(found.id);
@@ -134,7 +139,8 @@ export default function App() {
     if (add) {
       const fresh = items.filter((i) => !addedNames.has(i.event.name));
       store.addEvents(fresh.map((i) => ({
-        ...blankEvent(i.typeId), name: i.event.name, date: i.event.date, catalogName: i.event.name,
+        ...blankEvent(i.typeId), name: i.event.name, date: i.event.date,
+        displayDate: i.event.displayDate, catalogName: i.event.name,
       })));
     } else {
       const ids = path.events
