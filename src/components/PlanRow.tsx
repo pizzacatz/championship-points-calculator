@@ -27,7 +27,7 @@ const shortDate = (iso: string | null) => {
 };
 
 export function PlanRow({
-  result, rule, bfl, overdue, needsDate, displacement, onChange, onRemove,
+  result, rule, bfl, overdue, needsDate, onChange, onRemove,
 }: {
   result: EvaluatedResult;
   rule: EventTypeRule;
@@ -37,7 +37,6 @@ export function PlanRow({
   overdue: boolean;
   /** A manually added local, which carries no date of its own. */
   needsDate: boolean;
-  displacement: string | null;
   onChange: (patch: Partial<PlannedEvent>) => void;
   onRemove: () => void;
 }) {
@@ -100,11 +99,6 @@ export function PlanRow({
           This event has passed. Enter your result, or remove it — it is not counted.
         </p>
       )}
-
-      {/* Mapping a finish to a band is the calculator's job; having done it, saying
-          so on every row is the app narrating its own working. Only displacement
-          survives, because the row cannot convey it any other way. */}
-      {!overdue && displacement && <p className="plan-explain">{displacement}</p>}
 
       {result.error && <p className="callout danger row-error" role="alert">{result.error}</p>}
     </li>

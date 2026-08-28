@@ -204,7 +204,9 @@ describe('results versus blanks', () => {
     expect(result.results[1].rawPoints).toBe(0);
   });
 
-  it('explains what a new result displaces once a bucket is full', () => {
+  it('lets a stronger result displace the weakest once a bucket is full', () => {
+    // The arithmetic still has to be right; it is simply no longer narrated
+    // on the row, since the totals and the BFL slots already show it.
     const five = [
       ev({ eventTypeId: 'regional', awardedPoints: 325 }),
       ev({ eventTypeId: 'regional', awardedPoints: 300 }),
@@ -212,11 +214,11 @@ describe('results versus blanks', () => {
       ev({ eventTypeId: 'regional', awardedPoints: 200 }),
       ev({ eventTypeId: 'regional', awardedPoints: 160 }),
     ];
+    const before = score(path(five)).currentTotal;
     const sixth = ev({ eventTypeId: 'regional', awardedPoints: 350, name: 'Atlanta Regional' });
-    const result = score(path([...five, sixth]));
-    const d = result.displacements.find((x) => x.eventId === sixth.id)!;
-    expect(d.netPoints).toBe(350 - 160);
-    expect(d.message).toMatch(/adds 190 net CP by replacing/);
+    const after = score(path([...five, sixth]));
+    expect(after.currentTotal).toBe(before - 160 + 350);
+    expect(after.results.find((r) => r.event.id === sixth.id)!.counted).toBe(true);
   });
 });
 

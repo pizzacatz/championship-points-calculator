@@ -329,8 +329,6 @@ export default function App() {
                       ? { slot: null, limit: rule.bestFinishLimit } : null)}
                     overdue={!isResult && e.date != null && e.date < today}
                     needsDate={!e.catalogName && rule.scale !== 'major'}
-                    displacement={evaluation.displacements
-                      .find((d) => d.eventId === e.id && d.displacedEventId)?.message ?? null}
                     onChange={(patch) => store.updateEvent(e.id, patch)}
                     onRemove={() => { if (confirmDiscard([e.id])) store.removeEvent(e.id); }} />
                 );

@@ -1,0 +1,93 @@
+# Changelog
+
+All dates 2026-08-28 — the project was specified, built, reviewed and rebuilt in
+a single session.
+
+## 2.3.2
+
+- **Removed the displacement line from plan rows.** *"This result adds 190 net CP
+  by replacing Orlando Regional"* — the totals and the `BFL 2/5` slot already say
+  what counts and what does not. With it went the engine's displacement
+  calculation, which re-ran the whole Best Finish Limit pass once per scoring
+  result on every keystroke to produce a sentence nobody needed.
+- Plan rows now carry no explanatory prose at all.
+
+## 2.3.1
+
+- Dropped the explanatory note under Global & Grand Challenges. The section listed
+  six months and then explained that it was listing months.
+
+## 2.3.0
+
+- **Locals are scored from an assumed turnout** — 16 at a League Challenge, 32 at
+  a League Cup — instead of refusing to score a placement and asking for the CP.
+  Entering the CP overrides the assumption and, being a valid published award,
+  proves the kicker was met.
+  - The same figure drives the ladder, so what it asks for is what a result of
+    that shape would score.
+  - A Cup at 32 behaves exactly as one at 17: the 9th–16th band needs 48 entrants,
+    so neither figure unlocks it.
+  - The trade: an assumption that scores is one that can be wrong. A 13th at a
+    genuinely 30-player Challenge earns 6 CP and this records 0.
+- Online placements score too — their kickers are assumed met, and they were
+  caught by the same refusal.
+- Removed the **Needs the CP** and **Excluded by BFL** chips. The first has nothing
+  left to say; the second repeated the row's own `BFL –/4`.
+- Removed the band name from rows. Mapping a finish to a band is the calculator's
+  job; restating it answers a question nobody asked.
+- Official sources returned as a collapsed block at the foot of the page.
+
+## 2.2.0
+
+- **Global & Grand Challenges** for VGC, scraped from the official schedule and
+  grouped by month as it publishes them. They belong to no rating zone — points
+  are ranked within your own — so they form their own catalog group.
+- Stored against the last day of their month, so they sort after dated majors in
+  the same month and only become overdue once the month is over.
+- An empty plan no longer warns that it is short of its target.
+
+## 2.1.0
+
+- **"Target reached" no longer fires on a projection.** With 500 CP banked and six
+  unplayed events it was showing the green banner; banked and on-plan are now
+  separate claims.
+- **A finished event with no result drops out of the ladder.** It was still being
+  solved for, inflating the projection with points that can no longer be earned.
+  It is highlighted instead, asking for the result or removal.
+- **Clearing a zone confirms before discarding typed results**, and only when
+  something would actually be lost.
+- **The ladder was rebuilt.** It grouped by event type, so nine Regionals read
+  `×9` — implying 1,800 CP where the Best Finish Limit caps the truth at 1,000,
+  and printing a requirement for an International worth nothing. It now reports
+  how many of each type can actually count, adds CP totals, reads finishes as
+  "Top 32" down to "Top 4" then 2nd and 1st place, and holds its columns.
+- The standalone Best Finish Limit table is gone; per-result slots appear on the
+  plan rows as `BFL 3/5`.
+- Plan rows lost the type subtitle, the date's own line, and the Planned and
+  Counts badges. Rows sort by date. Totals moved into the sticky header. A season
+  line says how many events are played and which is next.
+- Title, GPE Network subtitle, catalog expand and collapse all.
+
+## 2.0.0
+
+- **Rebuilt the form around one question:** *if I attend these events, what is the
+  worst I can do and still qualify?*
+- **One number per event** — the CP or the placement, either one, because every CP
+  value is unique within its payout table. Attendance is never asked for; status
+  is not stored, since a row with a number is a result and a blank row is not.
+- **The ladder replaced the path generator** — three strategies, a
+  200,000-combination search, and two per-row fields, for one table.
+- Events come from a per-zone checklist; upcoming from rk9, past from Limitless.
+- Attendance baselines became per-zone medians with Specials pooled in. v1 applied
+  a single global 180 to every planned Regional, including North American ones
+  that median 705.
+- 34 inputs to log three events became 1.
+
+## 1.0.0
+
+- First release. Kickers, Best Finish Limits, displacement, three generated
+  paths, multiple plans, JSON export and import.
+- CP tables, Best Finish Limits, invitation slots and direct-invitation rules
+  transcribed from the official 2027 pages and locked with fixtures.
+- Previous-season cutoffs read from the official leaderboard API, confirming the
+  842 benchmark the PRD carried as an owner-supplied figure.

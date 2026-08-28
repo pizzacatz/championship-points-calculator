@@ -3,7 +3,7 @@
  * everything it needs arrives as arguments so the whole thing is testable.
  */
 import type {
-  AttendanceBaselines, BucketSummary, Displacement, EvaluatedResult, Evaluation,
+  AttendanceBaselines, BucketSummary, EvaluatedResult, Evaluation,
   EventTypeRule, Game, PlacementBand, PlannedEvent, QualificationPath, SeasonRules,
 } from './types';
 
@@ -359,36 +359,11 @@ export function evaluatePath(
 
   const sum = (b: BucketSummary[]) => b.reduce((s, x) => s + x.countedPoints, 0);
 
-  // Displacement: what each planned result actually adds once the BFL settles.
-  const displacements: Displacement[] = [];
-  const plannedIds = scored.filter((r) => r.rawPoints > 0);
-  for (const r of plannedIds) {
-    const without = scored.filter((x) => x.event.id !== r.event.id);
-    const before = applyBfl(without, rules);
-    const beforeTotal = sum(before.buckets);
-    const afterTotal = sum(projected.buckets);
-    const net = afterTotal - beforeTotal;
-    const dropped = [...before.counted].find((id) => !projected.counted.has(id)) ?? null;
-    const droppedResult = dropped ? scored.find((x) => x.event.id === dropped) ?? null : null;
-    displacements.push({
-      eventId: r.event.id,
-      netPoints: net,
-      displacedEventId: dropped,
-      displacedPoints: droppedResult?.rawPoints ?? 0,
-      message: droppedResult
-        ? `This result adds ${net} net CP by replacing ${droppedResult.event.name || droppedResult.rule.label} worth ${droppedResult.rawPoints} CP.`
-        : net > 0
-          ? `This result adds ${net} CP and displaces nothing.`
-          : `This result adds 0 net CP — it does not beat any counted ${r.rule.bflBucketLabel} result.`,
-    });
-  }
-
   return {
     results,
     currentTotal: sum(current.buckets),
     projectedTotal: sum(projected.buckets),
     buckets: projected.buckets,
-    displacements,
     directInvites: results.filter((r) => r.directInvite),
     errors: results.filter((r) => r.error).map((r) => ({ eventId: r.event.id, message: r.error! })),
   };

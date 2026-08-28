@@ -193,20 +193,11 @@ export type BucketSummary = {
   pointsToImprove: number | null;
 };
 
-export type Displacement = {
-  eventId: string;
-  netPoints: number;
-  displacedEventId: string | null;
-  displacedPoints: number;
-  message: string;
-};
-
 export type Evaluation = {
   results: EvaluatedResult[];
   currentTotal: number;
   projectedTotal: number;
   buckets: BucketSummary[];
-  displacements: Displacement[];
   directInvites: EvaluatedResult[];
   errors: { eventId: string; message: string }[];
 };
