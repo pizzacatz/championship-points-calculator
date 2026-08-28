@@ -153,7 +153,86 @@ League Cup                         2   Win it               50        100
 
 ---
 
-## 4. Still open from the v2 round
+## 4. Header and catalog chrome
+
+- **App title:** *Championship Points Calculator 2027*.
+- **Subtitle:** replace "2027 Masters" with **Part of the GPE Network**, linked to
+  `https://georgiaplayevents.com/#etc`. Matches the majors map, which carries the
+  same line.
+- **Events catalog:** add **Expand all** / **Collapse all**.
+- Delete the panel note *"Add what you can get to. Uncheck what you can't."*
+
+---
+
+## 5. Review of the shipped v2, by severity
+
+Measured against the live site with eight events added and two results logged.
+
+### 5.1 "Target reached" fires on a projection, not on results — trust
+
+The banner turns green and says **Target reached** while only 500 CP is banked.
+The 860 it is judging comes from the ladder's *assumed* finishes at six events
+that have not been played. PRD §3 and §7 are emphatic that nothing may imply
+qualification, and this is the strongest claim on the page resting on the softest
+evidence.
+
+Separate the two states plainly:
+
+| Banked | Reads |
+|---|---|
+| 500 of 842 | *On plan to reach 842 — 342 still to earn* |
+| 842 of 842 | *Target reached* |
+
+### 5.2 The totals scroll away while you use them — feedback
+
+CP now / Projected / To go sit at the very top. Entering results happens 800 to
+2,000 px below, so the number you are trying to move is off-screen at the moment
+you move it. Cause and effect should be visible together. Fold the three figures
+into the sticky header, or make the strip itself sticky.
+
+### 5.3 Results and blanks look the same — hierarchy
+
+Six of eight rows are empty, each the same height, weight and colour as the two
+carrying real results, distinguished only by a small grey pill. The page gives
+most of its area to the events you have *not* played. A logged result is a fact
+and an empty row is an intention; they should not have equal visual weight.
+
+### 5.4 The explanation line restates the row — redundancy
+
+> "200 CP → 9–16 band, worth 200 CP. The award confirms at least 33 players
+> attended. This result adds 200 CP and displaces nothing."
+
+Three sentences, and "200 CP" appears three times in a row that already shows
+**200 CP** twice. Keep only what the row cannot show: the band, and displacement
+when there is any. "Displaces nothing" is worth saying only when something is at
+risk of being displaced.
+
+### 5.5 Two unrelated ways to add an event — mental model
+
+Majors come from the catalog checklist; Cups and Challenges from three `+` buttons
+sitting *inside* the plan panel. Same task, two places, no visual relationship, and
+the `+` buttons put an input control inside a results display. They belong with the
+catalog.
+
+### 5.6 Smaller things
+
+- The Best Finish Limit table prints *"any result takes a free slot"* five times.
+- **Delete plan** is styled identically to **New plan** and sits beside it. A
+  destructive action should not look like its neighbours.
+- Every row repeats the micro-labels `CP` and `Place` — sixteen of them across
+  eight rows, where one column header would do.
+- The **Plan** dropdown shows a single entry until a second plan exists.
+
+### 5.7 Mobile is the worst case
+
+At 390 px the page runs **4,152 px** for eight events. Both tables wrap badly —
+the ladder's *"257–512 deepest that pays at ~1,096 players"* takes four lines, and
+every cell of the BFL table wraps. The compression in §1 helps; the tables need
+their own narrow-screen treatment rather than a horizontal scrollbar.
+
+---
+
+## 6. Still open from the v2 round
 
 - The catalog and the plan list both name the same event. Checking Baltimore in
   the catalog makes "Baltimore" appear twice on the page.
