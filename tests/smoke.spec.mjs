@@ -41,10 +41,13 @@ await check('the catalog lists zones collapsed, with counts', async () => {
 
 await check('bulk-add takes a whole zone', async () => {
   const zone = page.locator('.zone', { hasText: 'US and Canada' });
+  // The count the catalog itself advertises, rather than a magic number that
+  // goes stale as the season's schedule is published.
+  const advertised = Number((await zone.locator('.zone-count').innerText()).match(/of (\d+)/)[1]);
+  assert.ok(advertised > 0, 'zone advertises no events');
   await zone.getByRole('button', { name: 'Add all' }).click();
-  await page.waitForFunction(() => document.querySelectorAll('.plan-row').length > 5);
-  const n = await page.locator('.plan-row').count();
-  assert.ok(n >= 10, `expected a full zone, got ${n}`);
+  await page.waitForFunction((n) => document.querySelectorAll('.plan-row').length === n, advertised);
+  assert.equal(await page.locator('.plan-row').count(), advertised);
 });
 
 await check('unchecking one event removes it again', async () => {
