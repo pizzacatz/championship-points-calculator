@@ -179,6 +179,93 @@ up to.
 > limited to events that have not happened yet, because anything already run gets
 > real attendance from rk9.
 
+### Specials fold into their region's pool
+
+Do not hold a separate Specials baseline. Assign each Special to the region it is
+held in and average it together with that region's Regionals.
+
+Checked before adopting, because it only works if the two are comparable — and
+Specials turn out **not** to be systematically smaller:
+
+| Region | Regionals | Specials | Combined | Shift |
+|---|---|---|---:|---:|
+| NA | n=9 avg 732 | San Juan 99 | **669** | −63 |
+| EU | n=7 avg 594 | Turin 940, Seville 595 | **633** | +39 |
+| LA | n=7 avg 226 | Lima 77, Buenos Aires 93 | **195** | −31 |
+| OC | n=3 avg 260 | Auckland 43 | **206** | −54 |
+
+Turin drew more than most Regionals; Auckland drew 43. Every shift is under 9%,
+and merging fixes sample sizes of one or two events, so the combined pool is more
+robust than either alone. (VGC, 2025–26.)
+
+### Internationals: three-year average, per event
+
+Each International keeps its own baseline, averaged over the last three seasons —
+they are not interchangeable and there is only one of each per year.
+
+| | 23–24 | 24–25 | 25–26 | **3yr avg** |
+|---|---:|---:|---:|---:|
+| NAIC VGC | 921 | 1,129 | 1,096 | **1,049** |
+| EUIC VGC | 975 | 1,257 | 1,455 | **1,229** |
+| LAIC VGC | 393 | 455 | 518 | **455** |
+| NAIC TCG | 2,692 | 3,812 | 3,752 | **3,419** |
+| EUIC TCG | 2,605 | 3,361 | 4,010 | **3,325** |
+| LAIC TCG | 1,263 | 1,810 | 2,117 | **1,730** |
+
+> Note: every series is growing. EUIC VGC's 3-year mean of 1,229 sits 18% below
+> its most recent 1,455. A trailing mean therefore under-projects a growing field —
+> which is the **safe** direction for kickers (fewer bands claimed than will be
+> reached), but it is a systematic bias, not noise. Consider weighting the most
+> recent season more heavily if that lag ever matters.
+
+### Two plans, not three strategies
+
+Replace least-demanding / fewest-events / best-use-of-committed with two plan
+shapes that map to a decision players actually make:
+
+- **Region plan** — using only events in your own rating zone.
+- **International plan** — including the Internationals, i.e. what it takes if you
+  are willing to travel.
+
+This answers "do I have to fly to an IC to make it?", which is the real question,
+and it dissolves the degenerate third strategy entirely. Default to the region
+plan; tab or radio to the international plan; "View both" after.
+
+One ordering rule still runs underneath both — **least demanding** is the natural
+choice, so each plan returns the easiest set of finishes that reaches the target
+from its own pool of events.
+
+> **Naming hazard.** "Region" now means two different things: the region a
+> *baseline* is drawn from (where the event is held) and the region a *plan* is
+> limited to (where the player competes). Same word, two senses, in the same
+> screen. Name them distinctly in the UI.
+
+### Blank solves, filled constrains
+
+- An event left **blank** is what the app solves for — it computes the finish you
+  would need there.
+- An event with a **CP or placement filled in** is a fixed constraint, and the
+  remaining blank events are calculated around it.
+
+So a plan is a mix of knowns and unknowns, and the generator fills the unknowns.
+
+### Cups and Challenges: auto-filled default
+
+Planned Cups and Challenges auto-fill with the mean CP earned per event, rounded
+**down** to the nearest achievable payout tier, using bands with no kicker.
+
+> **Needs clarification before building.** "Mean CP earned per event" over which
+> population? The most useful reading is *the player's own completed results* — if
+> you have averaged 23 CP across six League Cups, future ones default to 20, the
+> nearest tier at or below. That is personalised and self-correcting. It needs a
+> fallback for a player with no history yet. The alternative reading is a global
+> published mean, which no source publishes. **Open.**
+
+### Kept as-is
+
+Multi-path, JSON export/import and the theme toggle all stay. The toggle needs to
+look better than a text button — a sun/moon icon.
+
 ### Live attendance and kickers from rk9
 
 For events that use rk9, read actual attendance and recompute kickers from it
