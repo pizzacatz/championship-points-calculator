@@ -78,7 +78,7 @@ the community databases that do, via
 |---|---|---|
 | TCG | [limitlesstcg.com](https://limitlesstcg.com/tournaments) | 36 events, final standings |
 | VGC | [limitlessvgc.com](https://limitlessvgc.com/tournaments) | 35 events, final standings |
-| GO | [rk9.gg](https://rk9.gg) rosters | 31 events, **registrations** — see below |
+| GO | [rk9.gg](https://rk9.gg) rosters | 31 events, **roster counts** — see below |
 
 Limitless's player count is the Masters count. Two independent spot-checks against
 [rk9.gg](https://rk9.gg), the official tournament software, and
@@ -121,9 +121,14 @@ IDs are never parsed or written out. The only thing that leaves the script is a 
 
 Two limits on the GO figures, both recorded in the data file and surfaced in the app:
 
-- **They are registrations, not confirmed attendance.** GO rosters carry no Standing
-  column, so unlike the TCG and VGC rosters there is no way to tell who actually played.
-  The real field can only be smaller, which makes these baselines optimistic.
+- **They count the roster, not the field that played, and the error runs in an unresolved
+  direction.** GO rosters carry no Standing column, so unlike the TCG and VGC rosters there
+  is no way to tell who actually finished. The obvious guess — that a roster over-counts
+  because of no-shows — is contradicted by the one independent check available: for Orlando
+  2026 GO the rk9 roster holds **156** where Liquipedia's `player_number` reports **174**.
+  An 11% disagreement in the opposite direction, unexplained. The rk9 roster may list only
+  players who consented to appear on it. Until that is resolved, treat the GO figures as
+  approximate in both directions.
 - **† Only 2 of the 6 Special Events are on rk9 at all**, so the GO Special figure is the
   lowest of a partial set rather than of the season, and is probably too high. The four
   missing events — Lima, San Juan, Auckland, Buenos Aires — return 500 on rk9, which

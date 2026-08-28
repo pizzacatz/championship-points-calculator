@@ -259,8 +259,9 @@ async function main() {
       const complete = v.events >= v.eventsNamed;
       const caveats = [];
       if (v.basis === 'registered') {
-        caveats.push('this roster publishes no final standings, so the figure counts players ' +
-          'REGISTERED and may exceed who actually played');
+        caveats.push('this roster publishes no final standings, so the figure counts the ' +
+          'roster rather than the field that played, and the direction of the error is ' +
+          'UNRESOLVED: for Orlando 2026 GO this roster holds 156 where Liquipedia reports 174');
       }
       if (!complete) {
         caveats.push(`only ${v.events} of the ${v.eventsNamed} events in this category are on ` +

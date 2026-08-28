@@ -1,7 +1,7 @@
 {
   "season": 2026,
   "verified": false,
-  "retrievedAt": "2026-08-28T10:51:25.708Z",
+  "retrievedAt": "2026-08-28T10:55:29.785Z",
   "description": "Projected Masters attendance for PLANNED major events: the single lowest Masters attendance observed during the previous season, held separately per game and major-event category.",
   "provenance": "Play! Pokémon publishes no machine-readable attendance feed. TCG and VGC counts come from Limitless (limitlesstcg.com, limitlessvgc.com); Pokémon GO comes from Liquipedia, which Limitless does not cover. Spot-checked against rk9.gg, the official tournament software: Seattle 2026 VGC reads 822 on Limitless and 821 Masters with a final standing on the rk9 roster.",
   "categoryNote": "Regional, Special and International each carry their own baseline. They share a payout table and one Best Finish Limit, but their field sizes differ by an order of magnitude (2026 VGC: smallest Regional 180, smallest Special 43), so a single shared figure would badly misprice two of the three. This refines the recommendation in PRD section 16 with the observed data.",
@@ -95,19 +95,19 @@
     "GO": {
       "regional": {
         "attendance": 38,
-        "sourceEvent": "Regional Brisbane — rk9 roster (this roster publishes no final standings, so the figure counts players REGISTERED and may exceed who actually played)",
+        "sourceEvent": "Regional Brisbane — rk9 roster (this roster publishes no final standings, so the figure counts the roster rather than the field that played, and the direction of the error is UNRESOLVED: for Orlando 2026 GO this roster holds 156 where Liquipedia reports 174)",
         "verified": false,
         "basis": "registered"
       },
       "special": {
         "attendance": 93,
-        "sourceEvent": "Special Event Seville — rk9 roster (this roster publishes no final standings, so the figure counts players REGISTERED and may exceed who actually played; only 2 of the 6 events in this category are on rk9 at all, so this is the lowest of a partial set, not of the season)",
+        "sourceEvent": "Special Event Seville — rk9 roster (this roster publishes no final standings, so the figure counts the roster rather than the field that played, and the direction of the error is UNRESOLVED: for Orlando 2026 GO this roster holds 156 where Liquipedia reports 174; only 2 of the 6 events in this category are on rk9 at all, so this is the lowest of a partial set, not of the season)",
         "verified": false,
         "basis": "registered"
       },
       "international": {
         "attendance": 266,
-        "sourceEvent": "LAIC 2025–26, São Paulo — rk9 roster (this roster publishes no final standings, so the figure counts players REGISTERED and may exceed who actually played)",
+        "sourceEvent": "LAIC 2025–26, São Paulo — rk9 roster (this roster publishes no final standings, so the figure counts the roster rather than the field that played, and the direction of the error is UNRESOLVED: for Orlando 2026 GO this roster holds 156 where Liquipedia reports 174)",
         "verified": false,
         "basis": "registered"
       }
