@@ -33,6 +33,16 @@ qualify?*
 Plans are stored in your browser. Multiple plans, JSON export and import, no
 accounts, nothing sent anywhere.
 
+## Documents
+
+| | |
+|---|---|
+| [`Championship-Points-Calculator-PRD.md`](Championship-Points-Calculator-PRD.md) | Current spec (v2) |
+| [`docs/PRD-DIFF-v1-to-v2.md`](docs/PRD-DIFF-v1-to-v2.md) | What changed from v1, and why |
+| [`docs/PRD-v1.0-2026-08-28.md`](docs/PRD-v1.0-2026-08-28.md) | v1, archived |
+| [`docs/DATA-SOURCES.md`](docs/DATA-SOURCES.md) | Every endpoint and cross-check |
+| [`docs/NEXT-VERSION.md`](docs/NEXT-VERSION.md) | Design notes and open questions |
+
 ## Data sources
 
 Every CP table, Best Finish Limit, invitation-slot count and direct-invitation rule in
