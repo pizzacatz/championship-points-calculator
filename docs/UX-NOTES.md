@@ -168,7 +168,7 @@ League Cup                         2   Win it               50        100
 
 Measured against the live site with eight events added and two results logged.
 
-### 5.1 "Target reached" fires on a projection, not on results — trust
+### 5.1 "Target reached" fires on a projection, not on results — trust  ✅ confirmed
 
 The banner turns green and says **Target reached** while only 500 CP is banked.
 The 860 it is judging comes from the ladder's *assumed* finishes at six events
@@ -183,7 +183,7 @@ Separate the two states plainly:
 | 500 of 842 | *On plan to reach 842 — 342 still to earn* |
 | 842 of 842 | *Target reached* |
 
-### 5.2 The totals scroll away while you use them — feedback
+### 5.2 The totals scroll away while you use them — feedback  ✅ confirmed sticky
 
 CP now / Projected / To go sit at the very top. Entering results happens 800 to
 2,000 px below, so the number you are trying to move is off-screen at the moment
@@ -216,7 +216,6 @@ catalog.
 
 ### 5.6 Smaller things
 
-- The Best Finish Limit table prints *"any result takes a free slot"* five times.
 - **Delete plan** is styled identically to **New plan** and sits beside it. A
   destructive action should not look like its neighbours.
 - Every row repeats the micro-labels `CP` and `Place` — sixteen of them across
@@ -225,14 +224,58 @@ catalog.
 
 ### 5.7 Mobile is the worst case
 
-At 390 px the page runs **4,152 px** for eight events. Both tables wrap badly —
-the ladder's *"257–512 deepest that pays at ~1,096 players"* takes four lines, and
-every cell of the BFL table wraps. The compression in §1 helps; the tables need
-their own narrow-screen treatment rather than a horizontal scrollbar.
+At 390 px the page runs **4,152 px** for eight events. The ladder's
+*"257–512 deepest that pays at ~1,096 players"* wraps over four lines. Deleting the
+BFL table (§3.3) and the compression in §1 remove most of that height; the ladder
+still needs a narrow-screen treatment rather than a horizontal scrollbar.
 
 ---
 
-## 6. Still open from the v2 round
+## 6. Second pass — things the first review missed
+
+### 6.1 The season has no presence, and the product is about the season
+
+The question this app exists to answer is *"given how many events are left, how
+well do I need to do?"* — but nothing on the page conveys **where you are in the
+season**. There is no sense of elapsed time, no next event, no count of what
+remains. Dates appear only as small grey text on each row.
+
+The majors map solves this with a season timeline. Something equivalent here — even
+one line, *"4 of 12 events played · next: Las Vegas, 4 Dec"* — would put the time
+dimension back into a tool whose central question is about time.
+
+### 6.2 A past event with no result is still treated as an opportunity
+
+Every event carries a date, so the app knows when Baltimore was. If it has been and
+gone and no result was entered, the ladder still counts it as an event you can
+solve for — it will happily tell you to finish top 16 at a tournament that finished
+last month. That is not a styling problem; it inflates the projection.
+
+At minimum, an unlogged event whose date has passed should be visually separated
+and excluded from the ladder, with a prompt to enter the result or remove it.
+
+### 6.3 Clearing a zone can destroy results with no warning
+
+**Clear** on a zone removes every event in it, including ones carrying logged
+results, instantly and with no undo. The same applies to the per-row ×. Removing an
+empty row is free; removing a logged result loses work the player typed. Those two
+should not behave identically — confirm when a removal would discard a result.
+
+### 6.4 Rows are ordered by addition, not by date
+
+Bulk-add happens to produce date order because the catalog is sorted. Add a League
+Cup by hand afterwards and it lands at the bottom regardless of when it is. A plan
+is a schedule; it should read in date order.
+
+### 6.5 Green means two different things
+
+**Counts** and **Direct invite** are both green badges. One is routine bookkeeping —
+this result is inside the Best Finish Limit — and the other is the single most
+significant outcome in the product. They should not share a colour.
+
+---
+
+## 7. Still open from the v2 round
 
 - The catalog and the plan list both name the same event. Checking Baltimore in
   the catalog makes "Baltimore" appear twice on the page.
