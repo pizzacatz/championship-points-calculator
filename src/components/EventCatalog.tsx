@@ -12,7 +12,7 @@ const CATEGORY_TO_TYPE: Record<CatalogEvent['category'], string> = {
  * event is the player asserting they can attend it.
  */
 export function EventCatalog({
-  catalog, rules, game, homeZone, addedNames, onToggle, onBulk,
+  catalog, rules, game, homeZone, addedNames, onToggle, onBulk, manualTypes, onAddManual,
 }: {
   catalog: EventsCatalog;
   rules: SeasonRules;
@@ -21,6 +21,10 @@ export function EventCatalog({
   addedNames: Set<string>;
   onToggle: (event: CatalogEvent, typeId: string, add: boolean) => void;
   onBulk: (events: { event: CatalogEvent; typeId: string }[], add: boolean) => void;
+  /** Cups and Challenges are unlisted, so they are added by hand — but adding is
+   *  one job, so the buttons belong here rather than inside the plan. */
+  manualTypes: { id: string; label: string }[];
+  onAddManual: (typeId: string) => void;
 }) {
   const [open, setOpen] = useState<Record<string, boolean>>({ [homeZone]: true });
 
@@ -31,13 +35,20 @@ export function EventCatalog({
     byZone.set(e.zone, [...(byZone.get(e.zone) ?? []), e]);
   }
 
+
   const zones = rules.ratingZones.filter((z) => byZone.has(z.id));
 
   return (
     <section className="panel" aria-labelledby="catalog-h">
       <header>
         <h2 id="catalog-h">Events</h2>
-        <span className="panel-note">Add what you can get to. Uncheck what you can't.</span>
+        <span className="row catalog-actions">
+          <button type="button" className="ghost"
+            onClick={() => setOpen(Object.fromEntries(zones.map((z) => [z.id, true])))}>
+            Expand all
+          </button>
+          <button type="button" className="ghost" onClick={() => setOpen({})}>Collapse all</button>
+        </span>
       </header>
 
       {zones.map((zone) => {
@@ -83,6 +94,12 @@ export function EventCatalog({
           </div>
         );
       })}
+
+      <div className="row add-manual">
+        {manualTypes.map((t) => (
+          <button key={t.id} type="button" onClick={() => onAddManual(t.id)}>+ {t.label}</button>
+        ))}
+      </div>
     </section>
   );
 }

@@ -60,6 +60,50 @@ export default function App() {
   const hasResults = evaluation.results.some((r) => r.rawPoints > 0);
   const belowPrevious = hasResults && previousCutoff != null && projected < previousCutoff;
 
+  const today = new Date().toISOString().slice(0, 10);
+
+  // A plan is a schedule, so it reads in date order. Undated manual events sort last.
+  const ordered = useMemo(() => {
+    const order = new Map(path.events.map((e, i) => [e.id, i]));
+    return [...evaluation.results].sort((a, b) => {
+      const da = a.event.date ?? '9999', db = b.event.date ?? '9999';
+      return da.localeCompare(db) || order.get(a.event.id)! - order.get(b.event.id)!;
+    });
+  }, [evaluation.results, path.events]);
+
+  // Position within its Best Finish Limit, for results that have one.
+  const bflSlots = useMemo(() => {
+    const map = new Map<string, { slot: number | null; limit: number | null }>();
+    const order = new Map(path.events.map((e, i) => [e.id, i]));
+    const byBucket = new Map<string, typeof evaluation.results>();
+    for (const r of evaluation.results) {
+      if (r.rawPoints <= 0 || !r.rule) continue;
+      byBucket.set(r.rule.bflBucket, [...(byBucket.get(r.rule.bflBucket) ?? []), r]);
+    }
+    for (const [, list] of byBucket) {
+      const limit = list[0].rule.bestFinishLimit;
+      [...list]
+        .sort((a, b) => b.rawPoints - a.rawPoints || order.get(a.event.id)! - order.get(b.event.id)!)
+        .forEach((r, i) => map.set(r.event.id, {
+          slot: limit == null || i < limit ? i + 1 : null, limit,
+        }));
+    }
+    return map;
+  }, [evaluation.results, path.events]);
+
+  const seasonLine = useMemo(() => {
+    const dated = path.events.filter((e) => e.date);
+    const played = evaluation.results.filter((r) => r.rawPoints > 0 || r.event.awardedPoints === 0).length;
+    const next = dated.filter((e) => e.date! >= today).sort((a, b) => a.date!.localeCompare(b.date!))[0];
+    if (!path.events.length) return 'No events yet.';
+    const parts = [`${played} of ${path.events.length} events played`];
+    if (next) {
+      parts.push(`next: ${(next.name || '').replace(/ Pokémon .*/, '')} on `
+        + new Date(`${next.date}T00:00:00`).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }));
+    }
+    return parts.join(' · ');
+  }, [path.events, evaluation.results, today]);
+
   const addedNames = useMemo(
     () => new Set(path.events.map((e) => e.catalogName).filter(Boolean) as string[]),
     [path.events],
@@ -69,8 +113,21 @@ export default function App() {
     if (add) store.addEvent({ ...blankEvent(typeId), name: event.name, date: event.date, catalogName: event.name });
     else {
       const found = path.events.find((e) => e.catalogName === event.name);
-      if (found) store.removeEvent(found.id);
+      if (found && confirmDiscard([found.id])) store.removeEvent(found.id);
     }
+  }
+
+  /** Confirm only when something typed would be lost — a prompt on every removal
+   *  just teaches people to dismiss it. */
+  function confirmDiscard(ids: string[]): boolean {
+    const losing = path.events.filter(
+      (e) => ids.includes(e.id) && (e.awardedPoints != null || e.placement != null),
+    ).length;
+    if (!losing) return true;
+    return confirm(
+      `This removes ${ids.length} event${ids.length === 1 ? '' : 's'}, `
+      + `${losing} with ${losing === 1 ? 'a result' : 'results'} you entered. Continue?`,
+    );
   }
 
   function bulkCatalog(items: { event: CatalogEvent; typeId: string }[], add: boolean) {
@@ -80,9 +137,10 @@ export default function App() {
         ...blankEvent(i.typeId), name: i.event.name, date: i.event.date, catalogName: i.event.name,
       })));
     } else {
-      store.removeEvents(path.events
+      const ids = path.events
         .filter((e) => e.catalogName && items.some((i) => i.event.name === e.catalogName))
-        .map((e) => e.id));
+        .map((e) => e.id);
+      if (confirmDiscard(ids)) store.removeEvents(ids);
     }
   }
 
@@ -116,8 +174,9 @@ export default function App() {
           <div className="wordmark">
             <img src={`${import.meta.env.BASE_URL}icon-192.png`} alt="" />
             <div>
-              <h1>Championship Points</h1>
-              <span className="season">{rules.season} Masters</span>
+              <h1>Championship Points Calculator {rules.season}</h1>
+              <a className="season" href="https://georgiaplayevents.com/#etc"
+                target="_blank" rel="noreferrer noopener">Part of the GPE Network</a>
             </div>
           </div>
 
@@ -149,6 +208,12 @@ export default function App() {
             </select>
           </div>
 
+          <div className="totals" role="group" aria-label="Championship Point totals">
+            <span className="t"><b>{fmt(evaluation.currentTotal)}</b><i>CP now</i></span>
+            <span className="t hero"><b>{fmt(projected)}</b><i>Projected</i></span>
+            <span className="t"><b>{projectedGap === 0 ? '0' : fmt(projectedGap)}</b><i>To go</i></span>
+          </div>
+
           <button type="button" className="theme-toggle" onClick={toggle}
             aria-pressed={theme === 'dark'}
             aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
@@ -173,21 +238,9 @@ export default function App() {
 
       <main className="shell" id="main">
         <section aria-labelledby="totals-h">
-          <h2 id="totals-h" className="visually-hidden">Totals</h2>
-          <div className="target-strip">
-            <div className="stat">
-              <div className="k">CP now</div>
-              <div className="v">{fmt(evaluation.currentTotal)}</div>
-            </div>
-            <div className="stat headline">
-              <div className="k">Projected</div>
-              <div className="v">{fmt(projected)}</div>
-            </div>
-            <div className="stat">
-              <div className="k">To go</div>
-              <div className="v">{projectedGap === 0 ? 'Reached' : fmt(projectedGap)}</div>
-            </div>
-          </div>
+          <h2 id="totals-h" className="visually-hidden">Totals and target</h2>
+
+          <p className="season-line">{seasonLine}</p>
 
           <p className="target-line">
             target{' '}
@@ -207,10 +260,18 @@ export default function App() {
               : 'no benchmark available'}
           </p>
 
-          {target != null && projectedGap === 0 && (
+          {/* Banked and projected are different claims. The green banner is only
+              earned once the CP is actually in hand. */}
+          {target != null && evaluation.currentTotal >= target && (
             <div className="callout ok" role="status">
               <strong>Target reached.</strong> That is not a Worlds qualification — the season-end
               cutoff moves, and only a direct invitation guarantees a place.
+            </div>
+          )}
+          {target != null && evaluation.currentTotal < target && projectedGap === 0 && (
+            <div className="callout" role="status">
+              <strong>On plan to reach {fmt(target)}.</strong> {fmt(target - evaluation.currentTotal)} CP
+              of that is still to earn — the finishes below are what it would take.
             </div>
           )}
 
@@ -233,7 +294,11 @@ export default function App() {
 
         <EventCatalog
           catalog={catalog} rules={rules} game={path.game} homeZone={zone}
-          addedNames={addedNames} onToggle={toggleCatalog} onBulk={bulkCatalog} />
+          addedNames={addedNames} onToggle={toggleCatalog} onBulk={bulkCatalog}
+          manualTypes={eventTypesForGame(rules, path.game)
+            .filter((t) => t.scale !== 'major')
+            .map((t) => ({ id: t.id, label: t.label }))}
+          onAddManual={(typeId) => store.addEvent(blankEvent(typeId))} />
 
         <section className="panel" aria-labelledby="plan-h">
           <header>
@@ -243,28 +308,25 @@ export default function App() {
             </span>
           </header>
 
-          <div className="row add-manual">
-            {eventTypesForGame(rules, path.game)
-              .filter((t) => t.scale !== 'major')
-              .map((type) => (
-                <button key={type.id} type="button" onClick={() => store.addEvent(blankEvent(type.id))}>
-                  + {type.label}
-                </button>
-              ))}
-          </div>
-
           {path.events.length === 0 ? (
             <p className="empty">Pick events above, or add a Cup or Challenge.</p>
           ) : (
             <ol className="plan-list">
-              {evaluation.results.map((result) => {
+              {ordered.map((result) => {
                 const rule = ruleFor(rules, result.event.eventTypeId);
                 if (!rule) return null;
+                const e = result.event;
+                const isResult = e.awardedPoints != null || e.placement != null;
                 return (
-                  <PlanRow key={result.event.id} result={result} rule={rule}
-                    displacement={evaluation.displacements.find((d) => d.eventId === result.event.id)?.message ?? null}
-                    onChange={(patch) => store.updateEvent(result.event.id, patch)}
-                    onRemove={() => store.removeEvent(result.event.id)} />
+                  <PlanRow key={e.id} result={result} rule={rule}
+                    bfl={bflSlots.get(e.id) ?? (result.rawPoints > 0
+                      ? { slot: null, limit: rule.bestFinishLimit } : null)}
+                    overdue={!isResult && e.date != null && e.date < today}
+                    needsDate={!e.catalogName && rule.scale !== 'major'}
+                    displacement={evaluation.displacements
+                      .find((d) => d.eventId === e.id && d.displacedEventId)?.message ?? null}
+                    onChange={(patch) => store.updateEvent(e.id, patch)}
+                    onRemove={() => { if (confirmDiscard([e.id])) store.removeEvent(e.id); }} />
                 );
               })}
             </ol>
@@ -273,34 +335,6 @@ export default function App() {
 
         <LadderPanel ladder={ladder} />
 
-        <section className="panel" aria-labelledby="bfl-h">
-          <header>
-            <h2 id="bfl-h">Best Finish Limits</h2>
-            <span className="panel-note">Only your best results in each bucket count.</span>
-          </header>
-          <div className="table-scroll">
-            <table>
-              <caption className="visually-hidden">Championship Points counted per bucket</caption>
-              <thead>
-                <tr><th>Bucket</th><th className="num">Slots</th><th className="num">CP</th><th>To improve</th></tr>
-              </thead>
-              <tbody>
-                {evaluation.buckets.map((b) => {
-                  const full = b.bestFinishLimit != null && b.slotsUsed >= b.bestFinishLimit;
-                  return (
-                    <tr key={b.bucket}>
-                      <td>{b.label}</td>
-                      <td className="num">{b.slotsUsed} of {b.bestFinishLimit ?? '∞'}</td>
-                      <td className="num">{fmt(b.countedPoints)}</td>
-                      <td>{full ? `beat ${fmt(b.weakestCountedPoints)} CP` : 'any result takes a free slot'}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
         <div className="row plan-actions">
           <button type="button" onClick={() => store.createPath(path.game, zone)}>New plan</button>
           <button type="button" onClick={exportPath}>Export</button>
@@ -308,7 +342,7 @@ export default function App() {
           <input ref={fileInput} type="file" accept="application/json" className="visually-hidden"
             aria-label="Import a plan"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) void importFile(f); e.target.value = ''; }} />
-          <button type="button" onClick={() => {
+          <button type="button" className="danger" onClick={() => {
             if (confirm(`Delete "${path.name}"?`)) store.deletePath(path.id);
           }}>Delete plan</button>
         </div>

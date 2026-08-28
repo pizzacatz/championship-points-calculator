@@ -146,5 +146,16 @@
       "internationals": {},
       "unavailable": true
     }
+  },
+  "ladderAssumptions": {
+    "note": "Assumed field size for a PLANNED local, used ONLY to decide how deep the ladder may ask you to finish. Never applied to a result the player entered: a placement whose band depends on an unmet kicker still asks for the CP.",
+    "league-challenge": {
+      "attendance": 8,
+      "deepestAsk": "top 4"
+    },
+    "league-cup": {
+      "attendance": 17,
+      "deepestAsk": "top 8"
+    }
   }
 }

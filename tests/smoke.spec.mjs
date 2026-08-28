@@ -21,11 +21,20 @@ page.on('pageerror', (e) => errors.push(String(e)));
 await page.goto(BASE, { waitUntil: 'networkidle' });
 
 const stat = (label) =>
-  page.locator('.stat', { has: page.locator('.k', { hasText: new RegExp(`^${label}$`, 'i') }) })
-    .locator('.v').innerText();
+  page.locator('.totals .t', { has: page.locator('i', { hasText: new RegExp(`^${label}$`, 'i') }) })
+    .locator('b').innerText();
 
-await check('the app renders', async () => {
-  assert.match(await page.locator('h1').first().innerText(), /Championship Points/);
+await check('the app renders with its title and network link', async () => {
+  assert.match(await page.locator('h1').first().innerText(), /Championship Points Calculator 2027/);
+  const link = page.locator('.wordmark a.season');
+  assert.match(await link.innerText(), /Part of the GPE Network/);
+  assert.equal(await link.getAttribute('href'), 'https://georgiaplayevents.com/#etc');
+});
+
+await check('the totals live in the sticky header', async () => {
+  const box = await page.locator('.masthead').boundingBox();
+  assert.ok(box.height < 110, `header should stay one row, was ${box.height}px`);
+  assert.equal(await page.locator('.masthead .totals').count(), 1);
 });
 
 await check('the target defaults to the previous-season cutoff', async () => {
@@ -37,6 +46,23 @@ await check('the catalog lists zones collapsed, with counts', async () => {
   const cat = page.locator('section', { has: page.getByRole('heading', { name: 'Events' }) });
   assert.match(await cat.innerText(), /US and Canada/);
   assert.match(await cat.innerText(), /0 of \d+/);
+});
+
+await check('expand all and collapse all work', async () => {
+  const cat = page.locator('section', { has: page.getByRole('heading', { name: 'Events' }) });
+  await cat.getByRole('button', { name: 'Expand all' }).click();
+  await page.waitForTimeout(250);
+  assert.equal(await cat.locator('.zone-list').count(), 4);
+  await cat.getByRole('button', { name: 'Collapse all' }).click();
+  await page.waitForTimeout(250);
+  assert.equal(await cat.locator('.zone-list').count(), 0);
+});
+
+await check('adding a local is offered beside the catalog, not in the plan', async () => {
+  const cat = page.locator('section', { has: page.getByRole('heading', { name: 'Events' }) });
+  assert.equal(await cat.getByRole('button', { name: '+ League Cup' }).count(), 1);
+  const plan = page.locator('section', { has: page.getByRole('heading', { name: 'Your plan' }) });
+  assert.equal(await plan.getByRole('button', { name: '+ League Cup' }).count(), 0);
 });
 
 await check('bulk-add takes a whole zone', async () => {
@@ -53,6 +79,10 @@ await check('bulk-add takes a whole zone', async () => {
 await check('unchecking one event removes it again', async () => {
   const before = await page.locator('.plan-row').count();
   const zone = page.locator('.zone', { hasText: 'US and Canada' });
+  if (!(await zone.locator('.zone-list').count())) {
+    await zone.locator('.zone-toggle').click();
+    await page.waitForTimeout(250);
+  }
   await zone.locator('.zone-list input[type=checkbox]').first().uncheck();
   await page.waitForFunction((b) => document.querySelectorAll('.plan-row').length === b - 1, before);
   assert.equal(await page.locator('.plan-row').count(), before - 1);
@@ -75,8 +105,22 @@ await check('a blank major is solved for by the ladder', async () => {
 await check('the ladder never demands a band the field cannot pay', async () => {
   const ladder = page.locator('section', { has: page.getByRole('heading', { name: 'What you need' }) });
   const text = await ladder.innerText();
-  // NA majors project from 705 players, so 257-512 (kicker 1,025) is impossible.
-  assert.doesNotMatch(text, /257-512|513-1024/);
+  // NA majors project from 705 players, so the 257-512 band cannot pay.
+  assert.doesNotMatch(text, /Top 512|Top 1024/);
+});
+
+await check('the ladder reports how many events can actually count', async () => {
+  const ladder = page.locator('section', { has: page.getByRole('heading', { name: 'What you need' }) });
+  const t = await ladder.innerText();
+  // Eight added majors share a Best Finish Limit of five.
+  assert.match(t, /\d of \d/, 'no counting column');
+  assert.match(t, /Top \d+|1st place|2nd place/, 'finish should read Top X');
+  assert.match(t, /Projected total/i);
+});
+
+await check('the standalone Best Finish Limit table is gone', async () => {
+  const body = await page.locator('main').innerText();
+  assert.doesNotMatch(body, /Best Finish Limits\n/);
 });
 
 // --- one number per event ------------------------------------------------
@@ -84,8 +128,8 @@ await check('typing a CP records a result, with no status to toggle', async () =
   const row = page.locator('.plan-row').first();
   await row.getByLabel('CP').fill('350');
   await page.waitForFunction(() =>
-    [...document.querySelectorAll('.stat')].some((s) =>
-      s.querySelector('.k')?.textContent === 'CP now' && s.querySelector('.v')?.textContent.trim() === '350'));
+    [...document.querySelectorAll('.totals .t')].some((s) =>
+      s.querySelector('i')?.textContent === 'CP now' && s.querySelector('b')?.textContent.trim() === '350'));
   assert.equal((await stat('CP now')).trim(), '350');
 });
 
@@ -114,10 +158,42 @@ await check('a row asks for one number and nothing else', async () => {
   assert.equal(inputs, 2, `expected CP and Place only, got ${inputs}`);
 });
 
+// --- overdue events, and not losing typed work ---------------------------
+await check('a past event with no result is marked overdue and left out of the ladder', async () => {
+  const cat = page.locator('section', { has: page.getByRole('heading', { name: 'Events' }) });
+  await cat.getByRole('button', { name: '+ League Cup' }).click();
+  await page.waitForTimeout(400);
+  const row = page.locator('.plan-row', { hasText: 'League Cup' });
+  await row.getByLabel('Date').fill('2026-01-10');
+  await page.waitForTimeout(700);
+  assert.match(await row.getAttribute('class'), /overdue/);
+  assert.match(await row.innerText(), /This event has passed/);
+  const ladder = await page.locator('section', { has: page.getByRole('heading', { name: 'What you need' }) }).innerText();
+  assert.doesNotMatch(ladder, /League Cup/, 'a finished event must not be solved for');
+});
+
+await check('entering its result clears the overdue state', async () => {
+  const row = page.locator('.plan-row', { hasText: 'League Cup' });
+  await row.getByLabel('CP').fill('50');
+  await page.waitForTimeout(700);
+  assert.doesNotMatch(await row.getAttribute('class'), /overdue/);
+});
+
+await check('removing a logged result asks before discarding it', async () => {
+  let asked = false;
+  const onDialog = (d) => { asked = true; d.dismiss(); };
+  page.on('dialog', onDialog);
+  await page.locator('.plan-row', { hasText: 'League Cup' })
+    .getByRole('button', { name: /Remove/ }).click();
+  await page.waitForTimeout(500);
+  page.off('dialog', onDialog);
+  assert.ok(asked, 'no confirmation before discarding typed work');
+});
+
 // --- BFL, persistence, chrome -------------------------------------------
-await check('the Best Finish Limit table reports occupancy', async () => {
-  const bfl = page.locator('table', { has: page.getByText('Regional / Special / International') });
-  assert.match(await bfl.innerText(), /of 5/);
+await check('a result shows its Best Finish Limit slot', async () => {
+  const logged = page.locator('.plan-row', { hasText: 'Baltimore' });
+  assert.match(await logged.innerText(), /BFL \d\/5/);
 });
 
 await check('the plan survives a reload', async () => {
@@ -137,7 +213,7 @@ await check('the removed v1 sections are gone', async () => {
   const body = await page.locator('main').innerText();
   for (const gone of ['Method, sources and limits', 'Official sources',
                       'Direct invitations', 'Ways to reach your target',
-                      'Projected attendance']) {
+                      'Projected attendance', 'Add what you can get to']) {
     assert.doesNotMatch(body, new RegExp(gone), `"${gone}" should be removed`);
   }
 });

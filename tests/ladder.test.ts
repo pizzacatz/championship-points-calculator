@@ -113,3 +113,48 @@ describe('the ladder', () => {
     expect(row(l, 'international')!.band).toEqual(row(l, 'international')!.deepestPayable);
   });
 });
+
+describe('v2.1 — counting, locals and past events', () => {
+  it('reports how many of a type can actually count, not how many were added', () => {
+    // Nine Regionals share a Best Finish Limit of five, so a row reading x9
+    // would ask for four finishes that cannot contribute to anything.
+    const l = solve(Array.from({ length: 9 }, () => blank('regional')), 842);
+    const r = row(l, 'regional')!;
+    expect(r.count).toBe(9);
+    expect(r.counting).toBe(5);
+    expect(r.pointsTotal).toBe(5 * r.pointsEach);
+  });
+
+  it('marks a type that contributes nothing rather than printing a requirement', () => {
+    // Five Regionals fill the major bucket; an International worth less cannot
+    // displace any of them.
+    const events = [
+      ...Array.from({ length: 5 }, () => ev({ eventTypeId: 'regional', awardedPoints: 350 })),
+      blank('international'),
+    ];
+    const l = solve(events, 842);
+    expect(row(l, 'international')!.counting).toBe(0);
+    expect(row(l, 'international')!.pointsTotal).toBe(0);
+  });
+
+  it('never asks for deeper than a top 4 at a Challenge or a top 8 at a Cup', () => {
+    const l = solve([blank('league-challenge'), blank('league-cup')], 60);
+    expect(row(l, 'league-challenge')!.band!.maxPlace).toBeLessThanOrEqual(4);
+    expect(row(l, 'league-cup')!.band!.maxPlace).toBeLessThanOrEqual(8);
+  });
+
+  it('leaves out an event whose date has passed with nothing entered', () => {
+    // You cannot go back and compete in a tournament that has finished, so
+    // solving for it would inflate the projection.
+    const past = ev({ eventTypeId: 'regional', date: '2020-01-01' });
+    const future = ev({ eventTypeId: 'regional', date: '2099-01-01' });
+    const l = solve([past, future], 200);
+    expect(row(l, 'regional')!.count).toBe(1);
+  });
+
+  it('still solves a past event once its result is entered', () => {
+    const played = ev({ eventTypeId: 'regional', date: '2020-01-01', awardedPoints: 350 });
+    const l = solve([played, blank('regional')], 400);
+    expect(l.projectedTotal).toBeGreaterThanOrEqual(400);
+  });
+});

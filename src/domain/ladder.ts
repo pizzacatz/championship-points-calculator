@@ -25,10 +25,15 @@ const RELAX_ORDER = [
 export type LadderRow = {
   eventTypeId: string;
   label: string;
+  /** Events of this type the ladder is solving for. */
   count: number;
+  /** How many of them can actually contribute, after the Best Finish Limit. */
+  counting: number;
   band: PlacementBand | null;
   bandLabel: string | null;
   pointsEach: number;
+  /** counting x pointsEach — what this row is really worth. */
+  pointsTotal: number;
   /** Deepest band this event type's projected field actually unlocks. */
   deepestPayable: PlacementBand | null;
   projectedField: number | null;
@@ -57,6 +62,16 @@ export function payableBands(
   // leaderboard is ranked globally.
   if (rule.scale === 'online') return { bands: table, field: null, assumed: true };
 
+  // Locals are unlisted, so the ladder works from an assumed field: a Challenge
+  // rarely clears 32 and a Cup 60, so it may ask for a top 4 and a top 8 and no
+  // deeper. This figure is deliberately confined to the ladder — scoring a
+  // placement the player entered against it would silently zero a real result.
+  if (rule.scale === 'local') {
+    const assumed = baselines.ladderAssumptions?.[rule.id]?.attendance;
+    if (assumed == null) return { bands: table, field: null, assumed: true };
+    return { bands: table.filter((b) => b.kicker <= assumed), field: assumed, assumed: true };
+  }
+
   const field = projectedField(baselines, path.game, rule, path);
   if (field == null) return { bands: table, field: null, assumed: true };
   return { bands: table.filter((b) => b.kicker <= field), field, assumed: false };
@@ -75,7 +90,13 @@ export function solveLadder(
   path: QualificationPath, rules: SeasonRules, baselines: AttendanceBaselines, target: number | null,
 ): Ladder {
   // Blank rows are the unknowns; anything carrying a number is a fixed constraint.
-  const unsolved = path.events.filter((e) => !isResult(e));
+  // An event whose date has passed with no result entered is neither: it cannot be
+  // played any more, so solving for it would inflate the projection with points
+  // that are no longer available.
+  const today = new Date().toISOString().slice(0, 10);
+  const unsolved = path.events.filter(
+    (e) => !isResult(e) && !(e.date != null && e.date < today),
+  );
 
   const groups = RELAX_ORDER
     .map((id) => ({ rule: ruleFor(rules, id), events: unsolved.filter((e) => e.eventTypeId === id) }))
@@ -116,16 +137,32 @@ export function solveLadder(
   const projectedTotal = totalWith(assign);
   const feasible = target != null && projectedTotal >= target;
 
+  // How many of each type actually reach the total, once the Best Finish Limit
+  // has taken its cut. Nine added Regionals sharing a bucket of five is five
+  // contributions, not nine — saying "x9" asks for four finishes that cannot count.
+  const solvedEvents = path.events.map((e) => {
+    const g = groups.find((x) => x.events.some((y) => y.id === e.id));
+    const band = g ? assign.get(g.rule.id) ?? null : null;
+    return band ? { ...e, placement: band.minPlace, awardedPoints: null } : e;
+  });
+  const counted = new Set(
+    evaluatePath({ ...path, events: solvedEvents }, rules, baselines)
+      .results.filter((r) => r.counted).map((r) => r.event.id),
+  );
+
   const rows: LadderRow[] = groups.map((g) => {
     const p = payable.get(g.rule.id)!;
     const band = assign.get(g.rule.id) ?? null;
+    const counting = g.events.filter((e) => counted.has(e.id)).length;
     return {
       eventTypeId: g.rule.id,
       label: g.rule.label,
       count: g.events.length,
+      counting,
       band,
       bandLabel: band ? bandLabel(band) : null,
       pointsEach: band?.points ?? 0,
+      pointsTotal: counting * (band?.points ?? 0),
       deepestPayable: p.bands[p.bands.length - 1] ?? null,
       projectedField: p.field,
       fieldAssumed: p.assumed,

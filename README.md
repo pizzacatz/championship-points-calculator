@@ -27,6 +27,11 @@ qualify?*
 - **The ladder** tells you the lowest finishes that still reach your target,
   relaxing the hardest events first: it will not ask for a top-32 at a
   1,100-player International when winning two 40-player Cups is more realistic.
+  It reports how many of each type can **actually count** — nine Regionals share
+  a Best Finish Limit of five, so it says "5 of 9" rather than asking for four
+  finishes that cannot contribute.
+- **A finished event you never logged drops out.** You cannot go back and compete
+  in it, so solving for it would inflate the projection. It is flagged instead.
 - **Best Finish Limits and displacement** are handled throughout — adding twelve
   Regionals cannot inflate anything, because only five ever count.
 

@@ -268,3 +268,21 @@ describe('planning target', () => {
     expect(gapTo(842, 700)).toBe(142);
   });
 });
+
+describe('the ladder assumption never scores a real result', () => {
+  it('asks for the CP rather than guessing a local field size', () => {
+    // The ladder assumes a Cup holds 17 players so it will not demand a top 16.
+    // Applying that to a placement the player entered would score a genuine
+    // 20 CP finish at a 60-player Cup as 0.
+    const e = ev({ eventTypeId: 'league-cup', placement: 13 });
+    const r = evaluateResult(e, rules, path([e]), baselines);
+    expect(r.rawPoints).toBe(0);
+    expect(r.reason).toBe('unverified-attendance');
+    expect(r.explanation).toMatch(/Enter the CP you were awarded/);
+  });
+
+  it('scores that same result correctly once the CP is given', () => {
+    const e = ev({ eventTypeId: 'league-cup', awardedPoints: 20 });
+    expect(evaluateResult(e, rules, path([e]), baselines).rawPoints).toBe(20);
+  });
+});

@@ -1,13 +1,15 @@
 import type { EvaluatedResult, EventTypeRule, PlannedEvent } from '../domain/types';
+import { bandLabel } from '../domain/calculate';
 
-const BADGE: Record<EvaluatedResult['reason'], { text: string; cls: string }> = {
-  'counts': { text: 'Counts', cls: 'ok' },
-  'planned-counts': { text: 'Would count', cls: 'accent' },
+/**
+ * Only exceptions get a badge. "Counts" was on nearly every row, and a badge that
+ * is almost always present carries no information — its absence is the signal.
+ */
+const BADGE: Partial<Record<EvaluatedResult['reason'], { text: string; cls: string }>> = {
   'excluded-by-bfl': { text: 'Excluded by BFL', cls: 'muted' },
   'below-kicker': { text: 'Below kicker', cls: 'warn' },
-  'unverified-attendance': { text: 'Needs a number', cls: 'warn' },
+  'unverified-attendance': { text: 'Needs the CP', cls: 'warn' },
   'invalid': { text: 'Check this', cls: 'danger' },
-  'incomplete': { text: "Planned", cls: 'muted' },
 };
 
 const intOrNull = (v: string): number | null => {
@@ -17,15 +19,24 @@ const intOrNull = (v: string): number | null => {
   return Number.isFinite(n) ? Math.trunc(n) : null;
 };
 
-/**
- * One event, one number. Either the CP or the placement — each derives the other,
- * because every CP value is unique within its event type's payout table.
- */
+const shortDate = (iso: string | null) => {
+  if (!iso) return null;
+  const d = new Date(`${iso}T00:00:00`);
+  return Number.isNaN(d.getTime()) ? iso
+    : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+};
+
 export function PlanRow({
-  result, rule, displacement, onChange, onRemove,
+  result, rule, bfl, overdue, needsDate, displacement, onChange, onRemove,
 }: {
   result: EvaluatedResult;
   rule: EventTypeRule;
+  /** Position in its Best Finish Limit bucket, once the result is real. */
+  bfl: { slot: number | null; limit: number | null } | null;
+  /** Past its date with nothing entered — it cannot be played any more. */
+  overdue: boolean;
+  /** A manually added local, which carries no date of its own. */
+  needsDate: boolean;
   displacement: string | null;
   onChange: (patch: Partial<PlannedEvent>) => void;
   onRemove: () => void;
@@ -33,14 +44,23 @@ export function PlanRow({
   const e = result.event;
   const badge = BADGE[result.reason];
   const title = e.name?.trim() || rule.label;
+  const date = shortDate(e.date);
 
   return (
-    <li className={`plan-row ${result.error ? 'invalid' : ''}`}>
+    <li className={`plan-row ${result.error ? 'invalid' : ''} ${overdue ? 'overdue' : ''}`}>
       <div className="plan-main">
         <span className="plan-title">
           {title}
-          <span className="plan-sub">{rule.shortLabel}{e.date ? ` · ${e.date}` : ''}</span>
+          {date && <span className="plan-date">{date}</span>}
         </span>
+
+        {needsDate && (
+          <span className="field field-date">
+            <label htmlFor={`d-${e.id}`}>Date</label>
+            <input id={`d-${e.id}`} type="date" value={e.date ?? ''}
+              onChange={(ev) => onChange({ date: ev.target.value || null })} />
+          </span>
+        )}
 
         <span className="plan-inputs">
           <span className="field">
@@ -59,18 +79,33 @@ export function PlanRow({
         </span>
 
         <span className="plan-result">
-          <strong>{result.rawPoints} CP</strong>
-          <span className={`badge ${badge.cls}`}>{badge.text}</span>
+          <strong className={result.rawPoints > 0 ? '' : 'zero'}>{result.rawPoints} CP</strong>
+          {bfl?.slot != null && (
+            <span className="bfl" title="Position in its Best Finish Limit">
+              BFL {bfl.slot}/{bfl.limit}
+            </span>
+          )}
+          {bfl && bfl.slot == null && bfl.limit != null && (
+            <span className="bfl out" title="Outside its Best Finish Limit">BFL –/{bfl.limit}</span>
+          )}
+          {badge && <span className={`badge ${badge.cls}`}>{badge.text}</span>}
           {result.directInvite && <span className="badge ok">Direct invite</span>}
         </span>
 
         <button type="button" className="icon" onClick={onRemove} aria-label={`Remove ${title}`}>×</button>
       </div>
 
-      {result.reason !== 'incomplete' && (
+      {overdue && (
+        <p className="plan-explain overdue-note">
+          This event has passed. Enter your result, or remove it — it is not counted.
+        </p>
+      )}
+
+      {/* Only what the row cannot already show: the band, and any real displacement. */}
+      {!overdue && result.band && result.rawPoints > 0 && (
         <p className="plan-explain">
-          {result.explanation}
-          {displacement && <> {displacement}</>}
+          {bandLabel(result.band)} band
+          {displacement && <> · {displacement}</>}
         </p>
       )}
 
