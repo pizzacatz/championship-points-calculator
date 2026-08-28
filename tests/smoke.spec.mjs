@@ -410,6 +410,48 @@ await check('Global Challenges are named without their dates, and tick individua
   await page.waitForTimeout(400);
 });
 
+await check('a plan saved before the rename is migrated on load', async () => {
+  await page.evaluate(() => {
+    const raw = JSON.parse(localStorage.getItem('cpc.paths.v1') || '[]');
+    raw[0].events.push({
+      id: 'legacy', name: 'Global Challenge \u2014 September 2026',
+      eventTypeId: 'vgc-global-challenge', date: '2026-09-30',
+      displayDate: 'Sept. 18\u201320',            // an old official range
+      placement: null, awardedPoints: null, attendance: null, catalogName: 'legacy',
+    });
+    localStorage.setItem('cpc.paths.v1', JSON.stringify(raw));
+  });
+  await page.reload({ waitUntil: 'networkidle' });
+  await page.waitForTimeout(700);
+  const row = page.locator('.plan-row', { hasText: 'Global Challenge' }).last();
+  const text = await row.innerText();
+  assert.doesNotMatch(text, /September 2026/, 'the month is still in the name');
+  assert.doesNotMatch(text, /Sept\. 18/, 'the old range is still shown');
+  const asked = [];
+  page.on('dialog', (d) => { asked.push(1); d.accept(); });
+  await row.getByRole('button', { name: /Remove/ }).click();
+  await page.waitForTimeout(400);
+});
+
+await check('a local shows its date once, on the button', async () => {
+  const cat = page.locator('section', { has: page.getByRole('heading', { name: 'Events' }) });
+  await cat.getByRole('button', { name: '+ League Challenge' }).click();
+  await page.waitForTimeout(400);
+  const row = page.locator('.plan-row', { hasText: 'League Challenge' }).last();
+  await row.getByLabel(/^Date for/).fill('2026-11-15');
+  await page.waitForTimeout(600);
+  const count = ((await row.innerText()).match(/2026-11-15/g) || []).length;
+  assert.equal(count, 1, `date shown ${count} times`);
+  // The date button must not stretch the remove control beside it.
+  const w = await row.locator('.icon').evaluate((e) => Math.round(e.getBoundingClientRect().width));
+  assert.ok(w < 40, `remove button is ${w}px wide`);
+  const d = (x) => x.accept();
+  page.on('dialog', d);
+  await row.getByRole('button', { name: /Remove/ }).click();
+  await page.waitForTimeout(400);
+  page.off('dialog', d);
+});
+
 await check('no em-dashes remain in the rendered page', async () => {
   const text = await page.locator('main').innerText();
   const found = text.match(/[^\n]{0,24}\u2014[^\n]{0,24}/g);

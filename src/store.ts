@@ -55,11 +55,19 @@ const write = (key: string, value: unknown): void => {
  */
 const migrate = (all: QualificationPath[]): QualificationPath[] => all.map((p) => ({
   ...p,
-  events: p.events.map((e) => (
-    e.displayDate && !/^\d{4}-\d{2}-00$/.test(e.displayDate)
-      ? { ...e, displayDate: undefined }
-      : e
-  )),
+  events: p.events.map((e) => {
+    let next = e;
+    // Old official ranges — "Sept. 18-20" — would keep showing beside the ISO
+    // dates around them. Only a month-precision date has a display form now.
+    if (e.displayDate && !/^\d{4}-\d{2}-00$/.test(e.displayDate)) {
+      next = { ...next, displayDate: undefined };
+    }
+    // Global Challenges used to carry their month in the name, which the date
+    // column already says. Stored plans keep the old form otherwise.
+    const dated = / [—-] (January|February|March|April|May|June|July|August|September|October|November|December) \d{4}$/;
+    if (dated.test(next.name)) next = { ...next, name: next.name.replace(dated, '') };
+    return next;
+  }),
 }));
 
 export function usePaths() {

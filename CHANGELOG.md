@@ -3,6 +3,19 @@
 All dates 2026-08-28 — the project was specified, built, reviewed and rebuilt in
 a single session.
 
+## 2.6.1
+
+- **The rename now reaches plans already saved.** v2.6 renamed Global Challenges
+  in the catalog but not in storage, so an existing plan kept showing
+  *Global Challenge — September 2026*. The load-time migration strips the month
+  from stored names as well as the old date ranges.
+- **A local shows its date once.** Both the row's date text and the calendar
+  button were printing it. The button is the value and the control, so the text
+  goes.
+- **The date button no longer stretches the remove control.** It spanned into the
+  remove button's grid column, forcing it wide. It has its own column now, which
+  collapses on rows that have no date button. The × is back to 25px.
+
 ## 2.6.0
 
 - **Fixed a migration bug.** Plans saved before v2.5 kept the old official date

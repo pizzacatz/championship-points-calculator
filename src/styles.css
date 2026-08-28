@@ -447,18 +447,24 @@ table.ladder .idle-note { font-size: 0.8rem; white-space: normal; }
 @media (max-width: 560px) {
   /* What the row is, and what it scored, on opposite corners; the destructive
      control no longer sits beside the number the row exists to show. */
-  .plan-main { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.4rem 0.5rem; }
+  /* title | date | remove, so the date button sits beside the name without
+     spanning into the remove button's column and stretching it. A row with no
+     date button simply collapses the middle column. */
+  .plan-main {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 0.4rem 0.5rem; align-items: start;
+  }
   .plan-title { min-width: 0; grid-column: 1; grid-row: 1; }
-  .plan-row .icon { grid-column: 2; grid-row: 1; align-self: start; }
+  .plan-row .icon { grid-column: 3; grid-row: 1; justify-self: end; }
   /* The earned CP sits in line with the fields it is derived from. It carries
      badges as well as the figure, so it wraps rather than pushing the page wide
      when a row has a direct invitation to report. */
   .plan-inputs { grid-column: 1; grid-row: 2; }
   .plan-result {
-    grid-column: 2; grid-row: 2; justify-content: flex-end;
+    grid-column: 2 / -1; grid-row: 2; justify-content: flex-end;
     min-width: 0; flex-wrap: wrap; row-gap: 0.2rem;
   }
-  .field-date { grid-column: 1 / -1; grid-row: 1; justify-self: end; margin-right: 2rem; }
+  .field-date { grid-column: 2; grid-row: 1; }
   table.ladder col.c-count { width: 4.6rem; }
   table.ladder col.c-finish { width: 6rem; }
   table.ladder col.c-cp { width: 4.2rem; }

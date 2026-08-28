@@ -70,7 +70,9 @@ export function PlanRow({
       <div className="plan-main">
         <span className="plan-title">
           {wrapTitle(title)}
-          {date && <span className="plan-date">{date}</span>}
+          {/* A local's date lives on its calendar button, which is both the value
+              and the control. Printing it here as well showed it twice. */}
+          {date && !needsDate && <span className="plan-date">{date}</span>}
         </span>
 
         {/* A Cup or Challenge carries no date of its own, and a full date input is
