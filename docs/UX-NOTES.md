@@ -314,29 +314,51 @@ Show upcoming by default and put the rest in a collapsed **Past events** group, 
 a player joining mid-season can still add a Regional they already played without
 that list crowding the one they are planning from.
 
-### 7.4 Folding in the Georgia Play Events calendar  — *not yet, and here is why*
+### 7.4 Georgia locals, from the GPE calendar  — *decided*
 
-Tempting, and it would remove manual entry entirely: pokedata publishes local Cups
-and Challenges as an API, dates included, which would also feed §7.1 and §7.2.
+**This app is for local players.** Georgia Cups and Challenges get their own
+catalog section; anyone outside Georgia collapses it away. That resolves the
+scope objection — the section is explicitly regional and optional, not a gap
+that silently affects some users.
 
-The problem is scope. That feed is **Georgia-only** —
-`_country/US/_state/GA` — and returned 112 events for a partial window. This app
-offers five worldwide rating zones and a full set of global majors. Folding in GA
-locals makes the product half-global and half-Georgian: a player in Europe gets a
-complete majors catalog and no locals at all, with nothing on screen explaining
-why. Widening the feed beyond Georgia is worse, not better — locals are the events
-near *you*, and filtering them needs a concept of where the player lives, which
-this app deliberately does not have.
+**Source: the Georgia Play Events ICS**, already published and already refreshed
+daily by that repo's own workflow:
 
-Three ways forward, in order of preference:
+```
+https://map.georgiaplayevents.com/events.ics
+```
 
-1. **Defer.** Ship §7.1's date field, keep manual entry for locals. Small, correct
-   everywhere, and unblocks sorting and greying immediately.
-2. **A clearly-scoped Georgia section.** A separate collapsed group labelled as
-   Georgia, offered alongside manual entry rather than replacing it. Honest about
-   what it covers, genuinely useful to the actual audience.
-3. **A general local catalog.** Needs a home location, a distance filter and a way
-   to handle thousands of events. A project, not a change.
+Verified against the live feed:
+
+| | |
+|---|---|
+| Events | 112, of which **101 are CP-eligible** |
+| Window | rolling — 2026-08-25 to 2026-11-29, about three months ahead |
+| Game and type | parse from the summary prefix: `VGC Challenge @ LAKE HARTWELL COLLECTIBLES` |
+| Per game | TCG 83, VGC 11, GO 4 |
+| Dates, venue, address | all present |
+| CORS | `access-control-allow-origin: *` |
+
+Three things that fall out of the data, worth designing around:
+
+- **Not everything in the feed earns CP.** Eleven events are Worlds Celebrations
+  or prereleases. Filter to Cups and Challenges only, or the catalog will offer
+  events that can never score.
+- **The window is short and rolling.** Locals are announced close to the date, so
+  the section will always show weeks ahead, never a season. That is honest — but
+  it means **manual entry has to stay**, because a Cup played two months ago has
+  already aged out of the feed and cannot be added from the catalog.
+- **Filtered by game, the lists are small.** A VGC player sees 11 local events,
+  a GO player 4. Comfortable; no pagination needed.
+
+Although CORS would allow fetching it at page load, read it on a schedule and
+commit the result, the same as every other source here. That keeps the site a
+static build, versions the data, and means an outage in the calendar cannot break
+the calculator.
+
+**Implementation is deferred** — the date field (§7.1), the overdue rule (§7.2)
+and the archive (§7.3) all land first, and they are what make a local catalog
+useful when it arrives.
 
 ### 7.5 What is still unresolved
 
@@ -348,7 +370,7 @@ Three ways forward, in order of preference:
 | Confirm before a removal discards a logged result | proposed, unconfirmed |
 | Green used for both *Counts* and *Direct invite* | proposed, unconfirmed |
 | A season line — *4 of 12 played · next: Las Vegas* | proposed, unconfirmed |
-| Where local events come from (§7.4) | **needs a decision** |
+| Where local events come from (§7.4) | **decided** — the GPE ICS, deferred |
 | Catalog and plan name the same event twice | open since v2 |
 | Pokémon GO attendance baselines | unverified; no published source |
 | Live Worlds boundary | none until the 2027 leaderboard period opens |
