@@ -205,11 +205,28 @@ describe('planned versus completed', () => {
     expect(raised.rawPoints).toBe(45);
   });
 
-  it('asks for an assumption when a game has no baseline yet', () => {
-    // Pokémon GO baselines are not sourced, so a planned GO major must not
-    // silently invent a field size.
+  it('keeps a projection conditional when its baseline is not fully verified', () => {
+    // The Pokémon GO baselines come from rk9 rosters that publish no final
+    // standings, so they count registrations. The projection is still useful,
+    // but it must not pose as an observation.
     const plan = ev({ eventTypeId: 'regional', status: 'planned', placement: 9 });
     const r = of(path([plan], { game: 'GO' }), plan.id);
+    expect(r.attendanceUsed).toBe(38);          // smallest 2026 GO Regional roster
+    expect(r.conditional).toBe(true);
+    expect(r.explanation).toMatch(/unverified baseline/);
+  });
+
+  it('still asks for an assumption when a category has no baseline at all', () => {
+    // A null baseline must never be silently treated as a field size of zero.
+    const emptied = {
+      ...baselines,
+      baselines: { ...baselines.baselines,
+        GO: { ...baselines.baselines.GO,
+          regional: { attendance: null, sourceEvent: null, verified: false } } },
+    };
+    const plan = ev({ eventTypeId: 'regional', status: 'planned', placement: 9 });
+    const p = path([plan], { game: 'GO' });
+    const r = evaluatePath(p, rules, emptied).results[0];
     expect(r.attendanceUsed).toBeNull();
     expect(r.reason).toBe('unverified-attendance');
     expect(r.rawPoints).toBe(0);

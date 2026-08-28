@@ -10,7 +10,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "refresh:leaderboard": "node scripts/refresh-leaderboard.mjs",
-    "refresh:attendance": "node scripts/refresh-attendance.mjs"
+    "refresh:attendance": "node scripts/refresh-attendance.mjs",
+    "harvest:rk9": "node scripts/harvest-rk9.mjs"
   },
   "license": "MIT",
   "devDependencies": {

@@ -76,9 +76,9 @@ the community databases that do, via
 
 | Game | Source | Status |
 |---|---|---|
-| TCG | [limitlesstcg.com](https://limitlesstcg.com/tournaments) | observed, 36 events |
-| VGC | [limitlessvgc.com](https://limitlessvgc.com/tournaments) | observed, 35 events |
-| GO | — | **not sourced** |
+| TCG | [limitlesstcg.com](https://limitlesstcg.com/tournaments) | 36 events, final standings |
+| VGC | [limitlessvgc.com](https://limitlessvgc.com/tournaments) | 35 events, final standings |
+| GO | [rk9.gg](https://rk9.gg) rosters | 31 events, **registrations** — see below |
 
 Limitless's player count is the Masters count. Two independent spot-checks against
 [rk9.gg](https://rk9.gg), the official tournament software, and
@@ -96,17 +96,42 @@ figure would misprice two of the three. That refines the recommendation in PRD �
 observed data. Baselines are *not* split by the player's home rating zone: kicker
 eligibility depends on attendance at the event actually entered.
 
-**Pokémon GO has no baseline yet.** Limitless does not cover it. Liquipedia does — its
-`player_number` field gives, for example, 174 for Orlando 2026 GO — but it rate-limits
-`action=parse` to one request every 30 seconds, and an early sweep tripped an IP block that
-had not lifted by the end of the session. The script now batches through `action=query`
-instead (50 titles per request, one request every two seconds), so the whole sweep is about
-two requests rather than 108; that request and response shape is verified against another
-MediaWiki, but the GO figures themselves are still outstanding.
+| | Regional | Special | International |
+|---|---:|---:|---:|
+| **TCG** | 617 | 80 | 2,117 |
+| **VGC** | 180 | 43 | 518 |
+| **GO** | 38 | 93 † | 266 |
 
-Rather than invent a field size, a planned GO major asks you to assume an attendance or a
-CP outcome, and the app explains why. Completed GO events are unaffected, since they use
-actual attendance. To fill it in once the block clears: `npm run refresh:attendance`.
+### Pokémon GO, and the rk9 harvester
+
+Limitless does not cover Pokémon GO, so
+[`scripts/harvest-rk9.mjs`](scripts/harvest-rk9.mjs) reads rk9 rosters directly.
+
+**rk9.gg/robots.txt disallows `/roster/`.** This script reads it anyway, at the explicit
+direction of the repository owner. That is a deliberate choice to override a site
+operator's stated access policy, and the consequences of it land on whoever runs the
+script. It is not wired into CI for that reason — run it by hand, rarely.
+
+Because rk9 is the software running live tournaments, the harvester is written to cost that
+service as little as possible: Pokémon GO only by default (TCG and VGC already come from a
+source that permits crawling), event discovery through `/event/`, which robots.txt permits,
+one sequential request every four seconds, and an on-disk cache so a re-run costs nothing.
+Rosters are counted and discarded — player names, countries, screen names and Play! Pokémon
+IDs are never parsed or written out. The only thing that leaves the script is a count.
+
+Two limits on the GO figures, both recorded in the data file and surfaced in the app:
+
+- **They are registrations, not confirmed attendance.** GO rosters carry no Standing
+  column, so unlike the TCG and VGC rosters there is no way to tell who actually played.
+  The real field can only be smaller, which makes these baselines optimistic.
+- **† Only 2 of the 6 Special Events are on rk9 at all**, so the GO Special figure is the
+  lowest of a partial set rather than of the season, and is probably too high. The four
+  missing events — Lima, San Juan, Auckland, Buenos Aires — return 500 on rk9, which
+  suggests they run on other software entirely.
+
+Because of both, every GO category is flagged `verified: false`, and planned GO majors stay
+labelled *conditional on the kicker being met* in the UI. A category is only marked verified
+when the sweep covered every event in it **and** those rosters published final standings.
 
 Note this data is only ever used for *planned* majors. Completed events always use their
 actual attendance, and entering an attendance on a planned event overrides the projection.
