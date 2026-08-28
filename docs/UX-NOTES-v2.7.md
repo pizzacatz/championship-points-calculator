@@ -91,3 +91,71 @@ meaningful, which is what the *Needs the CP* chip failed to do.
 **What does it show once known?** An attendance is evidence, not a result. It could
 stay invisible once entered, or read quietly beside the placement — *"64th of 300"* —
 which is also how a player would describe it themselves.
+
+---
+
+## 6. If CP entry goes
+
+Leaning toward removing it, so the row asks for one thing rather than offering a
+choice of two.
+
+### 6.1 The real simplification is the absent decision, not the field count
+
+The row does not get shorter — placement, and sometimes a turnout, is still one or
+two inputs. What goes is the **choice**: today a player has to decide *which*
+number to give before giving it. That is a small cognitive tax paid on every row,
+and it is the kind of thing that makes a form feel heavier than its field count.
+
+### 6.2 A turnout prompt must not be a prompt
+
+The obvious rule — *ask whenever the band's kicker exceeds what we assume* — fires
+far too often to be tolerable, and almost always to no purpose:
+
+| | Would prompt | Of those, really earn 0 anyway |
+|---|---:|---:|
+| Challenge assumed 16, actual 16 | 8 of 16 | 8 |
+| Cup assumed 32, actual 32 | 24 of 32 | 24 |
+| Cup assumed 32, actual 60 | 52 of 60 | 44 |
+
+At a genuinely 32-player Cup **every** prompt would be answered "32" and produce
+the same zero. Only about 8 of 52 ever change an answer.
+
+So the turnout should be a **shown, editable default**, not a question: the
+assumption is used, the player corrects it only if a zero looks wrong. That keeps
+the quiet path quiet, and is the lesson the *Needs the CP* chip taught — a control
+that fires whenever the app is unsure, rather than whenever it matters, becomes
+noise the user learns to ignore.
+
+### 6.3 Where accuracy actually matters, there is a lookup
+
+Weighting by what a plan can hold:
+
+| Bucket | Ceiling |
+|---|---:|
+| Regional / Special / International | 2,500 CP |
+| Global / Grand Challenge | 300 |
+| League Cup | 200 |
+| League Challenge | 60 |
+
+**Majors are 82% of the ceiling — and they are exactly the events with a published
+attendance to look up.** The friction of an assumed turnout lands on the smaller
+fifth of a plan, and the part that decides a season is priced exactly.
+
+### 6.4 What removing CP entry costs
+
+- **A player who knows their CP but not the turnout** loses the direct route. They
+  would enter a placement, see a zero that looks wrong, and have to remember how
+  many people were there. Recoverable, but less direct than typing 20.
+- Locals are where this bites, and locals are 8% of the ceiling.
+
+### 6.5 What it gains beyond simplicity
+
+- **Validation gets stronger.** Today it checks a CP against the payout table.
+  With a placement and a known turnout it can check something more meaningful:
+  *you cannot have finished 400th at a 300-player event.*
+- **Direct invitations get simpler.** Currently inferred from the CP value (350 at
+  a Regional); with a placement it is just *did you finish in the top N*.
+- **A retired insight.** v2's input model rested on every CP value being unique
+  within its table, which is what let a CP identify its band. That property was
+  the reason CP could be an input at all. Removing CP retires the idea that
+  justified it — worth recording, because it reads as a regression otherwise.
