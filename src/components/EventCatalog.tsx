@@ -3,6 +3,9 @@ import type { CatalogEvent, EventsCatalog, Game, RatingZoneId, SeasonRules } fro
 
 // Zone-grouped majors map their category onto an event type. Online events name
 // their own, since a month's Global Challenge is not a category of place.
+/** Unique across the whole catalog; the name alone is not. */
+export const keyOf = (e: { name: string; date: string }) => `${e.name}|${e.date}`;
+
 const CATEGORY_TO_TYPE: Partial<Record<CatalogEvent['category'], string>> = {
   regional: 'regional', special: 'special', international: 'international',
 };
@@ -20,6 +23,8 @@ export function EventCatalog({
   rules: SeasonRules;
   game: Game;
   homeZone: RatingZoneId;
+  /** Keyed on name + date: six events all called "Global Challenge" would
+   *  otherwise collapse to one key and tick together. */
   addedNames: Set<string>;
   onToggle: (event: CatalogEvent, typeId: string, add: boolean) => void;
   onBulk: (events: { event: CatalogEvent; typeId: string }[], add: boolean) => void;
@@ -43,7 +48,7 @@ export function EventCatalog({
   // Global and Grand Challenges are not regional — points are ranked within your
   // own zone — so they get their own group rather than sitting under a region.
   const online = (catalog.online ?? []).filter((e) => e.games?.includes(game));
-  const onlineAdded = online.filter((e) => addedNames.has(e.name)).length;
+  const onlineAdded = online.filter((e) => addedNames.has(keyOf(e))).length;
   const onlineOpen = open.online ?? false;
 
   return (
@@ -63,7 +68,7 @@ export function EventCatalog({
       {zones.map((zone) => {
         const events = byZone.get(zone.id)!;
         const withTypes = events.map((e) => ({ event: e, typeId: CATEGORY_TO_TYPE[e.category]! }));
-        const added = events.filter((e) => addedNames.has(e.name)).length;
+        const added = events.filter((e) => addedNames.has(keyOf(e))).length;
         const isOpen = open[zone.id] ?? false;
 
         return (
@@ -83,7 +88,7 @@ export function EventCatalog({
             {isOpen && (
               <ul className="zone-list">
                 {withTypes.map(({ event, typeId }) => {
-                  const on = addedNames.has(event.name);
+                  const on = addedNames.has(keyOf(event));
                   const id = `cat-${zone.id}-${event.name.replace(/\W+/g, '')}`;
                   return (
                     <li key={event.name}>
@@ -129,14 +134,14 @@ export function EventCatalog({
           {onlineOpen && (
             <ul className="zone-list">
               {online.map((event) => {
-                const on = addedNames.has(event.name);
+                const on = addedNames.has(keyOf(event));
                 const id = `cat-online-${event.name.replace(/\W+/g, '')}`;
                 return (
                   <li key={event.name}>
                     <input type="checkbox" id={id} checked={on}
                       onChange={() => onToggle(event, event.eventTypeId!, !on)} />
                     <label htmlFor={id}>
-                      {event.name.replace(/ — .*/, '')}
+                      <span className="ev-name">{event.name}</span>
                       <span className="zone-date">{event.displayDate ?? event.date}</span>
                     </label>
                   </li>

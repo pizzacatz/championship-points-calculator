@@ -1,6 +1,6 @@
 {
   "season": 2027,
-  "retrievedAt": "2026-08-28T20:17:17.301Z",
+  "retrievedAt": "2026-08-28T20:36:34.506Z",
   "sources": {
     "season": "https://championships.pokemon.com/api/events.json",
     "tournamentIds": "https://rk9.gg/events/pokemon",
@@ -391,7 +391,7 @@
   ],
   "online": [
     {
-      "name": "Global Challenge — September 2026",
+      "name": "Global Challenge",
       "date": "2026-09-30",
       "displayDate": "2026-09-00",
       "datePrecision": "month",
@@ -405,7 +405,7 @@
       "rk9": {}
     },
     {
-      "name": "Global Challenge — October 2026",
+      "name": "Global Challenge",
       "date": "2026-10-31",
       "displayDate": "2026-10-00",
       "datePrecision": "month",
@@ -419,7 +419,7 @@
       "rk9": {}
     },
     {
-      "name": "Global Challenge — December 2026",
+      "name": "Global Challenge",
       "date": "2026-12-31",
       "displayDate": "2026-12-00",
       "datePrecision": "month",
@@ -433,7 +433,7 @@
       "rk9": {}
     },
     {
-      "name": "Global Challenge — January 2027",
+      "name": "Global Challenge",
       "date": "2027-01-31",
       "displayDate": "2027-01-00",
       "datePrecision": "month",
@@ -447,7 +447,7 @@
       "rk9": {}
     },
     {
-      "name": "Global Challenge — March 2027",
+      "name": "Global Challenge",
       "date": "2027-03-31",
       "displayDate": "2027-03-00",
       "datePrecision": "month",
@@ -461,7 +461,7 @@
       "rk9": {}
     },
     {
-      "name": "Global Challenge — April 2027",
+      "name": "Global Challenge",
       "date": "2027-04-30",
       "displayDate": "2027-04-00",
       "datePrecision": "month",

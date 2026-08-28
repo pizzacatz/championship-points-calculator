@@ -29,7 +29,7 @@ export function LadderPanel({ ladder }: { ladder: Ladder }) {
 
       {ladder.rows.length === 0 ? (
         <p className="empty">
-          Add an event you haven't played and leave it blank — this is where it tells you
+          Add an event you haven't played and leave it blank. This is where it tells you
           the worst you can do there and still reach your target.
         </p>
       ) : (
@@ -64,7 +64,7 @@ export function LadderPanel({ ladder }: { ladder: Ladder }) {
                 <td>{r.label}</td>
                 <td className="num">0 of {r.count}</td>
                 <td colSpan={3} className="idle-note">
-                  outside your Best Finish Limit — adds nothing at this projection
+                  outside your Best Finish Limit, adds nothing at this projection
                 </td>
               </tr>
             ))}

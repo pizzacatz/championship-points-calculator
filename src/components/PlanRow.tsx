@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import type { EvaluatedResult, EventTypeRule, PlannedEvent } from '../domain/types';
 
 /**
@@ -42,6 +43,18 @@ export function PlanRow({
 }) {
   const e = result.event;
   const badge = BADGE[result.reason];
+  const dateInput = useRef<HTMLInputElement>(null);
+
+  // showPicker is the supported way to open the native calendar on demand;
+  // where it is missing, focusing the input is the next best thing.
+  const openPicker = () => {
+    const el = dateInput.current;
+    if (!el) return;
+    if (typeof el.showPicker === 'function') {
+      try { el.showPicker(); return; } catch { /* not allowed here; fall through */ }
+    }
+    el.focus();
+  };
   const title = e.name?.trim() || rule.label;
   const date = dateLabel(e);
   // On a narrow screen a long event name has to break somewhere, and the natural
@@ -60,11 +73,31 @@ export function PlanRow({
           {date && <span className="plan-date">{date}</span>}
         </span>
 
+        {/* A Cup or Challenge carries no date of its own, and a full date input is
+            a wide control showing mm/dd/yyyy before anything is entered. A calendar
+            button opens the native picker instead, and once a date is set it shows
+            the date — tapping it again reopens the picker. The input stays in the
+            DOM, and labelled, so the picker has something to open and assistive
+            technology has something to read. */}
         {needsDate && (
-          <span className="field field-date">
-            <label htmlFor={`d-${e.id}`}>Date</label>
-            <input id={`d-${e.id}`} type="date" value={e.date ?? ''}
+          <span className="field-date">
+            <input ref={dateInput} id={`d-${e.id}`} type="date" value={e.date ?? ''}
+              aria-label={`Date for ${title}`}
               onChange={(ev) => onChange({ date: ev.target.value || null })} />
+            <button type="button" className="date-btn" onClick={openPicker}
+              aria-label={e.date ? `Change the date for ${title}` : `Set a date for ${title}`}>
+              {e.date ?? (
+                <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false">
+                  <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" fill="none"
+                    stroke="currentColor" strokeWidth="1.8" />
+                  <line x1="3.5" y1="9.5" x2="20.5" y2="9.5" stroke="currentColor" strokeWidth="1.8" />
+                  <line x1="8" y1="2.8" x2="8" y2="6" stroke="currentColor" strokeWidth="1.8"
+                    strokeLinecap="round" />
+                  <line x1="16" y1="2.8" x2="16" y2="6" stroke="currentColor" strokeWidth="1.8"
+                    strokeLinecap="round" />
+                </svg>
+              )}
+            </button>
           </span>
         )}
 
@@ -77,7 +110,7 @@ export function PlanRow({
           </span>
           <span className="field-or">or</span>
           <span className="field">
-            <label htmlFor={`pl-${e.id}`}>Place</label>
+            <label htmlFor={`pl-${e.id}`}>Placement</label>
             <input id={`pl-${e.id}`} type="number" min={1} step={1} inputMode="numeric" maxLength={4}
               value={e.placement ?? ''}
               onChange={(ev) => onChange({ placement: intOrNull(ev.target.value), awardedPoints: null })} />
@@ -103,7 +136,7 @@ export function PlanRow({
 
       {overdue && (
         <p className="plan-explain overdue-note">
-          This event has passed. Enter your result, or remove it — it is not counted.
+          This event has passed. Enter your result, or remove it. It is not counted.
         </p>
       )}
 

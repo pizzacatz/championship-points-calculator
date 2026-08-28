@@ -103,7 +103,7 @@ async function globalChallenges() {
     seen.add(key);
     const lastDay = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
     out.push({
-      name: `${m[3]} — ${m[1]} ${year}`,
+      name: m[3],   // the date column says which month
       date: `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`,
       // "2026-09-00": the 00 says the day is not announced yet, and keeps the
       // date the same width as every other one in the catalog.

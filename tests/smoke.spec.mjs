@@ -257,7 +257,7 @@ await check('a past event with no result is marked overdue and left out of the l
   await cat.getByRole('button', { name: '+ League Cup' }).click();
   await page.waitForTimeout(400);
   const row = page.locator('.plan-row', { hasText: 'League Cup' });
-  await row.getByLabel('Date').fill('2026-01-10');
+  await row.getByLabel(/^Date for/).fill('2026-01-10');
   await page.waitForTimeout(700);
   assert.match(await row.getAttribute('class'), /overdue/);
   assert.match(await row.innerText(), /This event has passed/);
@@ -370,13 +370,59 @@ await check('a long event name breaks at "Championships" on a narrow screen', as
   await page.waitForTimeout(300);
 });
 
+await check('a local date is set from a calendar button, and can be changed', async () => {
+  const cat = page.locator('section', { has: page.getByRole('heading', { name: 'Events' }) });
+  await cat.getByRole('button', { name: '+ League Cup' }).click();
+  await page.waitForTimeout(400);
+  const row = page.locator('.plan-row', { hasText: 'League Cup' }).last();
+  const btn = row.locator('.date-btn');
+  assert.equal(await btn.locator('svg').count(), 1, 'no calendar icon before a date is set');
+  assert.match(await btn.getAttribute('aria-label'), /^Set a date for/);
+  await row.getByLabel(/^Date for/).fill('2026-11-15');
+  await page.waitForTimeout(500);
+  // Once set, the button shows the date in the same ISO form as every other.
+  assert.equal((await btn.innerText()).trim(), '2026-11-15');
+  assert.match(await btn.getAttribute('aria-label'), /^Change the date for/);
+  let asked = false;
+  const d = (x) => { asked = true; x.accept(); };
+  page.on('dialog', d);
+  await row.getByRole('button', { name: /Remove/ }).click();
+  await page.waitForTimeout(400);
+  page.off('dialog', d);
+});
+
+await check('Global Challenges are named without their dates, and tick individually', async () => {
+  const gc = page.locator('.zone', { hasText: 'Global & Grand' });
+  if (!(await gc.locator('.zone-list').count())) {
+    await gc.locator('.zone-toggle').click();
+    await page.waitForTimeout(300);
+  }
+  const names = await gc.locator('.ev-name').allInnerTexts();
+  assert.ok(names.every((n) => n.trim() === 'Global Challenge'),
+    `names still carry dates: ${names.slice(0, 2)}`);
+  const before = await page.locator('.plan-row').count();
+  await gc.locator('.zone-list input[type=checkbox]').first().check();
+  await page.waitForTimeout(500);
+  // Six identically named events must not tick together.
+  assert.match(await gc.locator('.zone-count').innerText(), /1\s*of\s*6/);
+  assert.equal(await page.locator('.plan-row').count(), before + 1);
+  await gc.locator('.zone-list input[type=checkbox]').first().uncheck();
+  await page.waitForTimeout(400);
+});
+
+await check('no em-dashes remain in the rendered page', async () => {
+  const text = await page.locator('main').innerText();
+  const found = text.match(/[^\n]{0,24}\u2014[^\n]{0,24}/g);
+  assert.equal(found, null, `em-dash still shown: ${found && found[0]}`);
+});
+
 await check('the season line names events needing results', async () => {
   // An earlier check removes its overdue row, so make one.
   const cat = page.locator('section', { has: page.getByRole('heading', { name: 'Events' }) });
   await cat.getByRole('button', { name: '+ League Challenge' }).click();
   await page.waitForTimeout(400);
   const row = page.locator('.plan-row', { hasText: 'League Challenge' }).last();
-  await row.getByLabel('Date').fill('2026-02-14');
+  await row.getByLabel(/^Date for/).fill('2026-02-14');
   await page.waitForTimeout(700);
   assert.match(await page.locator('.season-line').innerText(), /needs? results/);
   await row.getByRole('button', { name: /Remove/ }).click();
@@ -404,10 +450,28 @@ await check('the theme toggle is an icon and works', async () => {
 
 await check('no horizontal scroll at 320px', async () => {
   await page.setViewportSize({ width: 320, height: 800 });
-  await page.waitForTimeout(150);
-  const over = await page.evaluate(() =>
-    document.documentElement.scrollWidth - document.documentElement.clientWidth);
-  assert.ok(over <= 1, `overflows by ${over}px`);
+  await page.waitForTimeout(400);
+  const r = await page.evaluate(() => {
+    const w = document.documentElement.clientWidth;
+    // Anything inside a scroll container is allowed to be wider than the page.
+    const inScroller = (el) => {
+      for (let n = el.parentElement; n; n = n.parentElement) {
+        const o = getComputedStyle(n).overflowX;
+        if (o === 'auto' || o === 'scroll' || o === 'hidden') return true;
+      }
+      return false;
+    };
+    const guilty = [];
+    for (const el of document.querySelectorAll('*')) {
+      const b = el.getBoundingClientRect();
+      if (b.right > w + 0.5 && b.width > 0 && !inScroller(el)) {
+        guilty.push(`${el.tagName.toLowerCase()}.${(el.className || '').toString().split(' ')[0]}`
+          + ` right=${Math.round(b.right)} "${(el.textContent || '').trim().slice(0, 24)}"`);
+      }
+    }
+    return { over: document.documentElement.scrollWidth - w, guilty: guilty.slice(0, 4) };
+  });
+  assert.ok(r.over <= 1, `overflows by ${r.over}px — ${r.guilty.join(' | ') || 'no element identified'}`);
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 

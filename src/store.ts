@@ -47,10 +47,25 @@ const write = (key: string, value: unknown): void => {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* private mode, quota — non-fatal */ }
 };
 
+/**
+ * Plans saved before dates were unified on ISO carry the old official range —
+ * "Sept. 18-20" — which would keep showing forever, ragged, beside the ISO dates
+ * around it. Only a month-precision date (2026-09-00) has a display form of its
+ * own now; everything else falls back to its ISO date.
+ */
+const migrate = (all: QualificationPath[]): QualificationPath[] => all.map((p) => ({
+  ...p,
+  events: p.events.map((e) => (
+    e.displayDate && !/^\d{4}-\d{2}-00$/.test(e.displayDate)
+      ? { ...e, displayDate: undefined }
+      : e
+  )),
+}));
+
 export function usePaths() {
   const [paths, setPaths] = useState<QualificationPath[]>(() => {
     const stored = read<QualificationPath[]>(KEY, []);
-    return stored.length ? stored : [blankPath()];
+    return stored.length ? migrate(stored) : [blankPath()];
   });
   const [activeId, setActiveId] = useState<string>(() => {
     const stored = read<string | null>(ACTIVE, null);

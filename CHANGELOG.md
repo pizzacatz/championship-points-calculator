@@ -3,6 +3,28 @@
 All dates 2026-08-28 — the project was specified, built, reviewed and rebuilt in
 a single session.
 
+## 2.6.0
+
+- **Fixed a migration bug.** Plans saved before v2.5 kept the old official date
+  ranges — `Sept. 18-20` — so an existing plan still showed them beside the ISO
+  dates around it while a fresh plan was correct. Stale display strings are now
+  dropped on load.
+- **Global Challenges are named `Global Challenge`**, without the month; the date
+  column beside them already says which. The catalog's checkbox state moved from
+  keying on name to keying on **name and date**, without which six identically
+  named events would have collapsed to one key and ticked together.
+- **Local dates are set from a calendar button.** A Cup or Challenge no longer
+  shows a wide `mm/dd/yyyy` field; a calendar icon opens the native picker via
+  `showPicker()`, and once set the button shows the date in the same ISO form as
+  every other. Tapping it again reopens the picker.
+- **Em-dashes replaced.** Commas or full stops in prose; a hyphen where one stood
+  in for a missing number, since a comma there reads as a mistake.
+- **Place** becomes **Placement**.
+- Mobile: the earned CP sits in line with the fields it comes from, and wraps
+  rather than pushing the page wide when a row also carries a direct invitation.
+- The 320px check now names the element that overflows, which is how the two
+  regressions in this round were found rather than guessed at.
+
 ## 2.5.0
 
 - **Dates line up.** Every date in the app is now ISO — one format, ten

@@ -342,7 +342,13 @@ footer.site li { margin-bottom: 0.25rem; }
 .plan-row { border: 1px solid var(--border); border-radius: 8px; padding: 0.45rem 0.6rem;
             background: var(--page-bg); margin-bottom: 0.35rem; }
 .plan-main { display: flex; align-items: center; gap: 0.55rem; flex-wrap: wrap; }
-.plan-title { font-weight: 600; font-size: 0.9rem; margin-right: auto; min-width: 10rem; }
+.plan-title {
+  font-weight: 600; font-size: 0.9rem; margin-right: auto; min-width: 10rem;
+  /* The title binds its spaces so it breaks at "Championships" and nowhere else,
+     which makes a long name one unbreakable token. At very narrow widths that
+     would overflow, so allow a last-resort break rather than push the page wide. */
+  overflow-wrap: anywhere;
+}
 .plan-date {
   color: var(--text-muted); font-weight: 400; font-size: 0.78rem; margin-left: 0.5rem;
   font-variant-numeric: tabular-nums; white-space: nowrap;
@@ -351,7 +357,20 @@ footer.site li { margin-bottom: 0.25rem; }
 /* Four tabular digits plus padding and border. The spinner arrows are gone
    (see input[type=number] above), which is what made this look twice as wide. */
 .plan-inputs .field { width: 2.9rem; }
-.field-date { width: 7.6rem; }
+
+/* The date input stays rendered so the picker has something to open, but it is
+   the button that is seen and pressed. */
+.field-date { position: relative; display: inline-flex; flex: none; }
+.field-date input[type='date'] {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  opacity: 0; pointer-events: none; border: none; padding: 0;
+}
+.date-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem;
+  min-width: 2rem; height: 1.75rem; padding: 0 0.4rem;
+  font-size: 0.76rem; font-variant-numeric: tabular-nums; color: var(--text-muted);
+}
+.date-btn:hover { color: var(--accent-text); }
 .field-date { width: 7.6rem; }
 .plan-inputs label, .field-date label { font-size: 0.62rem; margin-bottom: 0.08rem; }
 .plan-inputs input, .field-date input { padding: 0.22rem 0.3rem; }
@@ -428,12 +447,18 @@ table.ladder .idle-note { font-size: 0.8rem; white-space: normal; }
 @media (max-width: 560px) {
   /* What the row is, and what it scored, on opposite corners; the destructive
      control no longer sits beside the number the row exists to show. */
-  .plan-main { display: grid; grid-template-columns: 1fr auto; gap: 0.4rem 0.5rem; }
+  .plan-main { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.4rem 0.5rem; }
   .plan-title { min-width: 0; grid-column: 1; grid-row: 1; }
   .plan-row .icon { grid-column: 2; grid-row: 1; align-self: start; }
-  .plan-inputs { grid-column: 1 / -1; grid-row: 2; }
-  .field-date { grid-column: 1 / -1; grid-row: 3; width: 100%; }
-  .plan-result { grid-column: 1 / -1; grid-row: 4; justify-content: flex-end; min-width: auto; }
+  /* The earned CP sits in line with the fields it is derived from. It carries
+     badges as well as the figure, so it wraps rather than pushing the page wide
+     when a row has a direct invitation to report. */
+  .plan-inputs { grid-column: 1; grid-row: 2; }
+  .plan-result {
+    grid-column: 2; grid-row: 2; justify-content: flex-end;
+    min-width: 0; flex-wrap: wrap; row-gap: 0.2rem;
+  }
+  .field-date { grid-column: 1 / -1; grid-row: 1; justify-self: end; margin-right: 2rem; }
   table.ladder col.c-count { width: 4.6rem; }
   table.ladder col.c-finish { width: 6rem; }
   table.ladder col.c-cp { width: 4.2rem; }

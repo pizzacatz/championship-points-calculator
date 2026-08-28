@@ -9,7 +9,7 @@ import type { PlacementBand } from './types';
  * 3rd-place band in any game — 3–4 reads "Top 4".
  */
 export function finishLabel(band: PlacementBand | null): string {
-  if (!band) return '—';
+  if (!band) return '-';
   if (band.maxPlace >= 4) return `Top ${band.maxPlace}`;
   return band.maxPlace === 1 ? '1st place' : `${band.maxPlace}nd place`;
 }

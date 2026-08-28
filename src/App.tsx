@@ -12,7 +12,7 @@ import type {
 } from './domain/types';
 import { blankEvent, usePaths, useTheme } from './store';
 import { PlanRow } from './components/PlanRow';
-import { EventCatalog } from './components/EventCatalog';
+import { EventCatalog, keyOf } from './components/EventCatalog';
 import { LadderPanel } from './components/LadderPanel';
 import { VERSION } from './version';
 
@@ -27,7 +27,8 @@ const GAMES: { id: Game; label: string }[] = [
   { id: 'GO', label: 'Pokémon GO' },
 ];
 
-const fmt = (n: number | null | undefined) => (n == null ? '—' : n.toLocaleString());
+/** A hyphen, not a dash: this stands in for a number, not for punctuation. */
+const fmt = (n: number | null | undefined) => (n == null ? '-' : n.toLocaleString());
 
 export default function App() {
   const { theme, toggle } = useTheme();
@@ -137,11 +138,11 @@ export default function App() {
       store.addEvent({
         ...blankEvent(typeId), name: event.name, date: event.date,
         displayDate: event.datePrecision === 'month' ? event.displayDate : undefined,
-        catalogName: event.name,
+        catalogName: keyOf(event),
       });
     }
     else {
-      const found = path.events.find((e) => e.catalogName === event.name);
+      const found = path.events.find((e) => e.catalogName === keyOf(event));
       if (found && confirmDiscard([found.id])) store.removeEvent(found.id);
     }
   }
@@ -161,15 +162,15 @@ export default function App() {
 
   function bulkCatalog(items: { event: CatalogEvent; typeId: string }[], add: boolean) {
     if (add) {
-      const fresh = items.filter((i) => !addedNames.has(i.event.name));
+      const fresh = items.filter((i) => !addedNames.has(keyOf(i.event)));
       store.addEvents(fresh.map((i) => ({
         ...blankEvent(i.typeId), name: i.event.name, date: i.event.date,
         displayDate: i.event.datePrecision === 'month' ? i.event.displayDate : undefined,
-        catalogName: i.event.name,
+        catalogName: keyOf(i.event),
       })));
     } else {
       const ids = path.events
-        .filter((e) => e.catalogName && items.some((i) => i.event.name === e.catalogName))
+        .filter((e) => e.catalogName && items.some((i) => keyOf(i.event) === e.catalogName))
         .map((e) => e.id);
       if (confirmDiscard(ids)) store.removeEvents(ids);
     }
@@ -286,7 +287,7 @@ export default function App() {
               onClick={() => store.update({ targetOverride: previousCutoff })}
               title={previousCutoff == null
                 ? 'No previous-season figure for this game and rating zone'
-                : `${cutoffs.season} final cutoff — rank ${invitationRank ?? '?'} in ${zoneLabel}`}>
+                : `${cutoffs.season} final cutoff, rank ${invitationRank ?? '?'} in ${zoneLabel}`}>
               {cutoffs.season}
             </button>
             {/* Present but disabled until the season's leaderboard opens: absent,
@@ -295,7 +296,7 @@ export default function App() {
               onClick={() => store.update({ targetOverride: liveBoundary })}
               title={liveBoundary == null
                 ? `The ${rules.season} leaderboard has not opened yet`
-                : `Live boundary — rank ${invitationRank ?? '?'} in ${zoneLabel}`}>
+                : `Live boundary, rank ${invitationRank ?? '?'} in ${zoneLabel}`}>
               {rules.season}
             </button>
           </p>
@@ -304,15 +305,15 @@ export default function App() {
               earned once the CP is actually in hand. */}
           {target != null && evaluation.currentTotal >= target && (
             <div className="callout ok" role="status">
-              <strong>Target reached.</strong> That is not a Worlds qualification — the season-end
+              <strong>Target reached.</strong> That is not a Worlds qualification. The season-end
               cutoff moves, and only a direct invitation guarantees a place.
             </div>
           )}
           {evaluation.directInvites.length > 0 && (
             <div className="callout ok">
               <strong>Direct invitation earned.</strong>{' '}
-              {evaluation.directInvites.map((r) => r.event.name?.trim() || r.rule.label).join(', ')} — a
-              qualifying finish regardless of your final total.
+              {evaluation.directInvites.map((r) => r.event.name?.trim() || r.rule.label).join(', ')}.
+              A qualifying finish regardless of your final total.
             </div>
           )}
         </section>
