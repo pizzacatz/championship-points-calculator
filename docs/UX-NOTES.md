@@ -275,7 +275,100 @@ significant outcome in the product. They should not share a colour.
 
 ---
 
-## 7. Still open from the v2 round
+## 7. Third pass — dates, emphasis, and where locals come from
+
+### 7.1 An optional date field, not drag-and-drop  — *recommended*
+
+Drag-to-reorder is the wrong tool here. A plan is a **schedule**, so its order is
+a fact about the world, not a preference to be hand-maintained: order should be
+*derived* from dates, and once it is, dragging has nothing left to express.
+Against it specifically — it is fiddly on the surface that is already worst
+(390 px, 4,152 px tall), and it needs a keyboard equivalent to stay accessible.
+
+An optional **date** field on manually added Cups and Challenges does everything
+dragging would, and more: it sorts them correctly, it lets past ones grey out, and
+it costs one small input that appears *only* on manual rows, since catalog events
+already carry their dates.
+
+### 7.2 Highlight what is overdue, not what is empty  — *recommended*
+
+Colouring every empty field defeats itself: six of eight rows are blank, so
+highlighting blanks highlights most of the page, and emphasis only works when it
+is scarce. Blank is the *normal* state of a plan — it means "not played yet".
+
+The scarce, actionable case is a **past event with no result**. That is genuinely
+overdue and worth a colour. It also folds §6.2 in: the same rule that greys the row
+removes it from the ladder.
+
+| Date | Result | Treatment |
+|---|---|---|
+| Future | blank | normal — the ladder solves it |
+| Future | filled | normal — counts |
+| **Past** | **blank** | **highlighted: enter a result or remove it. Excluded from the ladder** |
+| Past | filled | normal — counts |
+
+### 7.3 A past-events archive in the catalog  — *recommended*
+
+The catalog will fill up: by June 2027 every one of the 32 majors is in the past.
+Show upcoming by default and put the rest in a collapsed **Past events** group, so
+a player joining mid-season can still add a Regional they already played without
+that list crowding the one they are planning from.
+
+### 7.4 Folding in the Georgia Play Events calendar  — *not yet, and here is why*
+
+Tempting, and it would remove manual entry entirely: pokedata publishes local Cups
+and Challenges as an API, dates included, which would also feed §7.1 and §7.2.
+
+The problem is scope. That feed is **Georgia-only** —
+`_country/US/_state/GA` — and returned 112 events for a partial window. This app
+offers five worldwide rating zones and a full set of global majors. Folding in GA
+locals makes the product half-global and half-Georgian: a player in Europe gets a
+complete majors catalog and no locals at all, with nothing on screen explaining
+why. Widening the feed beyond Georgia is worse, not better — locals are the events
+near *you*, and filtering them needs a concept of where the player lives, which
+this app deliberately does not have.
+
+Three ways forward, in order of preference:
+
+1. **Defer.** Ship §7.1's date field, keep manual entry for locals. Small, correct
+   everywhere, and unblocks sorting and greying immediately.
+2. **A clearly-scoped Georgia section.** A separate collapsed group labelled as
+   Georgia, offered alongside manual entry rather than replacing it. Honest about
+   what it covers, genuinely useful to the actual audience.
+3. **A general local catalog.** Needs a home location, a distance filter and a way
+   to handle thousands of events. A project, not a change.
+
+### 7.5 What is still unresolved
+
+| Item | Status |
+|---|---|
+| Ladder shows *5 of 9* counting rather than *×9* | proposed, unconfirmed |
+| Plan rows sort by date | proposed, unconfirmed |
+| Past unlogged events excluded from the ladder | proposed, unconfirmed |
+| Confirm before a removal discards a logged result | proposed, unconfirmed |
+| Green used for both *Counts* and *Direct invite* | proposed, unconfirmed |
+| A season line — *4 of 12 played · next: Las Vegas* | proposed, unconfirmed |
+| Where local events come from (§7.4) | **needs a decision** |
+| Catalog and plan name the same event twice | open since v2 |
+| Pokémon GO attendance baselines | unverified; no published source |
+| Live Worlds boundary | none until the 2027 leaderboard period opens |
+
+### 7.6 Recommended build order
+
+Correctness first, because two of these are wrong rather than ugly:
+
+1. **Trust and correctness** — the "Target reached" split, past unlogged events out
+   of the ladder, confirm-before-discard.
+2. **The ladder** — CP total, Top X, *5 of 9* counting, BFL folded in, alignment.
+   One rebuild; these all touch the same code.
+3. **Compression and chrome** — plan-row cuts, sticky totals, title and subtitle,
+   expand/collapse all, date field, overdue highlight, date sorting.
+4. **Deferred** — the local catalog decision, the season line, the catalog/plan
+   duplication.
+
+---
+
+## 8. Still open from the v2 round
 
 - The catalog and the plan list both name the same event. Checking Baltimore in
   the catalog makes "Baltimore" appear twice on the page.
