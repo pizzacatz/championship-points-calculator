@@ -107,22 +107,107 @@ The three target-related cards (planning target, previous cutoff, live boundary)
 are one concept, not three. Collapse to a line under the cards:
 `target 842 · 2026 cutoff · edit`.
 
-### Worth considering: make the CP field a dropdown
+### Input: placement OR CP, whichever you remember
 
-Since the legal values are a short fixed list per event type, the input could be a
-`<select>` rather than a number box, each option labelled with both facts:
+Not everyone recalls that a 9th–16th at a Regional pays 200. So the row offers
+**both** fields and you fill either one; each derives the other.
+
+- **CP entered** -> band, kicker and direct-invite status all follow, since CP is a
+  unique key into the table.
+- **Placement entered** -> the band follows immediately, but if that band has a
+  nonzero kicker the CP is unresolved until the field size is known.
+
+That gap is closed by pulling real attendance from rk9 (below). Which produces a
+clean split worth designing around:
+
+| Event kind | On rk9? | Reliable input |
+|---|---|---|
+| Regional, Special, International | yes | **placement** — attendance comes from rk9 |
+| League Cup, League Challenge | no | **CP** — nothing else can resolve the kicker |
+
+CP is a plain number box, not a dropdown.
+
+### Blank means "I'm going"
+
+A **major** added with no CP and no placement is an expression of intent to attend.
+It stays in the plan and participates in the final calculation and the generator —
+that is how you ask "what do I need at the events I'm already going to?"
+
+Every added event is assumed attended. **Commitment is implied by adding it**, so
+the commitment field disappears.
+
+> Consequence: this makes the third generator strategy degenerate. "Best use of
+> committed events" maximises committed events used and minimises optional ones —
+> but if everything is committed there are no optional ones left to minimise. It
+> collapses toward "use every event", which is close to what least-demanding
+> already returns. Either reframe it as an explicit *spread across everything*
+> (maximise event count, then minimise difficulty — a genuinely different axis from
+> least-demanding's ordering) or drop to two strategies. **Open.**
+
+### Kill the field subtitles
+
+Every field currently carries a `.hint` line explaining it. Remove them. With
+attendance, commitment, best-finish, notes and date all gone, the remaining inputs
+are self-evident from their labels.
+
+### Attendance baselines: regional average, not global low
+
+Two reversals of earlier decisions, both correct:
+
+1. **Average, not the single lowest.** The PRD specified the lowest observed field.
+2. **Split by the event's region**, which PRD §16 Q2 explicitly recommended against.
+
+The data shows why. VGC Regionals, 2025–26, from Limitless (`&region=` filter):
+
+| Region | n | min | avg | max |
+|---|---:|---:|---:|---:|
+| North America | 9 | 542 | **732** | 1,013 |
+| Europe | 7 | 415 | **594** | 742 |
+| Latin America | 7 | 180 | **226** | 282 |
+| Oceania | 3 | 210 | **260** | 291 |
+
+Today a single global baseline of 180 — Curitiba, a Latin American event — is
+applied to every planned Regional, including North American ones averaging 732. A
+4x understatement that suppresses bands NA players would comfortably reach.
+
+Note this is the region of **the event**, not the player's home zone, which keeps
+§16 Q2's actual reasoning intact: kicker eligibility depends on the field you turn
+up to.
+
+> Trade-off, accepted: an average means roughly half of events run smaller than
+> projected, so some bands will be claimed that are not reached. The exposure is
+> limited to events that have not happened yet, because anything already run gets
+> real attendance from rk9.
+
+### Live attendance and kickers from rk9
+
+For events that use rk9, read actual attendance and recompute kickers from it
+rather than from any projection. This is what makes placement-only entry work for
+majors, and it turns a registration count into a live kicker forecast for events
+still filling up.
+
+Scope it deliberately: only events in the user's own plan, once a day, cached.
+Sweeping every event continuously is a lot of traffic against live tournament
+infrastructure, on a path its `robots.txt` disallows.
+
+### Auto-fill by region
+
+Buttons that add every published Regional for a region in one click — one for
+North America/Canada, one for Europe, one for Latin America, and so on.
+
+Source: `rk9.gg/events/pokemon`, which **robots.txt permits**. It returns 39
+upcoming 2027 events with date, event name, location and one tournament id per
+game:
 
 ```
-Regional Championship
-  [ 350 — 1st                    v ]
-    325 — 2nd
-    300 — 3rd–4th
-    200 — 9th–16th
-      0 — below kicker
+September 18-20, 2026 | 2027 Baltimore Pokemon Regional | Baltimore, US      | 3 games
+September 26-27, 2026 | 2027 Brisbane Pokemon Regional  | South Brisbane, AU | 3 games
+October 3-4, 2026     | 2027 Recife Pokemon Regional    | Olinda, PE, BR     | 3 games
 ```
 
-Zero typing, zero validation errors possible, and it serves both mental models —
-pick by CP or pick by finish. Undecided.
+Region comes from the trailing country code in the location, via a country ->
+rating-zone map. The page is upcoming-only, which is exactly right for planning a
+season in progress.
 
 ### Panels
 
