@@ -259,77 +259,57 @@ they are not interchangeable and there is only one of each per year.
 > most-recent 1,455) and is the **safe** direction for kickers — fewer bands claimed
 > than will be reached.
 
-### Two plans, not three strategies
+### One list, not two plans
 
-Replace least-demanding / fewest-events / best-use-of-committed with two plan
-shapes that map to a decision players actually make:
+Superseded: there is no "home plan" and no "travel plan". Every tournament involves
+travelling to it — a Regional three hours away is travel too — so the distinction
+was false.
 
-- **Region plan** — using only events in your own rating zone.
-- **International plan** — including the Internationals, i.e. what it takes if you
-  are willing to travel.
+**Region is an input affordance, not an output mode.** The region buttons exist to
+*bulk-add* candidate events so you have something to plan over. They do not define
+a plan, a scope, or a mode. There is exactly one list: the events you have added.
 
-This answers "do I have to fly to an IC to make it?", which is the real question,
-and it dissolves the degenerate third strategy entirely. Default to the region
-plan; tab or radio to the international plan; "View both" after.
+- Click **NA/CAN** to add every North American Regional at once.
+- Then add or remove any individual event by hand.
+- The calculator solves over whatever list results.
 
-One ordering rule still runs underneath both — **least demanding** is the natural
-choice, so each plan returns the easiest set of finishes that reaches the target
-from its own pool of events.
+Internationals still belong to their host region for bulk-add purposes — NAIC comes
+in with the NA button — because it genuinely is the more reachable IC for someone
+already there. That is now purely about which button adds it, nothing more.
 
-**Internationals belong to their host region.** An International sits in the plan
-of the region that hosts it, because it genuinely is a more viable option for
-someone already living there. For the 2027 season:
+**This dissolves the Oceania / SO asymmetry.** That problem was an artefact of
+framing two plans and implying they were comparable across zones. With one list
+there is nothing to compare. An SO player adds whatever events they intend to enter,
+the same as anyone else. Their target is still lower (VGC 257) and their slots fewer
+(5), but that is data shown plainly, not a structural implication in the UI.
 
-| International | Host region | In the home plan of |
-|---|---|---|
-| LAIC — São Paulo, Nov 2026 | Latin America | LA players |
-| EUIC — London, Feb 2027 | Europe | EU players |
-| NAIC — Chicago, Jun 2027 | North America | NA players |
+### Bulk-add makes "fewest events" the important output
 
-So an NA player's home plan is NA Regionals + NA Specials + NAIC, and only EUIC
-and LAIC require the travel plan. That is a sharper division than "majors here vs
-Internationals" — it is **what I can reach without flying abroad** versus **what
-opens up if I will**.
+The two ideas fit together better than either does alone. Bulk-add produces a
+*generous* candidate list — click NA/CAN and you have twelve Regionals you are
+certainly not all attending. The job of the output is then to prune it:
 
-> **Naming hazard, now sharper.** With NAIC inside an NA player's region plan, a
-> plan called "international" would exclude an International Championship while a
-> plan called "region" contains one. Rename both: **Home plan** and **Travel plan**,
-> or "without travel" / "with travel". Avoid "international" as a plan name — it
-> already names an event type.
+> "To reach 842, you need these three: Orlando top 16, Charlotte top 32,
+>  Baltimore top 64."
 
-> **Second naming hazard, unchanged.** Host region governs *plan membership only*.
-> It does not change which baseline an International uses — NAIC still projects
-> from its own three-season median of 1,096, whether it appears in a home plan or a
-> travel plan. Keep "which plan is this event in" and "which baseline does it draw
-> from" visibly separate.
+So **fewest events** stops being a secondary strategy and becomes the primary
+answer, precisely because the input is now over-generous by design. *Least
+demanding* remains the complement: the easiest finishes if you attend everything
+on the list.
 
-> **Asymmetry to surface honestly.** No International is hosted in Oceania or in
-> Middle East & South Africa, so players in those zones have no IC in their home
-> plan at all — every IC is a travel event for them. Combined with small local
-> fields and few slots (VGC: AP 20, SO 5), their home plan is structurally thinner
-> than an NA or EU player's. The UI should not imply parity between the two plans
-> across zones.
+This also explains why no commitment flag is needed. You add everything you
+*could* attend; the calculator tells you which you *need* to. The pruning lives in
+the output, not in a per-row field.
 
-### Rating zone stays a dropdown
+> Note: the Best Finish Limit already caps the damage from over-adding. Twelve
+> added Regionals cannot inflate a projection beyond the best five, because they
+> share one bucket of five. Adding generously is safe.
 
-Do **not** infer the player's rating zone from the regions of the events they add.
-Considered and rejected. CP is portable but leaderboards are not — a Georgia player
-who wins EUIC banks 500 CP on the *North America* leaderboard — so event locations
-carry no information about which leaderboard a player is ranked on.
-
-The decisive failure: Middle East & South Africa has almost no local majors, so a SO
-player's plan is mostly European events and the inference would classify them EU.
-That shows them a VGC target of 799 instead of **257**, and 90 slots instead of 5. A
-qualified player at 300 CP would be told they are 500 short. The error is systematic,
-it targets the players with the fewest local options, and it points in the direction
-that makes people quit.
-
-Lesser flaws: the classification flips as events are added, silently moving the
-headline gap-to-target; ties are undefined; a single event makes it "certain".
-
-Using event location to decide **which events to suggest** and **what belongs to the
-home plan** is fine — that genuinely is geography. Only wiring it to rating zone,
-which drives the target and the leaderboard, breaks.
+> **Open:** with plans collapsed, what does the strategy switcher show? "Best use of
+> committed events" is still degenerate — commitment is implied by adding. That
+> leaves **fewest events** and **least demanding**, which are genuinely different
+> and both useful over one list. Two tabs, or default to fewest-events with least-
+> demanding behind a toggle.
 
 ### Blank solves, filled constrains
 
