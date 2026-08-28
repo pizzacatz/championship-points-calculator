@@ -3,6 +3,22 @@
 All dates 2026-08-28 — the project was specified, built, reviewed and rebuilt in
 a single session.
 
+## 2.6.2
+
+- **On mobile the earned CP is pinned to the bottom right**, with the Best Finish
+  Limit chip and any badges to its left. It was sitting at the top of its cell,
+  and the chip was to its right.
+- **The CP figure reserves three digits**, which is every value it can hold —
+  Championship Points top out at 500 — so the chip beside it no longer shifts as
+  the number changes width.
+- **Rows are laid out with flex rather than grid.** Grid made the two lines share
+  columns, so pinning the CP to a fixed width narrowed the title's column until
+  event names broke mid-syllable — *"Louisville P / okémon Re / gional"*. Flex
+  lines size independently.
+- **The remove control is out of flow**, pinned to the top right corner. In flow
+  it either dropped to a line of its own beneath a wrapping title or took the
+  width the title needed.
+
 ## 2.6.1
 
 - **The rename now reaches plans already saved.** v2.6 renamed Global Challenges

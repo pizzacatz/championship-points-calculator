@@ -452,6 +452,52 @@ await check('a local shows its date once, on the button', async () => {
   page.off('dialog', d);
 });
 
+await check('on mobile the CP is pinned bottom right, with the BFL chip to its left', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.waitForTimeout(500);
+  // Two and three digit values on Regional rows, so a shifting width would show.
+  const regionals = page.locator('.plan-row', { hasText: 'Regional Championships' });
+  await regionals.nth(0).getByLabel('CP').fill('80');
+  await regionals.nth(1).getByLabel('CP').fill('350');
+  await page.waitForTimeout(700);
+  const m = await page.evaluate(() => {
+    const out = [];
+    // Only clean, scored rows: an error or overdue note adds height below the
+    // figure and would make "bottom of the row" mean something else.
+    const clean = [...document.querySelectorAll('.plan-row')]
+      .filter((r) => !r.querySelector('.row-error') && !r.classList.contains('overdue')
+        && /Regional Championships/.test(r.textContent));
+    for (const r of clean.slice(0, 2)) {
+      const cpEl = r.querySelector('.plan-result strong');
+      const bfl = r.querySelector('.plan-result .bfl');
+      const x = r.querySelector('.icon');
+      if (!cpEl || !x) continue;
+      const rb = r.getBoundingClientRect(), cb = cpEl.getBoundingClientRect();
+      out.push({
+        left: Math.round(cb.left),
+        bottomGap: Math.round(rb.bottom - cb.bottom),
+        rightGap: Math.round(rb.right - cb.right),
+        bflLeft: bfl ? bfl.getBoundingClientRect().right <= cb.left + 1 : null,
+        xTop: Math.round(x.getBoundingClientRect().top - rb.top),
+        xRight: Math.round(rb.right - x.getBoundingClientRect().right),
+      });
+    }
+    return out;
+  });
+  assert.equal(m.length, 2, 'need two scored rows to compare');
+  // A fixed box for the figure means the chip beside it does not move.
+  assert.equal(new Set(m.map((x) => x.left)).size, 1,
+    `CP starts at different x for 2 and 3 digits: ${m.map((x) => x.left)}`);
+  for (const r of m) {
+    assert.ok(r.bottomGap <= 14, `CP sits ${r.bottomGap}px above the row bottom`);
+    assert.ok(r.rightGap <= 16, `CP sits ${r.rightGap}px from the right edge`);
+    assert.ok(r.bflLeft !== false, 'the BFL chip is not to the left of the CP');
+    assert.ok(r.xTop <= 14 && r.xRight <= 16, 'the remove control is not in the top right');
+  }
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.waitForTimeout(400);
+});
+
 await check('no em-dashes remain in the rendered page', async () => {
   const text = await page.locator('main').innerText();
   const found = text.match(/[^\n]{0,24}\u2014[^\n]{0,24}/g);
