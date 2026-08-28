@@ -360,20 +360,69 @@ the calculator.
 and the archive (§7.3) all land first, and they are what make a local catalog
 useful when it arrives.
 
-### 7.5 What is still unresolved
+### 7.5 The six open items, with a recommendation each
 
-| Item | Status |
-|---|---|
-| Ladder shows *5 of 9* counting rather than *×9* | proposed, unconfirmed |
-| Plan rows sort by date | proposed, unconfirmed |
-| Past unlogged events excluded from the ladder | proposed, unconfirmed |
-| Confirm before a removal discards a logged result | proposed, unconfirmed |
-| Green used for both *Counts* and *Direct invite* | proposed, unconfirmed |
-| A season line — *4 of 12 played · next: Las Vegas* | proposed, unconfirmed |
-| Where local events come from (§7.4) | **decided** — the GPE ICS, deferred |
-| Catalog and plan name the same event twice | open since v2 |
-| Pokémon GO attendance baselines | unverified; no published source |
-| Live Worlds boundary | none until the 2027 leaderboard period opens |
+#### 1. The ladder should say "5 of 9", not "×9"  — **do it**
+
+Nine added Regionals show as one row reading `×9` at 200 CP each. Only the best
+five majors ever count, so that row implies 1,800 CP where the truth is 1,000.
+It is not unclear, it is **wrong**: it asks for a top-16 at nine tournaments when
+five would do, and prints a requirement for an International whose 85 CP does not
+make the cut at all. Everything else on this list is polish; this is a defect.
+
+#### 2. Sort plan rows by date  — **do it**
+
+Bulk-add happens to produce date order only because the catalog is sorted. Add a
+Cup by hand and it lands at the bottom whatever its date. A plan is a schedule and
+should read like one.
+
+It is also a prerequisite for the overdue highlight (§7.2): greying past events
+only reads as a boundary if the list is chronological. Out of order, grey and
+white rows interleave at random and look like a rendering fault.
+
+#### 3. Drop past unlogged events from the ladder  — **do it**
+
+Once Baltimore's date has passed and no result was entered, the ladder still
+solves for it — it will tell you to finish top 16 at a tournament that is over,
+and count those points toward your target. That does not just look wrong, it
+reports you as on track when you are not. Same rule as §7.2, so the two land
+together.
+
+#### 4. Confirm before a removal discards a result  — **do it, but narrowly**
+
+*Clear* on a zone deletes every event in it, logged results included, with no
+warning and no undo.
+
+Confirm **only when something would actually be lost**, and say how much:
+*"This removes 3 events, 2 with results you entered."* Prompting on every removal
+trains people to dismiss the dialog without reading, which is worse than no
+dialog — the warning has to stay rare to stay meaningful. Removing an empty row
+should remain instant.
+
+#### 5. Stop using green for two different things  — **do it, by deleting a badge**
+
+**Counts** and **Direct invite** are both green. One is routine bookkeeping, the
+other the most significant outcome in the product.
+
+The fix is not a new colour. **Counts** is the default state of any valid result —
+it applies to nearly every row, and a badge that is almost always present carries
+no information. Delete it. Keep the badges that mark **exceptions**: *Excluded by
+BFL*, *Below kicker*, *Check this*. Green then belongs to *Direct invite* alone,
+and the plan list loses a badge from most of its rows, which serves §1 as well.
+
+#### 6. A season line  — **do it, in its smallest form**
+
+One line under the totals:
+
+> *4 of 12 events played · next: Las Vegas, 4 Dec*
+
+The product's own question is *"given how many events are left, how well do I need
+to do?"* — and the page currently answers only the second half. The data is
+already present; this costs one line.
+
+Resist building a timeline widget. The majors map already does that well, and
+duplicating it here spends a lot of vertical space on the surface that is already
+4,152 px tall on mobile.
 
 ### 7.6 Recommended build order
 
