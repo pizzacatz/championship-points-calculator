@@ -150,12 +150,15 @@ Every field currently carries a `.hint` line explaining it. Remove them. With
 attendance, commitment, best-finish, notes and date all gone, the remaining inputs
 are self-evident from their labels.
 
-### Attendance baselines: regional average, not global low
+### Attendance baselines: regional median, not global low
 
 Two reversals of earlier decisions, both correct:
 
-1. **Average, not the single lowest.** The PRD specified the lowest observed field.
+1. **A central figure, not the single lowest.** The PRD specified the lowest
+   observed field.
 2. **Split by the event's region**, which PRD §16 Q2 explicitly recommended against.
+3. **Median, not mean** — see below. Pooling Specials in introduces low outliers,
+   and the mean cannot survive them.
 
 The data shows why. VGC Regionals, 2025–26, from Limitless (`&region=` filter):
 
@@ -174,8 +177,46 @@ Note this is the region of **the event**, not the player's home zone, which keep
 §16 Q2's actual reasoning intact: kicker eligibility depends on the field you turn
 up to.
 
-> Trade-off, accepted: an average means roughly half of events run smaller than
-> projected, so some bands will be claimed that are not reached. The exposure is
+### Median, not mean — everywhere
+
+Use the **median** for every baseline. The pooled per-region distributions are not
+symmetric, and the outliers all sit on the low side because that is exactly what
+folding Specials in introduces:
+
+| Region | n | mean | **median** | values |
+|---|---:|---:|---:|---|
+| NA | 10 | 669 | **707** | 99, 542, 625, 676, 705, 709, 746, 750, 822, 1013 |
+| EU | 9 | 633 | **661** | 415, 418, 558, 595, 661, 679, 688, 742, 940 |
+| LA | 9 | 195 | **214** | 77, 93, 180, 185, 214, 220, 234, 270, 282 |
+| OC | 4 | 206 | **244** | 43, 210, 278, 291 |
+
+The median is higher in all four, but the size of the gap is not the point — the
+shape is. Look at Oceania: the mean of 206 sits **below three of the four actual
+events**. One 43-player Auckland Special drags the "typical Oceania field" beneath
+almost every field Oceania actually ran. That is not a defensible projection. The
+median of 244 sits inside the real cluster.
+
+North America is the same story: nine events between 542 and 1,013 plus a single
+99-player San Juan Special, and the mean quietly answers to that one event.
+
+**Median also mitigates the Internationals' growth lag.** With three points from a
+growing series the median is the middle year, which drops the oldest and smallest:
+
+| | mean | **median** | most recent |
+|---|---:|---:|---:|
+| NAIC VGC | 1,049 | **1,096** | 1,096 |
+| EUIC VGC | 1,229 | **1,257** | 1,455 |
+| NAIC TCG | 3,419 | **3,752** | 3,752 |
+| EUIC TCG | 3,325 | **3,361** | 4,010 |
+
+So one change fixes both problems: outlier sensitivity in the pooled regional data,
+and the trailing-mean bias flagged for the ICs.
+
+**Even-count convention:** round **down** rather than interpolating. It matches the
+CP rule elsewhere and keeps the projection on the conservative side.
+
+> Trade-off, accepted: a central figure means roughly half of events run smaller
+> than projected, so some bands will be claimed that are not reached. Exposure is
 > limited to events that have not happened yet, because anything already run gets
 > real attendance from rk9.
 
@@ -198,25 +239,25 @@ Turin drew more than most Regionals; Auckland drew 43. Every shift is under 9%,
 and merging fixes sample sizes of one or two events, so the combined pool is more
 robust than either alone. (VGC, 2025–26.)
 
-### Internationals: three-year average, per event
+### Internationals: three-year median, per event
 
-Each International keeps its own baseline, averaged over the last three seasons —
+Each International keeps its own baseline, taken over the last three seasons —
 they are not interchangeable and there is only one of each per year.
 
-| | 23–24 | 24–25 | 25–26 | **3yr avg** |
+| | 23–24 | 24–25 | 25–26 | **3yr median** |
 |---|---:|---:|---:|---:|
-| NAIC VGC | 921 | 1,129 | 1,096 | **1,049** |
-| EUIC VGC | 975 | 1,257 | 1,455 | **1,229** |
+| NAIC VGC | 921 | 1,129 | 1,096 | **1,096** |
+| EUIC VGC | 975 | 1,257 | 1,455 | **1,257** |
 | LAIC VGC | 393 | 455 | 518 | **455** |
-| NAIC TCG | 2,692 | 3,812 | 3,752 | **3,419** |
-| EUIC TCG | 2,605 | 3,361 | 4,010 | **3,325** |
-| LAIC TCG | 1,263 | 1,810 | 2,117 | **1,730** |
+| NAIC TCG | 2,692 | 3,812 | 3,752 | **3,752** |
+| EUIC TCG | 2,605 | 3,361 | 4,010 | **3,361** |
+| LAIC TCG | 1,263 | 1,810 | 2,117 | **1,810** |
 
-> Note: every series is growing. EUIC VGC's 3-year mean of 1,229 sits 18% below
-> its most recent 1,455. A trailing mean therefore under-projects a growing field —
-> which is the **safe** direction for kickers (fewer bands claimed than will be
-> reached), but it is a systematic bias, not noise. Consider weighting the most
-> recent season more heavily if that lag ever matters.
+> Note: every series is growing, so any trailing figure under-projects. The median
+> of three points is the middle year, which drops the oldest and smallest and so
+> lags less than the mean would. Residual lag remains (EUIC VGC's 1,257 against a
+> most-recent 1,455) and is the **safe** direction for kickers — fewer bands claimed
+> than will be reached.
 
 ### Two plans, not three strategies
 
@@ -251,15 +292,24 @@ So a plan is a mix of knowns and unknowns, and the generator fills the unknowns.
 
 ### Cups and Challenges: auto-filled default
 
-Planned Cups and Challenges auto-fill with the mean CP earned per event, rounded
-**down** to the nearest achievable payout tier, using bands with no kicker.
+A planned Cup or Challenge auto-fills with **the middle CP a player can earn,
+assuming they earn anything at all** — the midpoint of that event's payout tiers
+excluding 0, rounded **down** when the count is even.
 
-> **Needs clarification before building.** "Mean CP earned per event" over which
-> population? The most useful reading is *the player's own completed results* — if
-> you have averaged 23 CP across six League Cups, future ones default to 20, the
-> nearest tier at or below. That is personalised and self-correcting. It needs a
-> fallback for a player with no history yet. The alternative reading is a global
-> published mean, which no source publishes. **Open.**
+| Event | Tiers (excluding 0) | Default | Finish |
+|---|---|---:|---|
+| League Challenge | 4, 6, 8, 10, 12, 15 | **8 CP** | 5th–8th |
+| League Cup | 13, 16, 20, 25, 32, 40, 50 | **25 CP** | 5th–8th |
+
+Both land on a 5th–8th finish, which is a sane default for a planned local.
+
+This is not a statistical mean over the player's history. It is the middle of the
+table — a neutral assumption that needs no history and works for a first-time user.
+
+The rationale for defaulting at all: Cups and Challenges carry their own Best
+Finish Limit of 4 each, so a finish below what a player typically manages does not
+improve their total. Filling in a mid-table result models the realistic case rather
+than a bottom-of-table one that would be discarded by the BFL anyway.
 
 ### Kept as-is
 
