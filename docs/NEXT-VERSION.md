@@ -357,6 +357,76 @@ Scope it deliberately: only events in the user's own plan, once a day, cached.
 Sweeping every event continuously is a lot of traffic against live tournament
 infrastructure, on a path its `robots.txt` disallows.
 
+### The event catalog: a collapsible checklist
+
+Bulk-add adds **every** event in a region. The catalog is a checklist, collapsed by
+region, with bulk actions per group:
+
+```
+▾ North America / Canada        [ Add all · Clear ]    3 of 14
+    ☑ Baltimore Regional        Sep 18–20
+    ☐ Louisville Regional       Oct 9–11
+    ☑ NAIC — Chicago            Jun 18–20
+    …
+▸ Europe                        [ Add all · Clear ]    0 of 11
+▸ Latin America                 [ Add all · Clear ]    1 of 7
+▸ Oceania                       [ Add all · Clear ]    0 of 4
+```
+
+Expand the player's own rating zone by default (that is what the zone dropdown is
+already telling us); collapse the rest.
+
+**Its real job is fast subtraction, not bulk-add.** "Add all NA" then letting the
+output prune would have the calculator recommend Louisville, Baltimore and Portland
+to someone who can only reach two of them. PRD §7 FR-3 is explicit — *do not infer
+feasibility from travel, cost or availability*, and *only events explicitly added by
+the player may participate* — precisely so that adding an event **is** the player
+asserting they can attend it. Bulk-add-all reintroduces the problem that rule
+exists to prevent.
+
+So the checklist is "add all, then uncheck what you cannot reach", and unchecking
+needs to be as fast as adding. That is the ergonomic that matters; the bulk button
+alone is not the feature.
+
+### Catalog source, and the gap in it
+
+| Events | Source | Notes |
+|---|---|---|
+| Upcoming | `rk9.gg/events/pokemon` | robots-permitted. 39 events for 2027 with date, name, location, one tournament id per game |
+| Past, this season | Limitless (`?time=<season>&type=…`) | rk9 has **no** past-events view; slugs must be guessed and a wrong one returns 500 |
+| Cups and Challenges | manual entry | not in any catalog; they are local and unlisted |
+
+**The gap:** a player joining mid-season has completed majors to log, and the rk9
+catalog is upcoming-only. Those are exactly the events where they know their CP.
+Either pull past events from Limitless or accept manual entry for them.
+
+Region comes from the trailing country code in rk9's location string
+("Baltimore, US", "South Brisbane, AU", "Olinda, Pernambuco, BR"), via a country →
+rating-zone map that needs building. Game filtering is free: each event lists one
+tournament id per game, so a VGC path attaches the VGC one.
+
+> **Open:** does the checklist *replace* the plan list, or sit above it? Checking a
+> box and then seeing the same event again in a separate table is duplication. One
+> option is that the catalog only ever shows what has **not** been added, so checked
+> events move down into the plan and unchecking is the remove action. Fewer panels,
+> no repetition — but it makes the catalog's contents shift as you work.
+
+### Kept as-is
+
+Multi-path, JSON export/import and the theme toggle all stay. The toggle needs to
+look better than a text button — a sun/moon icon.
+
+### Live attendance and kickers from rk9
+
+For events that use rk9, read actual attendance and recompute kickers from it
+rather than from any projection. This is what makes placement-only entry work for
+majors, and it turns a registration count into a live kicker forecast for events
+still filling up.
+
+Scope it deliberately: only events in the user's own plan, once a day, cached.
+Sweeping every event continuously is a lot of traffic against live tournament
+infrastructure, on a path its `robots.txt` disallows.
+
 ### Auto-fill by region
 
 Buttons that add every published Regional for a region in one click — one for
