@@ -168,3 +168,64 @@ Points worth settling before building:
   is noise.
 - **Say when a filter is hiding rows**, so a filtered list is never mistaken for
   the whole plan.
+
+---
+
+## 5. Chrome and layout — decided 2026-08-28
+
+- **Keep the Plan selector.** The fourth figure has to find room elsewhere.
+- **Remove the `+ Global Challenge / Grand Challenge` button.** The catalog section
+  covers it.
+- **Remove the Below kicker chip.**
+- **Narrow the CP and Place inputs** to four characters. Seven is far more than any
+  value needs: CP tops out at 500, a placement at 1024.
+
+### 5.1 Where the fourth figure's room comes from
+
+Measured at 1280 px, the header is nearly full:
+
+| | Width |
+|---|---:|
+| Wordmark (icon, title, subtitle) | 459 |
+| Game / Rating zone / Plan selects | 136 each — **408** |
+| The three figures | 172 |
+| Theme toggle | 46 |
+| Gaps | ~65 |
+| **Free** | **30** |
+
+A fourth figure needs about 55, so it overflows by roughly 25.
+
+Tightening the title's padding helps less than it looks: the wordmark's 459 px is
+mostly *text*, not padding. The three selects at 408 px are the real budget — 136
+down to about 110 each reclaims 78, which covers it with room spare. Trimming the
+wordmark padding on top is worth doing, but it is the smaller half.
+
+### 5.2 Losing the Below kicker chip
+
+It is the last badge that explains a zero. Without it a result scoring 0 and a row
+nobody has filled in both read `0 CP`.
+
+They remain distinguishable — a scored zero has a number in its CP or Place box and
+an untouched row does not — so this is legible rather than ambiguous. Worth naming
+because it is the only cue left.
+
+### 5.3 Losing the manual Global Challenge button
+
+That button was the escape hatch for a Grand Challenge announced outside the
+published schedule — the official page says *"stay tuned for dates and details"*.
+The catalog scraper re-reads that page daily and picks up new months on its own, so
+the exposure is small: an event announced and entered on the same day.
+
+---
+
+## 6. Mobile
+
+- **Move the theme toggle to the top right**, on the same row as the title and
+  subtitle, rather than wrapping below the selects.
+- **Keep all four figures.** There is room.
+- **Align the zone counts.** `8 of 8`, `0 of 10`, `0 of 4` currently start wherever
+  the zone name ends, so they stagger. Fix the zone-name column so every count
+  lines up on the word **of** — which needs the left-hand number right-aligned in
+  its own span, not just the block positioned.
+- **Widen *Expand all*** as a tap target, and let the event names give up the width
+  it needs.
