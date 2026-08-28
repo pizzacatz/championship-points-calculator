@@ -270,3 +270,30 @@ carry it:
 
 It costs nothing — the overdue test already exists for the row highlight — and it
 turns the season line from a progress readout into the page's only prompt to act.
+
+### 7.1a The figures, measured
+
+Run against the real engine, goal 842, VGC in US and Canada:
+
+| | CP NOW | TO GO | GOAL | AVAILABLE | The callout would say |
+|---|---:|---:|---:|---:|---|
+| **A** nothing entered, 8 blank majors | 0 | 842 | 842 | 1,750 | *"842 CP still to earn"* |
+| **B** 525 banked, 6 blank majors | 525 | 317 | 842 | 1,225 | *"317 CP still to earn"* |
+| **C** 525 banked, **1** blank major | 525 | 317 | 842 | **350** | *"317 CP still to earn"* |
+
+**It is a literal duplicate.** The callout's number is TO GO in every row — 842,
+317, 317 — because both are `goal − banked`.
+
+**And it cannot tell B from C.** Those two situations are not remotely alike. B has
+1,225 CP of headroom against a 317 need: comfortable, many ways through. C has 350
+against the same 317: one event, and close to the edge — a 17th–32nd instead of a
+9th–16th and it misses. The callout says the same sentence for both. **AVAILABLE is
+the figure that separates them**, which is the argument for the four numbers rather
+than the prose.
+
+**A also shows the Best Finish Limit doing its work**: eight blank majors, but
+AVAILABLE is 1,750 — five wins, not eight. A naive sum would have promised 2,800.
+
+One note for implementation: `goal − banked` goes negative once the goal is passed
+(1,350 banked against 842 gives −508). TO GO must floor at zero; the current
+callout only avoids it because a separate guard hides it in that state.
