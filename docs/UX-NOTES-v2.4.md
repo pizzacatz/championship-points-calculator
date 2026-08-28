@@ -229,3 +229,44 @@ the exposure is small: an event announced and entered on the same day.
   its own span, not just the block positioned.
 - **Widen *Expand all*** as a tap target, and let the event names give up the width
   it needs.
+
+---
+
+## 7. Two consequences of the new figures
+
+### 7.1 The "on plan" callout becomes a duplicate — remove it
+
+It currently reads:
+
+> **On plan to reach 842.** 317 CP of that is still to earn — the finishes below
+> are what it would take.
+
+`target − currentTotal` is exactly what **TO GO** will now show. So the banner
+states the headline figure a second time, in prose, directly beneath it. Its other
+half — *"the finishes below are what it would take"* — is a caption for the ladder,
+which already has a heading saying *What you need*.
+
+Remove it. This is the same cut as the band names, the BFL chip and the
+displacement line: the app narrating a number it has already displayed.
+
+**Two callouts stay**, because each says something no figure does:
+
+| Callout | Why it earns its place |
+|---|---|
+| **Target reached** | Carries the "this is not a Worlds qualification" caveat, which PRD §7 requires and no number conveys |
+| **Direct invitation earned** | A qualifying finish that stands regardless of the totals — the one outcome the arithmetic cannot express |
+
+### 7.2 The season line should count what is overdue
+
+It currently reads *"3 of 10 events played · next: Baltimore on Sep 18"*, where
+"played" means a result was entered. An event whose date has passed with nothing
+entered is in neither number — not played, and not the next one coming.
+
+That is the one state a player most needs prompting about, and right now it is
+visible only by scrolling the plan until an amber row appears. The line should
+carry it:
+
+> 3 of 10 played · **2 need results** · next: Baltimore on Sep 18
+
+It costs nothing — the overdue test already exists for the row highlight — and it
+turns the season line from a progress readout into the page's only prompt to act.
