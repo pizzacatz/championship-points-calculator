@@ -447,7 +447,7 @@ Correctness first, because two of these are wrong rather than ugly:
 
 Everything in §1–§7 is decided. These are not.
 
-### 8.1 The assumed local field size has two incompatible jobs — **needs a decision**
+### 8.1 The assumed local field size applies to the ladder only  ✅ decided
 
 §2 sets a Challenge to 8 players and a Cup to 17, so the ladder will ask for a top
 4 and a top 8 and no deeper. That is right for *planning*.
@@ -464,12 +464,11 @@ The two uses need separating:
 | Which bands the ladder may ask for | the assumption — 8 and 17 |
 | Scoring a placement the player entered | **no assumption**; ask for the CP if the kicker cannot be resolved |
 
-Recommended: apply the assumption to the ladder only, and keep the existing
-behaviour for entered results — a local placement whose band depends on an unmet
-kicker asks for the CP rather than guessing. Otherwise the app quietly zeroes real
-points.
+**Decided: ladder only.** A placement entered against a local whose band depends
+on an unmet kicker still asks for the CP rather than guessing, exactly as it does
+today. The assumption never scores a result the player actually played.
 
-### 8.2 "3rd place" has no band to attach to — **needs confirming**
+### 8.2 The 3–4 band reads "Top 4"  ✅ decided
 
 The instruction was *"after top 4, use 1st place – 2nd place – 3rd place"*. Every
 payout table bands 3rd and 4th **together**, so there is no 3rd-place band in any
@@ -477,16 +476,14 @@ game. The rule as implemented reads:
 
 > Top 32 · Top 16 · Top 8 · **Top 4** · 2nd place · 1st place
 
-Which is a decision I made rather than one you gave me. The alternative is to name
-the 3–4 band *"3rd place"* — accurate as the best finish in it, but the ladder
-states the **worst** you can do, and the worst in that band is 4th.
+Confirmed as fine either way, so it stays "Top 4" — consistent with the rule above
+it, and the ladder states the worst you can do, which in that band is 4th.
 
-### 8.3 The catalog and the plan name the same event twice
+### 8.3 The catalog and the plan name the same event twice  ✅ leave it
 
-Open since v2 and raised twice without a decision. Checking Baltimore in the
-catalog makes "Baltimore" appear again in the plan list a few hundred pixels below.
-The alternative is that the catalog only ever shows what has *not* been added, so
-checking an event moves it down and unchecking is the remove action.
+Decided: leave as is. The catalog is a picker and the plan is a worksheet; the
+repeated name is the cost of keeping those two jobs separate, and the catalog is
+collapsed by default anyway.
 
 ### 8.4 Proposed in §5, never explicitly confirmed
 
