@@ -1,6 +1,6 @@
 {
   "season": 2027,
-  "retrievedAt": "2026-08-28T20:36:34.506Z",
+  "retrievedAt": "2026-08-28T20:44:18.896Z",
   "sources": {
     "season": "https://championships.pokemon.com/api/events.json",
     "tournamentIds": "https://rk9.gg/events/pokemon",
