@@ -8,3 +8,4 @@ test-results/
 docs/screenshot-*.png
 docs/live-*.png
 .cache/
+docs/v2-*.png
