@@ -1,0 +1,25 @@
+/* GeorgiaPlayEvents brand primitives — vendored copy.
+   Source of truth: GeorgiaPlayEventsAssets/docs/COLOR-SCHEME.md §8.3.
+   Do not redefine these values locally; refresh this file from the assets repo.
+
+   Rule: the gradient stops (--gpe-gold, --gpe-coral) are decorative — headlines,
+   rules, dividers. Only --gpe-peach and --gpe-burnt may carry interaction state. */
+:root {
+  /* headline gradient — decorative only, never an interaction surface */
+  --gpe-gold:   #ffd180;
+  --gpe-coral:  #ff9e80;
+  /* interactive accents */
+  --gpe-peach:  #ffb072;  /* dark mode  */
+  --gpe-burnt:  #a85526;  /* light mode */
+  --gpe-burnt-hover: #8f4520;
+  /* dark surfaces */
+  --gpe-black:   #0d0d0d; /* page    */
+  --gpe-surface: #1a1a1a; /* raised  */
+  --gpe-hover:   #2a2a2a;
+  /* light surfaces */
+  --gpe-cream:   #fff1df; /* page    */
+  --gpe-card:    #fdf7ef;
+  /* text */
+  --gpe-ink:     #2c211b; /* on light */
+  --gpe-paper:   #f8efe5; /* on dark  */
+}

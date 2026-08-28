@@ -1,0 +1,194 @@
+{
+  "season": 2027,
+  "rulesVersion": "2027.1.0",
+  "verifiedAt": "2026-08-28",
+  "verifiedBy": "Transcribed from the official championships.pokemon.com CMS payloads on 2026-08-28; each table checked twice against the page source.",
+  "sourceUrls": [
+    "https://championships.pokemon.com/en-us/about/",
+    "https://championships.pokemon.com/en-us/about/league-challenges-and-league-cup",
+    "https://championships.pokemon.com/en-us/about/pokemon-regional-and-special-championships",
+    "https://championships.pokemon.com/en-us/about/international-championships",
+    "https://championships.pokemon.com/en-us/about/pokemon-vgc-global-challenge-grand-challenge",
+    "https://championships.pokemon.com/en-us/about/pokemon-pgo-gbl-leaderboard-challenge",
+    "https://championships.pokemon.com/en-us/competitors/leaderboards"
+  ],
+  "ratingZones": [
+    { "id": "NA", "label": "US and Canada" },
+    { "id": "EU", "label": "Europe" },
+    { "id": "LA", "label": "Latin America" },
+    { "id": "AP", "label": "Oceania" },
+    { "id": "SO", "label": "Middle East and South Africa" }
+  ],
+  "invitationSlots": {
+    "VGC": { "NA": 90, "EU": 90, "LA": 60, "AP": 20, "SO": 5 },
+    "TCG": { "NA": 140, "EU": 140, "LA": 125, "AP": 20, "SO": 10 },
+    "GO":  { "NA": 75, "EU": 65, "LA": 65, "AP": 10, "SO": 5 }
+  },
+  "leaderboardProduct": { "VGC": "vg", "TCG": "tcg", "GO": "pgo" },
+  "leaderboardDivision": { "VGC": "masters", "TCG": "masters", "GO": "all" },
+  "directInviteNotes": [
+    "Regional Championships: 1st place in each age division earns a direct invitation.",
+    "Special Championships: 1st place in each age division earns a direct invitation.",
+    "International Championships: 1st through 4th place in each age division earn direct invitations.",
+    "Direct invites do not pass down — if a competitor who already holds a direct invite would earn another, the runner-up does not receive one.",
+    "The top four finishers from the previous season's World Championships also earn a direct invite."
+  ],
+  "placementTables": {
+    "leagueChallenge": [
+      { "minPlace": 1,  "maxPlace": 1,  "kicker": 0,  "points": 15 },
+      { "minPlace": 2,  "maxPlace": 2,  "kicker": 4,  "points": 12 },
+      { "minPlace": 3,  "maxPlace": 4,  "kicker": 8,  "points": 10 },
+      { "minPlace": 5,  "maxPlace": 8,  "kicker": 14, "points": 8 },
+      { "minPlace": 9,  "maxPlace": 16, "kicker": 25, "points": 6 },
+      { "minPlace": 17, "maxPlace": 32, "kicker": 48, "points": 4 }
+    ],
+    "leagueCup": [
+      { "minPlace": 1,  "maxPlace": 1,  "kicker": 0,   "points": 50 },
+      { "minPlace": 2,  "maxPlace": 2,  "kicker": 4,   "points": 40 },
+      { "minPlace": 3,  "maxPlace": 4,  "kicker": 8,   "points": 32 },
+      { "minPlace": 5,  "maxPlace": 8,  "kicker": 17,  "points": 25 },
+      { "minPlace": 9,  "maxPlace": 16, "kicker": 48,  "points": 20 },
+      { "minPlace": 17, "maxPlace": 32, "kicker": 80,  "points": 16 },
+      { "minPlace": 33, "maxPlace": 64, "kicker": 128, "points": 13 }
+    ],
+    "major": [
+      { "minPlace": 1,   "maxPlace": 1,    "kicker": 0,    "points": 350 },
+      { "minPlace": 2,   "maxPlace": 2,    "kicker": 4,    "points": 325 },
+      { "minPlace": 3,   "maxPlace": 4,    "kicker": 8,    "points": 300 },
+      { "minPlace": 5,   "maxPlace": 8,    "kicker": 17,   "points": 280 },
+      { "minPlace": 9,   "maxPlace": 16,   "kicker": 33,   "points": 200 },
+      { "minPlace": 17,  "maxPlace": 32,   "kicker": 65,   "points": 160 },
+      { "minPlace": 33,  "maxPlace": 64,   "kicker": 129,  "points": 120 },
+      { "minPlace": 65,  "maxPlace": 128,  "kicker": 257,  "points": 80 },
+      { "minPlace": 129, "maxPlace": 256,  "kicker": 513,  "points": 60 },
+      { "minPlace": 257, "maxPlace": 512,  "kicker": 1025, "points": 45 },
+      { "minPlace": 513, "maxPlace": 1024, "kicker": 2049, "points": 22 }
+    ],
+    "international": [
+      { "minPlace": 1,   "maxPlace": 1,    "kicker": 0,    "points": 500 },
+      { "minPlace": 2,   "maxPlace": 2,    "kicker": 4,    "points": 480 },
+      { "minPlace": 3,   "maxPlace": 4,    "kicker": 8,    "points": 420 },
+      { "minPlace": 5,   "maxPlace": 8,    "kicker": 17,   "points": 380 },
+      { "minPlace": 9,   "maxPlace": 16,   "kicker": 33,   "points": 300 },
+      { "minPlace": 17,  "maxPlace": 32,   "kicker": 65,   "points": 240 },
+      { "minPlace": 33,  "maxPlace": 64,   "kicker": 129,  "points": 180 },
+      { "minPlace": 65,  "maxPlace": 128,  "kicker": 257,  "points": 140 },
+      { "minPlace": 129, "maxPlace": 256,  "kicker": 513,  "points": 100 },
+      { "minPlace": 257, "maxPlace": 512,  "kicker": 1025, "points": 85 },
+      { "minPlace": 513, "maxPlace": 1024, "kicker": 2049, "points": 42 }
+    ],
+    "onlineChallenge": [
+      { "minPlace": 1,   "maxPlace": 1,    "kicker": 0,    "points": 75 },
+      { "minPlace": 2,   "maxPlace": 2,    "kicker": 8,    "points": 65 },
+      { "minPlace": 3,   "maxPlace": 4,    "kicker": 17,   "points": 54 },
+      { "minPlace": 5,   "maxPlace": 8,    "kicker": 33,   "points": 52 },
+      { "minPlace": 9,   "maxPlace": 16,   "kicker": 48,   "points": 25 },
+      { "minPlace": 17,  "maxPlace": 32,   "kicker": 65,   "points": 13 },
+      { "minPlace": 33,  "maxPlace": 64,   "kicker": 128,  "points": 11 },
+      { "minPlace": 65,  "maxPlace": 128,  "kicker": 257,  "points": 7 },
+      { "minPlace": 129, "maxPlace": 256,  "kicker": 513,  "points": 5 },
+      { "minPlace": 257, "maxPlace": 512,  "kicker": 1025, "points": 4 },
+      { "minPlace": 513, "maxPlace": 1024, "kicker": 2049, "points": 3 }
+    ]
+  },
+  "eventTypes": [
+    {
+      "id": "league-challenge",
+      "label": "League Challenge",
+      "shortLabel": "Challenge",
+      "games": ["VGC", "TCG", "GO"],
+      "scale": "local",
+      "bflBucket": "leagueChallenge",
+      "bflBucketLabel": "League Challenge",
+      "bestFinishLimit": 4,
+      "table": "leagueChallenge",
+      "manualTemplate": true,
+      "directInvitePlacesThrough": 0,
+      "note": "Pokémon Challenges award the same points and share this Best Finish Limit."
+    },
+    {
+      "id": "league-cup",
+      "label": "League Cup",
+      "shortLabel": "Cup",
+      "games": ["VGC", "TCG", "GO"],
+      "scale": "local",
+      "bflBucket": "leagueCup",
+      "bflBucketLabel": "League Cup",
+      "bestFinishLimit": 4,
+      "table": "leagueCup",
+      "manualTemplate": true,
+      "directInvitePlacesThrough": 0,
+      "note": "Pokémon Cups award the same points and share this Best Finish Limit."
+    },
+    {
+      "id": "regional",
+      "label": "Regional Championship",
+      "shortLabel": "Regional",
+      "games": ["VGC", "TCG", "GO"],
+      "scale": "major",
+      "bflBucket": "major",
+      "bflBucketLabel": "Regional / Special / International",
+      "bestFinishLimit": 5,
+      "table": "major",
+      "manualTemplate": true,
+      "directInvitePlacesThrough": 1,
+      "note": "Shares one five-result Best Finish Limit with Special and International Championships."
+    },
+    {
+      "id": "special",
+      "label": "Special Championship",
+      "shortLabel": "Special",
+      "games": ["VGC", "TCG", "GO"],
+      "scale": "major",
+      "bflBucket": "major",
+      "bflBucketLabel": "Regional / Special / International",
+      "bestFinishLimit": 5,
+      "table": "major",
+      "manualTemplate": true,
+      "directInvitePlacesThrough": 1,
+      "note": "Same payout table as a Regional Championship; prizing is at the organizer's discretion."
+    },
+    {
+      "id": "international",
+      "label": "International Championship",
+      "shortLabel": "International",
+      "games": ["VGC", "TCG", "GO"],
+      "scale": "major",
+      "bflBucket": "major",
+      "bflBucketLabel": "Regional / Special / International",
+      "bestFinishLimit": 5,
+      "table": "international",
+      "manualTemplate": true,
+      "directInvitePlacesThrough": 4,
+      "note": "Shares the five-result major Best Finish Limit. The four finalists in each age division earn direct invitations."
+    },
+    {
+      "id": "vgc-global-challenge",
+      "label": "Global Challenge / Grand Challenge",
+      "shortLabel": "Global Challenge",
+      "games": ["VGC"],
+      "scale": "online",
+      "bflBucket": "onlineVgc",
+      "bflBucketLabel": "Global / Grand Challenge",
+      "bestFinishLimit": 4,
+      "table": "onlineChallenge",
+      "manualTemplate": true,
+      "directInvitePlacesThrough": 0,
+      "note": "Global and Grand Challenges share one combined Best Finish Limit of 4. Points are awarded on final ranking of eligible competitors per rating zone."
+    },
+    {
+      "id": "go-leaderboard-challenge",
+      "label": "GO Battle League Leaderboard Challenge",
+      "shortLabel": "GBL Leaderboard",
+      "games": ["GO"],
+      "scale": "online",
+      "bflBucket": "onlineGo",
+      "bflBucketLabel": "GBL Leaderboard Challenge",
+      "bestFinishLimit": 4,
+      "table": "onlineChallenge",
+      "manualTemplate": true,
+      "directInvitePlacesThrough": 0,
+      "note": "Points are awarded on final global GO Battle League leaderboard placement at the end of each in-game Season. Available to TPCi rating zones only."
+    }
+  ]
+}

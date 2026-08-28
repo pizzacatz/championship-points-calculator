@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Championship Points Calculator — 2027 Play! Pokémon</title>
+    <meta name="description" content="Plan a 2027 Play! Pokémon Worlds run. Applies event kickers and Best Finish Limits to VGC, TCG and Pokémon GO Masters results, shows what counts and what gets displaced, and generates paths to your target." />
+    <meta name="color-scheme" content="light dark" />
+
+    <link rel="icon" href="/championship-points-calculator/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/championship-points-calculator/apple-touch-icon.png" />
+    <link rel="manifest" href="/championship-points-calculator/manifest.webmanifest" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Championship Points Calculator" />
+    <meta property="og:description" content="Kicker- and Best-Finish-Limit-aware Championship Point planning for the 2027 Play! Pokémon season." />
+    <meta property="og:image" content="https://pizzacatz.github.io/championship-points-calculator/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;650;700&display=swap" rel="stylesheet" />
+
+    <script>
+      // Resolve the theme before first paint so there is no flash, and so the
+      // stylesheet needs no prefers-color-scheme block. Matches TeamSheet.
+      (function () {
+        try {
+          var saved = localStorage.getItem('cpc.theme');
+          var dark = saved ? saved === 'dark'
+            : window.matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        } catch (e) {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <p style="font-family: system-ui, sans-serif; padding: 2rem; max-width: 40rem; margin: 0 auto;">
+        The Championship Points Calculator needs JavaScript: every total is computed in your
+        browser, and nothing is stored on a server.
+      </p>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

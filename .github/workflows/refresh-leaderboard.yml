@@ -1,0 +1,37 @@
+name: Refresh leaderboard boundary
+
+# The live Worlds-invitation boundary is read once a day and committed as a
+# static snapshot, so the deployed site stays a dependency-free static build
+# with no runtime backend. A failed refresh keeps the last valid snapshot.
+on:
+  schedule:
+    - cron: '17 9 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Read the official leaderboard
+        run: node scripts/refresh-leaderboard.mjs
+
+      - name: Commit the snapshot if it changed
+        run: |
+          if git diff --quiet -- public/data/leaderboard-snapshot.json; then
+            echo "boundary unchanged; nothing to commit"
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/leaderboard-snapshot.json
+          git commit -m "chore: refresh live leaderboard boundary"
+          git push

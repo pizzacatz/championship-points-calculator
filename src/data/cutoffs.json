@@ -1,0 +1,105 @@
+{
+  "season": 2026,
+  "description": "Final 2026-season Championship Point total held by the player at the last Masters Worlds-invitation slot in each rating zone. Read from the official leaderboard.",
+  "sourceUrl": "https://championships.pokemon.com/en-us/competitors/leaderboards",
+  "periodGuid": "a0a3bb4a4c7a75628526ebbc7eb61d26",
+  "retrievedAt": "2026-08-28T05:32:48.738Z",
+  "boundaries": {
+    "VGC": {
+      "NA": {
+        "rank": 90,
+        "championshipPoints": 842,
+        "calculationDate": "2026-07-06T19:00:36.872Z",
+        "totalRanked": 3005
+      },
+      "EU": {
+        "rank": 90,
+        "championshipPoints": 799,
+        "calculationDate": "2026-07-06T19:00:36.872Z",
+        "totalRanked": 2479
+      },
+      "LA": {
+        "rank": 60,
+        "championshipPoints": 797,
+        "calculationDate": "2026-07-06T19:00:36.872Z",
+        "totalRanked": 1396
+      },
+      "AP": {
+        "rank": 20,
+        "championshipPoints": 808,
+        "calculationDate": "2026-07-06T19:00:36.872Z",
+        "totalRanked": 322
+      },
+      "SO": {
+        "rank": 5,
+        "championshipPoints": 257,
+        "calculationDate": "2026-07-06T19:00:36.872Z",
+        "totalRanked": 27
+      }
+    },
+    "TCG": {
+      "NA": {
+        "rank": 140,
+        "championshipPoints": 738,
+        "calculationDate": "2026-07-06T19:00:36.872Z",
+        "totalRanked": 25540
+      },
+      "EU": {
+        "rank": 140,
+        "championshipPoints": 653,
+        "calculationDate": "2026-07-06T19:00:36.872Z",
+        "totalRanked": 16799
+      },
+      "LA": {
+        "rank": 125,
+        "championshipPoints": 627,
+        "calculationDate": "2026-07-06T19:00:36.872Z",
+        "totalRanked": 15437
+      },
+      "AP": {
+        "rank": 20,
+        "championshipPoints": 740,
+        "calculationDate": "2026-07-06T19:00:36.872Z",
+        "totalRanked": 1594
+      },
+      "SO": {
+        "rank": 10,
+        "championshipPoints": 420,
+        "calculationDate": "2026-07-06T19:00:36.872Z",
+        "totalRanked": 320
+      }
+    },
+    "GO": {
+      "NA": {
+        "rank": 75,
+        "championshipPoints": 744,
+        "calculationDate": "2026-07-06T19:00:36.872Z",
+        "totalRanked": 1146
+      },
+      "EU": {
+        "rank": 65,
+        "championshipPoints": 614,
+        "calculationDate": "2026-07-06T19:00:36.872Z",
+        "totalRanked": 737
+      },
+      "LA": {
+        "rank": 65,
+        "championshipPoints": 640,
+        "calculationDate": "2026-07-06T19:00:36.872Z",
+        "totalRanked": 1214
+      },
+      "AP": {
+        "rank": 10,
+        "championshipPoints": 666,
+        "calculationDate": "2026-07-06T19:00:36.872Z",
+        "totalRanked": 102
+      },
+      "SO": {
+        "rank": 5,
+        "championshipPoints": 210,
+        "calculationDate": "2026-07-06T19:00:36.872Z",
+        "totalRanked": 26
+      }
+    }
+  }
+}

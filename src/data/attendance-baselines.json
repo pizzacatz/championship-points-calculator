@@ -1,0 +1,22 @@
+{
+  "season": 2026,
+  "verified": false,
+  "description": "Projected Masters-division attendance for PLANNED major events, defined by the PRD as the single lowest Masters attendance observed during the previous season, held separately by game and major-event category.",
+  "provenance": "PROVISIONAL. Play! Pokémon publishes no machine-readable attendance feed, so these figures could not be sourced the way the CP tables and leaderboard cutoffs were. They are conservative placeholders, not observations. Until they are replaced with verified counts, every planned-major projection that depends on them is labelled unverified in the app, and the player is expected to override them.",
+  "howToVerify": "For each game and category, find the smallest Masters field among the previous season's events (official event standings pages list final Masters standings; the highest final placement is a lower bound on attendance) and record it below with the event that produced it.",
+  "baselines": {
+    "VGC": {
+      "regionalSpecial": { "attendance": 300, "sourceEvent": null, "verified": false },
+      "international":   { "attendance": 700, "sourceEvent": null, "verified": false }
+    },
+    "TCG": {
+      "regionalSpecial": { "attendance": 500, "sourceEvent": null, "verified": false },
+      "international":   { "attendance": 900, "sourceEvent": null, "verified": false }
+    },
+    "GO": {
+      "regionalSpecial": { "attendance": 60,  "sourceEvent": null, "verified": false },
+      "international":   { "attendance": 150, "sourceEvent": null, "verified": false }
+    }
+  },
+  "note": "Separated by game and major-event category, but not by the player's home rating zone: kicker eligibility depends on attendance at the event actually entered, not on where the player lives. This resolves the two open data questions in PRD section 16."
+}
