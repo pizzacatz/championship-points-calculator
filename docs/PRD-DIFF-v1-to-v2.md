@@ -92,9 +92,15 @@ Masters attendance observed during the previous season"*, and §16 Q2 recommende
 
 Both were wrong, and the data says so.
 
-**Lowest → median.** Pooling Specials into a zone introduces low outliers. Oceania's
-*mean* of 206 sits below three of its four actual events, because of one 43-player
-Auckland Special. The median of 244 sits inside the real cluster.
+**Lowest → median.** Pooling Specials into a zone introduces low outliers, and the
+mean cannot survive them. Oceania ran four events — 43, 210, 278, 291 — and their
+*mean* of 206 sits below three of the four, dragged there by one 43-player Auckland
+Special. The median of 210 is inside the real cluster. North America is the same
+shape: nine events between 542 and 1,013 plus a single 99-player San Juan Special,
+mean 669, median 705.
+
+(Medians round **down** on an even count, matching the conservative convention used
+elsewhere.)
 
 **Global → per zone.** v1 applied a single baseline to every planned Regional:
 
