@@ -140,10 +140,6 @@ export function EventCatalog({
               })}
             </ul>
           )}
-          <p className="hint online-note">
-            Published by month, without dates. Global and Grand Challenges share one
-            Best Finish Limit of 4.
-          </p>
         </div>
       )}
 
