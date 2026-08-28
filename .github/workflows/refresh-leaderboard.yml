@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   refresh:
@@ -25,13 +26,24 @@ jobs:
         run: node scripts/refresh-leaderboard.mjs
 
       - name: Commit the snapshot if it changed
+        id: commit
         run: |
           if git diff --quiet -- public/data/leaderboard-snapshot.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "boundary unchanged; nothing to commit"
-            exit 0
+          else
+            git config user.name  "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add public/data/leaderboard-snapshot.json
+            git commit -m "chore: refresh live leaderboard boundary"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data/leaderboard-snapshot.json
-          git commit -m "chore: refresh live leaderboard boundary"
-          git push
+
+      # Commits made with GITHUB_TOKEN do not trigger other workflows, so without
+      # this the refreshed boundary sits in git and never reaches the live site.
+      - name: Trigger the Pages deploy
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy.yml --ref "${GITHUB_REF_NAME}"

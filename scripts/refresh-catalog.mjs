@@ -224,6 +224,20 @@ const main = async () => {
     ...await past('VGC', 'limitlessvgc.com', 3),
     ...await past('TCG', 'limitlesstcg.com', 4),
   ];
+  // Guards, because the failure that shipped last time was silent: the catalog
+  // looked full, it was just full of the wrong season.
+  if (!up.length) throw new Error('no events for the season — refusing to publish an empty catalog');
+
+  const windowStart = `${SEASON - 1}-09-01`;   // a season runs September ...
+  const windowEnd = `${SEASON}-06-30`;         // ... to the end of June
+  const strays = up.filter((e) => e.date < windowStart || e.date > windowEnd);
+  if (strays.length) {
+    throw new Error(
+      `${strays.length} event(s) fall outside the ${SEASON} season (${windowStart}..${windowEnd}): `
+      + strays.slice(0, 5).map((e) => `${e.name} ${e.date}`).join('; '),
+    );
+  }
+
   mkdirSync(dirname(OUT), { recursive: true });
   writeFileSync(OUT, JSON.stringify({
     season: SEASON,

@@ -1,0 +1,86 @@
+name: Refresh event catalog
+
+# Keeps the list of Regionals, Special Championships and Internationals current
+# for the season in progress. Same framework as pokemon-majors-map: scrape on a
+# schedule, never publish a failed scrape, commit only real changes, and kick the
+# deploy explicitly afterwards.
+on:
+  schedule:
+    # Daily, off the hour to be polite to the sources.
+    - cron: '41 9 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/refresh-events.yml'
+      - 'scripts/refresh-catalog.mjs'
+
+permissions:
+  contents: write
+  issues: write
+  actions: write
+
+concurrency:
+  group: refresh-events
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Read the published season
+        id: scrape
+        run: node scripts/refresh-catalog.mjs
+        continue-on-error: true
+
+      # A failed scrape must never publish: the last good catalog stays live and
+      # we raise an issue instead of quietly shipping a gap.
+      - name: File an issue on failure
+        if: steps.scrape.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = 'Event catalog refresh failed — the list may be stale'
+            const { data: issues } = await github.rest.issues.listForRepo({
+              ...context.repo, state: 'open', labels: 'scraper',
+            })
+            const body = `The daily catalog refresh failed on ${new Date().toISOString()}.\n\n`
+              + `See the [workflow run](${context.serverUrl}/${context.repo.owner}/`
+              + `${context.repo.repo}/actions/runs/${context.runId}). `
+              + `The site keeps serving the last good catalog until this is fixed.`
+            const existing = issues.find(i => i.title === title)
+            if (existing) {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: existing.number, body })
+            } else {
+              await github.rest.issues.create({ ...context.repo, title, body, labels: ['scraper'] })
+            }
+            core.setFailed('Catalog refresh failed; issue filed.')
+
+      - name: Commit if the schedule changed
+        id: commit
+        if: steps.scrape.outcome == 'success'
+        run: |
+          if git diff --quiet -- src/data/events-catalog.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "no change"
+          else
+            git config user.name  "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add src/data/events-catalog.json
+            git commit -m "data: refresh event catalog ($(date -u +%F))"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Commits made with GITHUB_TOKEN do not trigger other workflows, so the
+      # deploy has to be kicked by hand or the new data never reaches the site.
+      - name: Trigger the Pages deploy
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy.yml --ref "${GITHUB_REF_NAME}"

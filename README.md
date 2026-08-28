@@ -151,6 +151,7 @@ npm run dev        # http://localhost:5173/
 | `npm run build` | typecheck, then production build to `dist/` |
 | `npm run refresh:leaderboard` | re-read the live boundary from the official API |
 | `npm run refresh:attendance` | rebuild the attendance baselines from Limitless and Liquipedia |
+| `npm run refresh:catalog` | rebuild the season's Regional / Special / International list |
 
 The end-to-end smoke test drives the built app in a real browser:
 
@@ -197,6 +198,23 @@ possible, and it is why the rules live in JSON rather than in components.
 The site is served from `points.georgiaplayevents.com` at the domain root — `public/CNAME`
 holds the custom domain, and `vite.config.ts` therefore builds with `base: '/'`. The DNS
 record is a `CNAME` from `points` to `pizzacatz.github.io`.
+
+Two scheduled workflows keep the data current, both following the framework
+[pokemon-majors-map](https://github.com/pizzacatz/pokemon-majors-map) uses: scrape
+on a schedule, never publish a failed scrape, commit only real changes, and kick
+the deploy explicitly afterwards — commits made with `GITHUB_TOKEN` do not trigger
+other workflows, so without that last step refreshed data sits in git and never
+reaches the site.
+
+| Workflow | Refreshes |
+|---|---|
+| `refresh-events.yml` | the season's Regionals, Specials and Internationals |
+| `refresh-leaderboard.yml` | the live Worlds-invitation boundary |
+
+`refresh-catalog.mjs` refuses to publish a catalog that is empty, or that contains
+an event outside the season window — September to the end of June. That guard
+exists because the first version of this failed silently: the list looked full, it
+was just full of last season's finished events.
 
 The site is fully static. A scheduled GitHub Action reads the official leaderboard
 once a day and commits a snapshot, so there is no runtime backend and no user account
