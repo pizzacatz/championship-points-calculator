@@ -136,7 +136,8 @@ export default function App() {
     if (add) {
       store.addEvent({
         ...blankEvent(typeId), name: event.name, date: event.date,
-        displayDate: event.displayDate, catalogName: event.name,
+        displayDate: event.datePrecision === 'month' ? event.displayDate : undefined,
+        catalogName: event.name,
       });
     }
     else {
@@ -163,7 +164,8 @@ export default function App() {
       const fresh = items.filter((i) => !addedNames.has(i.event.name));
       store.addEvents(fresh.map((i) => ({
         ...blankEvent(i.typeId), name: i.event.name, date: i.event.date,
-        displayDate: i.event.displayDate, catalogName: i.event.name,
+        displayDate: i.event.datePrecision === 'month' ? i.event.displayDate : undefined,
+        catalogName: i.event.name,
       })));
     } else {
       const ids = path.events
@@ -273,7 +275,7 @@ export default function App() {
           <p className="season-line">{seasonLine}</p>
 
           <p className="goal-line">
-            <label htmlFor="goal">Championship Points Goal:</label>
+            <label htmlFor="goal">CP Goal:</label>
             <input id="goal" type="number" min={0} step={1} inputMode="numeric"
               value={path.targetOverride ?? target ?? ''}
               onChange={(e) => {
@@ -285,7 +287,7 @@ export default function App() {
               title={previousCutoff == null
                 ? 'No previous-season figure for this game and rating zone'
                 : `${cutoffs.season} final cutoff — rank ${invitationRank ?? '?'} in ${zoneLabel}`}>
-              Last season
+              {cutoffs.season}
             </button>
             {/* Present but disabled until the season's leaderboard opens: absent,
                 a player wonders whether the feature exists at all. */}
@@ -294,7 +296,7 @@ export default function App() {
               title={liveBoundary == null
                 ? `The ${rules.season} leaderboard has not opened yet`
                 : `Live boundary — rank ${invitationRank ?? '?'} in ${zoneLabel}`}>
-              This season
+              {rules.season}
             </button>
           </p>
 

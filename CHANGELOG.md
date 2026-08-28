@@ -3,6 +3,30 @@
 All dates 2026-08-28 — the project was specified, built, reviewed and rebuilt in
 a single session.
 
+## 2.5.0
+
+- **Dates line up.** Every date in the app is now ISO — one format, ten
+  characters — and rendered with `tabular-nums`. The column was ragged because
+  the body face uses proportional digits, so `1` is narrower than `8` and
+  `2027-01-15` did not match `2026-09-18`. Fixed-width figures plus a fixed
+  column give one left edge and one right edge across all 38 dates.
+- **Global Challenges read `2026-09-00`.** They are published by month, so the
+  `00` says the day is not announced yet while keeping the same width as
+  everything else.
+- **The CP and Place fields are four characters wide.** They looked like six
+  because a `type="number"` input carries spinner arrows worth ~15px before any
+  text. The arrows are gone — the values are typed, never nudged — and the field
+  is 46px, which fits `1024` exactly.
+- **`Championship Points Goal:` becomes `CP Goal:`**, its field narrows to four
+  characters, and the fill buttons read **2026** and **2027** rather than *Last
+  season* and *This season*.
+- **Mobile plan rows** put the remove × at the top right, level with the event
+  title, and the earned CP at the bottom right — the two things a row is about on
+  opposite corners, with the destructive control no longer beside the number.
+- **Long event names break at "Championships"** on a narrow screen. Every space
+  before that word is bound, leaving it as the only break opportunity; CSS alone
+  cannot express "break only here".
+
 ## 2.4.0
 
 - **Four figures at the top: CP NOW · TO GO · GOAL · AVAILABLE.**

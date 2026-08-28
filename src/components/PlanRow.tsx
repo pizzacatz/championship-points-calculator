@@ -18,12 +18,13 @@ const intOrNull = (v: string): number | null => {
   return Number.isFinite(n) ? Math.trunc(n) : null;
 };
 
-const shortDate = (iso: string | null) => {
-  if (!iso) return null;
-  const d = new Date(`${iso}T00:00:00`);
-  return Number.isNaN(d.getTime()) ? iso
-    : d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
-};
+/**
+ * Dates read as ISO throughout — one format, one width, ten characters — because
+ * a column of "Sep 18" and "June 5" cannot be made to line up. Events published
+ * by month only carry their own form, `2026-09-00`, which is the same width.
+ */
+const dateLabel = (e: { date: string | null; displayDate?: string }) =>
+  e.displayDate ?? e.date ?? null;
 
 export function PlanRow({
   result, rule, bfl, overdue, needsDate, onChange, onRemove,
@@ -42,13 +43,20 @@ export function PlanRow({
   const e = result.event;
   const badge = BADGE[result.reason];
   const title = e.name?.trim() || rule.label;
-  const date = e.displayDate ?? shortDate(e.date);
+  const date = dateLabel(e);
+  // On a narrow screen a long event name has to break somewhere, and the natural
+  // seam is before "Championships". Binding the earlier spaces leaves that as the
+  // only break opportunity, which CSS alone cannot express.
+  const wrapTitle = (t: string) => {
+    const at = t.lastIndexOf(' Championship');
+    return at < 0 ? t : t.slice(0, at).replace(/ /g, '\u00a0') + t.slice(at);
+  };
 
   return (
     <li className={`plan-row ${result.error ? 'invalid' : ''} ${overdue ? 'overdue' : ''}`}>
       <div className="plan-main">
         <span className="plan-title">
-          {title}
+          {wrapTitle(title)}
           {date && <span className="plan-date">{date}</span>}
         </span>
 

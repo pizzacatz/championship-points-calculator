@@ -1,6 +1,6 @@
 {
   "season": 2027,
-  "retrievedAt": "2026-08-28T17:51:43.370Z",
+  "retrievedAt": "2026-08-28T20:08:59.134Z",
   "sources": {
     "season": "https://championships.pokemon.com/api/events.json",
     "tournamentIds": "https://rk9.gg/events/pokemon",
@@ -24,21 +24,6 @@
       }
     },
     {
-      "name": "Brisbane Pokémon Regional Championships",
-      "date": "2026-09-26",
-      "endDate": "2026-09-27",
-      "displayDate": "Sept. 26–27",
-      "location": "Brisbane, Australia",
-      "zone": "AP",
-      "category": "regional",
-      "status": "upcoming",
-      "rk9": {
-        "GO": "BR003-6CxLSFjQiTHuAh",
-        "TCG": "BR001-5YdU57MmWxTxaY",
-        "VGC": "BR002-IU5yO1W76UpdyA"
-      }
-    },
-    {
       "name": "Frankfurt Pokémon Regional Championships",
       "date": "2026-09-26",
       "endDate": "2026-09-27",
@@ -51,6 +36,21 @@
         "GO": "FR003-metsuLQs6Ef1M3",
         "TCG": "FR001-qWsas6LjddfVxo",
         "VGC": "FR002-fiunEHp9wx4mh4"
+      }
+    },
+    {
+      "name": "Brisbane Pokémon Regional Championships",
+      "date": "2026-09-26",
+      "endDate": "2026-09-27",
+      "displayDate": "Sept. 26–27",
+      "location": "Brisbane, Australia",
+      "zone": "AP",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "BR003-6CxLSFjQiTHuAh",
+        "TCG": "BR001-5YdU57MmWxTxaY",
+        "VGC": "BR002-IU5yO1W76UpdyA"
       }
     },
     {
@@ -393,7 +393,7 @@
     {
       "name": "Global Challenge — September 2026",
       "date": "2026-09-30",
-      "displayDate": "September 2026",
+      "displayDate": "2026-09-00",
       "datePrecision": "month",
       "zone": null,
       "category": "online",
@@ -407,7 +407,7 @@
     {
       "name": "Global Challenge — October 2026",
       "date": "2026-10-31",
-      "displayDate": "October 2026",
+      "displayDate": "2026-10-00",
       "datePrecision": "month",
       "zone": null,
       "category": "online",
@@ -421,7 +421,7 @@
     {
       "name": "Global Challenge — December 2026",
       "date": "2026-12-31",
-      "displayDate": "December 2026",
+      "displayDate": "2026-12-00",
       "datePrecision": "month",
       "zone": null,
       "category": "online",
@@ -435,7 +435,7 @@
     {
       "name": "Global Challenge — January 2027",
       "date": "2027-01-31",
-      "displayDate": "January 2027",
+      "displayDate": "2027-01-00",
       "datePrecision": "month",
       "zone": null,
       "category": "online",
@@ -449,7 +449,7 @@
     {
       "name": "Global Challenge — March 2027",
       "date": "2027-03-31",
-      "displayDate": "March 2027",
+      "displayDate": "2027-03-00",
       "datePrecision": "month",
       "zone": null,
       "category": "online",
@@ -463,7 +463,7 @@
     {
       "name": "Global Challenge — April 2027",
       "date": "2027-04-30",
-      "displayDate": "April 2027",
+      "displayDate": "2027-04-00",
       "datePrecision": "month",
       "zone": null,
       "category": "online",

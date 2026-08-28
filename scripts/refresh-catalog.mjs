@@ -105,7 +105,9 @@ async function globalChallenges() {
     out.push({
       name: `${m[3]} — ${m[1]} ${year}`,
       date: `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`,
-      displayDate: `${m[1]} ${year}`,
+      // "2026-09-00": the 00 says the day is not announced yet, and keeps the
+      // date the same width as every other one in the catalog.
+      displayDate: `${year}-${String(monthIndex + 1).padStart(2, '0')}-00`,
       datePrecision: 'month',
       zone: null,
       category: 'online',

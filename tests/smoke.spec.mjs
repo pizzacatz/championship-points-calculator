@@ -38,7 +38,37 @@ await check('the totals live in the sticky header', async () => {
 });
 
 await check('the goal defaults to the previous-season cutoff', async () => {
-  assert.equal(await page.getByLabel('Championship Points Goal:').inputValue(), '842');
+  assert.equal(await page.getByLabel('CP Goal:').inputValue(), '842');
+});
+
+await check('the goal buttons name their seasons', async () => {
+  const line = page.locator('.goal-line');
+  assert.equal(await line.getByRole('button', { name: '2026' }).isEnabled(), true);
+  assert.equal(await line.getByRole('button', { name: '2027' }).isDisabled(), true);
+});
+
+await check('every catalog date is ISO and the column lines up', async () => {
+  const cat = page.locator('section', { has: page.getByRole('heading', { name: 'Events' }) });
+  await cat.getByRole('button', { name: 'Expand all' }).click();
+  await page.waitForTimeout(400);
+  const r = await page.evaluate(() => {
+    const ds = [...document.querySelectorAll('.zone-date')];
+    const text = ds.map((d) => d.textContent.trim());
+    return {
+      nonIso: text.filter((t) => !/^\d{4}-\d{2}-\d{2}$/.test(t)),
+      // A month-only event reads 2026-09-00: same ten characters, day unannounced.
+      monthOnly: text.filter((t) => t.endsWith('-00')).length,
+      lefts: [...new Set(ds.map((d) => Math.round(d.getBoundingClientRect().left)))].length,
+      rights: [...new Set(ds.map((d) => Math.round(d.getBoundingClientRect().right)))].length,
+      tabular: getComputedStyle(ds[0]).fontVariantNumeric,
+    };
+  });
+  assert.deepEqual(r.nonIso, [], 'non-ISO dates present');
+  assert.ok(r.monthOnly >= 6, 'Global Challenges should read YYYY-MM-00');
+  assert.equal(r.lefts, 1, `dates start at ${r.lefts} different x positions`);
+  assert.equal(r.rights, 1, `dates end at ${r.rights} different x positions`);
+  assert.match(r.tabular, /tabular-nums/, 'dates need fixed-width figures to align');
+  await cat.getByRole('button', { name: 'Collapse all' }).click();
 });
 
 await check('four figures, and TO GO measured against banked CP', async () => {
@@ -48,13 +78,6 @@ await check('four figures, and TO GO measured against banked CP', async () => {
   }
   // Nothing banked, so TO GO is the whole goal — not "reached" off a projection.
   assert.equal((await stat('To go')).trim(), '842');
-});
-
-await check('the goal can be filled from last season, and this season is disabled', async () => {
-  const line = page.locator('.goal-line');
-  assert.equal(await line.getByRole('button', { name: 'Last season' }).isEnabled(), true);
-  // The 2027 leaderboard period is not published, so there is nothing to read.
-  assert.equal(await line.getByRole('button', { name: 'This season' }).isDisabled(), true);
 });
 
 await check('the zone counts all line up on the word "of"', async () => {
@@ -191,6 +214,19 @@ await check('a row asks for one number and nothing else', async () => {
   assert.equal(inputs, 2, `expected CP and Place only, got ${inputs}`);
 });
 
+await check('the CP field is four characters wide, with no spinner', async () => {
+  const r = await page.evaluate(() => {
+    const i = document.querySelector('.plan-inputs input');
+    i.value = '1024'; i.dispatchEvent(new Event('input', { bubbles: true }));
+    return { w: Math.round(i.getBoundingClientRect().width),
+             spinner: getComputedStyle(i).appearance,
+             fits: i.scrollWidth <= i.clientWidth + 1 };
+  });
+  assert.ok(r.w < 56, `field is ${r.w}px — wider than four characters need`);
+  assert.equal(r.spinner, 'textfield', 'number spinners still eating width');
+  assert.ok(r.fits, 'four digits do not fit');
+});
+
 // --- Global and Grand Challenges -----------------------------------------
 await check('VGC gets a Global & Grand Challenge section, by month', async () => {
   const gc = page.locator('.zone', { hasText: 'Global & Grand Challenges' });
@@ -200,8 +236,9 @@ await check('VGC gets a Global & Grand Challenge section, by month', async () =>
     await page.waitForTimeout(300);
   }
   const t = await gc.innerText();
-  for (const m of ['September 2026', 'October 2026', 'December 2026',
-                   'January 2027', 'March 2027', 'April 2027']) {
+  // Published by month, so the day reads 00 — same ten characters as every other date.
+  for (const m of ['2026-09-00', '2026-10-00', '2026-12-00',
+                   '2027-01-00', '2027-03-00', '2027-04-00']) {
     assert.match(t, new RegExp(m), `missing ${m}`);
   }
 });
@@ -312,6 +349,25 @@ await check('the plan can be filtered by event type, without changing a total', 
   await filter.getByRole('button', { name: /^All/ }).click();
   await page.waitForTimeout(400);
   assert.equal(await page.locator('.plan-row').count(), rows);
+});
+
+await check('a long event name breaks at "Championships" on a narrow screen', async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.waitForTimeout(400);
+  const lines = await page.evaluate(() => {
+    // Pick a row that actually has "Championships" in its name.
+    const t = [...document.querySelectorAll('.plan-title')]
+      .find((el) => /Championship/.test(el.textContent));
+    // Every space before "Championships" is bound, so it is the only break.
+    if (!t) return { missing: true };
+    return { text: t.textContent, nbsp: (t.textContent.match(/\u00a0/g) || []).length,
+             overflow: t.scrollWidth - t.clientWidth };
+  });
+  assert.ok(!lines.missing, 'no Championships row in the plan to check');
+  assert.ok(lines.nbsp > 0, 'no bound spaces — the title can break anywhere');
+  assert.ok(lines.overflow <= 1, `title overflows its column by ${lines.overflow}px`);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.waitForTimeout(300);
 });
 
 await check('the season line names events needing results', async () => {

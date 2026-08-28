@@ -92,7 +92,12 @@ export function EventCatalog({
                       <label htmlFor={id}>
                         {/* No category chip: "…International Championships" already says so. */}
                         <span className="ev-name">{event.name}</span>
-                        <span className="zone-date">{event.date}</span>
+                        {/* ISO throughout: one format, one width, so the column
+                            aligns. Only month-precision events differ, and their
+                            2026-09-00 form is the same ten characters. */}
+                        <span className="zone-date">
+                          {event.datePrecision === 'month' ? event.displayDate : event.date}
+                        </span>
                       </label>
                     </li>
                   );
