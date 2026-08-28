@@ -45,11 +45,8 @@ export type SeasonRules = {
   eventTypes: EventTypeRule[];
 };
 
-export type ResultStatus = 'completed' | 'planned';
-
 export type PlannedEvent = {
   id: string;
-  status: ResultStatus;
   name: string;
   eventTypeId: string;
   date: string | null;
@@ -57,24 +54,52 @@ export type PlannedEvent = {
   placement: number | null;
   /** CP actually awarded (completed) or the hypothetical outcome (planned). */
   awardedPoints: number | null;
-  /** Actual players in this game/division, when the player supplied it. */
+  /** Actual players, when known — read from rk9 for majors, never asked for. */
   attendance: number | null;
-  committed: boolean;
-  /** Best placement the path generator may assume for this event. */
-  bestFinishConstraint: number | null;
-  notes: string;
+  /** Set when the row came from the published catalog rather than manual entry. */
+  catalogName?: string;
 };
+
+export type ZoneBaseline = { attendance: number; events: number; basis: string };
+export type IcBaseline = { attendance: number; zone: RatingZoneId; seasons: number; basis: string };
 
 export type AttendanceBaselines = {
   season: number;
-  verified: boolean;
+  previousSeason: number;
+  retrievedAt: string;
+  statistic: 'median';
   description: string;
   provenance: string;
-  howToVerify: string;
-  baselines: Record<Game, Record<'regional' | 'special' | 'international', {
-    attendance: number | null; sourceEvent: string | null; verified: boolean;
-  }>>;
+  onlineEvents: string;
+  observations: Record<string, Record<string, { events: number; min: number; max: number }>>;
+  baselines: Record<Game, {
+    zones: Partial<Record<RatingZoneId, ZoneBaseline>>;
+    internationals: Record<string, IcBaseline>;
+    unavailable?: boolean;
+  }>;
+};
+
+/** One published major, offered by the catalog checklist. */
+export type CatalogEvent = {
+  name: string;
+  date: string;
+  location?: string;
+  country?: string | null;
+  zone: RatingZoneId | null;
+  category: 'regional' | 'special' | 'international';
+  status: 'upcoming' | 'completed';
+  rk9?: Partial<Record<Game, string>>;
+  game?: Game;
+  attendance?: number;
+};
+
+export type EventsCatalog = {
+  season: number;
+  retrievedAt: string;
+  sources: Record<string, string>;
   note: string;
+  upcoming: CatalogEvent[];
+  completed: CatalogEvent[];
 };
 
 export type Cutoffs = {
@@ -110,8 +135,6 @@ export type QualificationPath = {
   ageDivision: AgeDivision;
   /** Manual override of the planning target. */
   targetOverride: number | null;
-  /** Added to the historical-low attendance baseline for planned majors. */
-  attendanceAdjustment: number;
   events: PlannedEvent[];
   updatedAt: string;
 };
@@ -169,8 +192,8 @@ export type Displacement = {
 
 export type Evaluation = {
   results: EvaluatedResult[];
-  currentPoints: number;
-  projectedPoints: number;
+  currentTotal: number;
+  projectedTotal: number;
   buckets: BucketSummary[];
   displacements: Displacement[];
   directInvites: EvaluatedResult[];

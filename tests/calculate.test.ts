@@ -42,19 +42,41 @@ describe('completed local results', () => {
     expect(r.attendanceSource).toBe('implied-by-award');
   });
 
-  // PRD fixture 10.
-  it('asks for CP or attendance when a kicker-dependent band has neither', () => {
+  it('asks for the CP when a local has no field size to resolve its kicker', () => {
+    // Cups and Challenges are unlisted, so nothing can settle a 9-16 finish
+    // except the CP itself. The form never asks for attendance.
     const e = ev({ eventTypeId: 'league-cup', placement: 13 });
     const r = evaluateResult(e, rules, path([e]), baselines);
     expect(r.reason).toBe('unverified-attendance');
-    expect(r.error).toMatch(/CP awarded or the total attendance/);
+    expect(r.explanation).toMatch(/Enter the CP you were awarded/);
   });
 
-  it('rejects an impossible placement and CP combination', () => {
-    const e = ev({ eventTypeId: 'league-cup', placement: 13, awardedPoints: 32 });
+  it('resolves a placement at a major from the projected field', () => {
+    // A 9-16 Regional needs 33 players; the NA zone median is 705, so it pays.
+    const e = ev({ eventTypeId: 'regional', placement: 9 });
+    const r = evaluateResult(e, rules, path([e]), baselines);
+    expect(r.rawPoints).toBe(200);
+    expect(r.attendanceSource).toBe('baseline');
+  });
+
+  it('resolves a completed result from the CP alone', () => {
+    // Every CP value is unique within a table, so the award identifies the band.
+    const e = ev({ eventTypeId: 'league-cup', awardedPoints: 20 });
+    const r = evaluateResult(e, rules, path([e]), baselines);
+    expect(r.rawPoints).toBe(20);
+    expect(r.band).toMatchObject({ minPlace: 9, maxPlace: 16 });
+  });
+
+  it('rejects a CP value that is not a payout for that event type', () => {
+    const e = ev({ eventTypeId: 'league-cup', awardedPoints: 35 });
     const r = evaluateResult(e, rules, path([e]), baselines);
     expect(r.reason).toBe('invalid');
-    expect(r.error).toMatch(/pays 20 CP/);
+    expect(r.error).toMatch(/not one of them/);
+  });
+
+  it('detects a direct invitation from the CP alone', () => {
+    const e = ev({ eventTypeId: 'regional', awardedPoints: 350 });
+    expect(evaluateResult(e, rules, path([e]), baselines).directInvite).toBe(true);
   });
 
   it('keeps roster optional for a completed 0 CP result', () => {
@@ -71,20 +93,20 @@ describe('Best Finish Limits', () => {
   // PRD fixture 1.
   it('adds nothing when a fifth League Challenge is weaker than the counted four', () => {
     const four = [challenge(1, 15), challenge(1, 15), challenge(2, 12), challenge(2, 12)];
-    const before = score(path(four)).currentPoints;
+    const before = score(path(four)).currentTotal;
     const weaker = challenge(17, 4);
     const after = score(path([...four, weaker]));
     expect(before).toBe(54);
-    expect(after.currentPoints).toBe(54);
+    expect(after.currentTotal).toBe(54);
     expect(after.results.find((r) => r.event.id === weaker.id)!.reason).toBe('excluded-by-bfl');
   });
 
   // PRD fixture 2.
   it('adds new CP minus displaced CP when a fifth League Challenge is stronger', () => {
     const four = [challenge(1, 15), challenge(2, 12), challenge(2, 12), challenge(17, 4)];
-    const before = score(path(four)).currentPoints; // 15+12+12+4 = 43
+    const before = score(path(four)).currentTotal; // 15+12+12+4 = 43
     const stronger = challenge(1, 15);
-    const after = score(path([...four, stronger])).currentPoints; // drops the 4
+    const after = score(path([...four, stronger])).currentTotal; // drops the 4
     expect(before).toBe(43);
     expect(after).toBe(before + 15 - 4);
   });
@@ -93,7 +115,7 @@ describe('Best Finish Limits', () => {
     const challenges = Array.from({ length: 5 }, () => challenge(1, 15));
     const cups = Array.from({ length: 5 }, () => ev({ eventTypeId: 'league-cup', placement: 1, awardedPoints: 50 }));
     const result = score(path([...challenges, ...cups]));
-    expect(result.currentPoints).toBe(4 * 15 + 4 * 50);
+    expect(result.currentTotal).toBe(4 * 15 + 4 * 50);
     const buckets = Object.fromEntries(result.buckets.map((b) => [b.bucket, b.slotsUsed]));
     expect(buckets.leagueChallenge).toBe(4);
     expect(buckets.leagueCup).toBe(4);
@@ -110,7 +132,7 @@ describe('Best Finish Limits', () => {
       ev({ eventTypeId: 'regional', placement: 17, attendance: 400 }),  // 160 — sixth, excluded
     ];
     const result = score(path(events));
-    expect(result.currentPoints).toBe(420 + 350 + 325 + 280 + 200);
+    expect(result.currentTotal).toBe(420 + 350 + 325 + 280 + 200);
     expect(result.results[5].reason).toBe('excluded-by-bfl');
     expect(result.buckets.find((b) => b.bucket === 'major')!.slotsUsed).toBe(5);
   });
@@ -123,11 +145,11 @@ describe('Best Finish Limits', () => {
       ev({ eventTypeId: 'regional', placement: 5, attendance: 400 }),  // 280
       ev({ eventTypeId: 'regional', placement: 17, attendance: 400 }), // 160
     ];
-    const baseTotal = score(path(five)).currentPoints;
+    const baseTotal = score(path(five)).currentTotal;
     const sixthWeak = ev({ eventTypeId: 'regional', placement: 33, attendance: 400 }); // 120
-    expect(score(path([...five, sixthWeak])).currentPoints).toBe(baseTotal);
+    expect(score(path([...five, sixthWeak])).currentTotal).toBe(baseTotal);
     const sixthStrong = ev({ eventTypeId: 'regional', placement: 9, attendance: 400 }); // 200
-    expect(score(path([...five, sixthStrong])).currentPoints).toBe(baseTotal - 160 + 200);
+    expect(score(path([...five, sixthStrong])).currentTotal).toBe(baseTotal - 160 + 200);
   });
 
   it('reports what a new result must beat to improve a full bucket', () => {
@@ -147,96 +169,30 @@ describe('Best Finish Limits', () => {
   });
 });
 
-describe('planned versus completed', () => {
-  // PRD fixture: a planned result moves projected CP only.
-  it('leaves current CP untouched and moves projected CP', () => {
-    const done = ev({ eventTypeId: 'regional', placement: 1 });
-    const plan = ev({ eventTypeId: 'regional', status: 'planned', placement: 9, attendance: 400 });
-    const result = score(path([done, plan]));
-    expect(result.currentPoints).toBe(350);
-    expect(result.projectedPoints).toBe(350 + 200);
+describe('results versus blanks', () => {
+  it('treats a row with a number as a result and a blank row as intent', () => {
+    const done = ev({ eventTypeId: 'regional', awardedPoints: 350 });
+    const blank = ev({ eventTypeId: 'regional' });
+    const result = score(path([done, blank]));
+    // No status to toggle: the presence of a number is what distinguishes them.
+    expect(result.currentTotal).toBe(350);
+    expect(result.results[1].reason).toBe('incomplete');
+    expect(result.results[1].rawPoints).toBe(0);
   });
 
-  it('explains what a planned result displaces', () => {
+  it('explains what a new result displaces once a bucket is full', () => {
     const five = [
-      ev({ eventTypeId: 'regional', placement: 2, attendance: 400 }),  // 325
-      ev({ eventTypeId: 'regional', placement: 3, attendance: 400 }),  // 300
-      ev({ eventTypeId: 'regional', placement: 5, attendance: 400 }),  // 280
-      ev({ eventTypeId: 'regional', placement: 9, attendance: 400 }),  // 200
-      ev({ eventTypeId: 'regional', placement: 17, attendance: 400 }), // 160
+      ev({ eventTypeId: 'regional', awardedPoints: 325 }),
+      ev({ eventTypeId: 'regional', awardedPoints: 300 }),
+      ev({ eventTypeId: 'regional', awardedPoints: 280 }),
+      ev({ eventTypeId: 'regional', awardedPoints: 200 }),
+      ev({ eventTypeId: 'regional', awardedPoints: 160 }),
     ];
-    const plan = ev({ eventTypeId: 'regional', status: 'planned', placement: 1, name: 'Atlanta Regional' });
-    const result = score(path([...five, plan]));
-    const d = result.displacements.find((x) => x.eventId === plan.id)!;
+    const sixth = ev({ eventTypeId: 'regional', awardedPoints: 350, name: 'Atlanta Regional' });
+    const result = score(path([...five, sixth]));
+    const d = result.displacements.find((x) => x.eventId === sixth.id)!;
     expect(d.netPoints).toBe(350 - 160);
-    expect(d.displacedPoints).toBe(160);
     expect(d.message).toMatch(/adds 190 net CP by replacing/);
-  });
-
-  it('projects a planned major from the verified previous-season low', () => {
-    const plan = ev({ eventTypeId: 'regional', status: 'planned', placement: 9 });
-    const r = of(path([plan]), plan.id);
-    // Smallest 2026 VGC Regional Masters field: Curitiba, 180 players.
-    expect(r.attendanceSource).toBe('baseline');
-    expect(r.attendanceUsed).toBe(180);
-    // The baseline is a real observation now, so the result is not conditional.
-    expect(r.conditional).toBe(false);
-    expect(r.rawPoints).toBe(200);
-  });
-
-  it('gives Regionals, Specials and Internationals their own baseline', () => {
-    // Field sizes differ by an order of magnitude, so one shared figure would
-    // misprice two of the three.
-    const at = (id: string) => {
-      const plan = ev({ eventTypeId: id, status: 'planned', placement: 9 });
-      return of(path([plan]), plan.id).attendanceUsed;
-    };
-    expect(at('regional')).toBe(180);
-    expect(at('special')).toBe(43);
-    expect(at('international')).toBe(518);
-  });
-
-  it('applies the attendance adjustment to the planned-major baseline', () => {
-    const plan = ev({ eventTypeId: 'regional', status: 'planned', placement: 257 });
-    // VGC regional baseline is 180; the 257–512 band needs a 1,025-player kicker.
-    expect(of(path([plan]), plan.id).rawPoints).toBe(0);
-    const raised = of(path([plan], { attendanceAdjustment: 900 }), plan.id);
-    expect(raised.attendanceUsed).toBe(1080);
-    expect(raised.rawPoints).toBe(45);
-  });
-
-  it('keeps a projection conditional when its baseline is not fully verified', () => {
-    // The Pokémon GO baselines come from rk9 rosters that publish no final
-    // standings, so they count registrations. The projection is still useful,
-    // but it must not pose as an observation.
-    const plan = ev({ eventTypeId: 'regional', status: 'planned', placement: 9 });
-    const r = of(path([plan], { game: 'GO' }), plan.id);
-    expect(r.attendanceUsed).toBe(38);          // smallest 2026 GO Regional roster
-    expect(r.conditional).toBe(true);
-    expect(r.explanation).toMatch(/unverified baseline/);
-  });
-
-  it('still asks for an assumption when a category has no baseline at all', () => {
-    // A null baseline must never be silently treated as a field size of zero.
-    const emptied = {
-      ...baselines,
-      baselines: { ...baselines.baselines,
-        GO: { ...baselines.baselines.GO,
-          regional: { attendance: null, sourceEvent: null, verified: false } } },
-    };
-    const plan = ev({ eventTypeId: 'regional', status: 'planned', placement: 9 });
-    const p = path([plan], { game: 'GO' });
-    const r = evaluatePath(p, rules, emptied).results[0];
-    expect(r.attendanceUsed).toBeNull();
-    expect(r.reason).toBe('unverified-attendance');
-    expect(r.rawPoints).toBe(0);
-  });
-
-  it('marks a planned local positive CP outcome as conditional on the kicker', () => {
-    const plan = ev({ eventTypeId: 'league-cup', status: 'planned', placement: 13, awardedPoints: 20 });
-    const r = of(path([plan]), plan.id);
-    expect(r.conditional).toBe(true);
-    expect(r.explanation).toMatch(/assuming the 48-player kicker is met/);
   });
 });
 
@@ -246,7 +202,7 @@ describe('direct invitations', () => {
     const win = ev({ eventTypeId: 'regional', placement: 1, name: 'Atlanta Regional' });
     const result = score(path([win]));
     expect(result.directInvites).toHaveLength(1);
-    expect(result.currentPoints).toBe(350);
+    expect(result.currentTotal).toBe(350);
   });
 
   it('records a direct invite independently of whether the result improves the total', () => {
@@ -260,9 +216,9 @@ describe('direct invitations', () => {
     expect(r.directInvite).toBe(true);
   });
 
-  it('does not treat a planned finish as an earned invitation', () => {
-    const plan = ev({ eventTypeId: 'regional', status: 'planned', placement: 1 });
-    expect(score(path([plan])).directInvites).toHaveLength(0);
+  it('does not treat a blank event as an earned invitation', () => {
+    const blank = ev({ eventTypeId: 'regional' });
+    expect(score(path([blank])).directInvites).toHaveLength(0);
   });
 });
 
@@ -277,7 +233,7 @@ describe('game separation', () => {
   it('scores the GO Battle League Leaderboard Challenge in its own bucket', () => {
     const e = ev({ eventTypeId: 'go-leaderboard-challenge', placement: 1 });
     const result = score(path([e], { game: 'GO' }));
-    expect(result.currentPoints).toBe(75);
+    expect(result.currentTotal).toBe(75);
     expect(result.buckets.find((b) => b.bucket === 'onlineGo')!.slotsUsed).toBe(1);
   });
 });
@@ -306,7 +262,7 @@ describe('planning target', () => {
       ev({ eventTypeId: 'regional', placement: 1 }),                       // 350
       ev({ eventTypeId: 'league-cup', placement: 1 }),                     // 50
     ];
-    const total = score(path(events)).currentPoints;
+    const total = score(path(events)).currentTotal;
     expect(total).toBe(900);
     expect(gapTo(842, total)).toBe(0);
     expect(gapTo(842, 700)).toBe(142);

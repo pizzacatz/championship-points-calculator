@@ -1,116 +1,150 @@
 {
-  "season": 2026,
-  "verified": false,
-  "retrievedAt": "2026-08-28T10:55:29.785Z",
-  "description": "Projected Masters attendance for PLANNED major events: the single lowest Masters attendance observed during the previous season, held separately per game and major-event category.",
-  "provenance": "Play! Pokémon publishes no machine-readable attendance feed. TCG and VGC counts come from Limitless (limitlesstcg.com, limitlessvgc.com); Pokémon GO comes from Liquipedia, which Limitless does not cover. Spot-checked against rk9.gg, the official tournament software: Seattle 2026 VGC reads 822 on Limitless and 821 Masters with a final standing on the rk9 roster.",
-  "categoryNote": "Regional, Special and International each carry their own baseline. They share a payout table and one Best Finish Limit, but their field sizes differ by an order of magnitude (2026 VGC: smallest Regional 180, smallest Special 43), so a single shared figure would badly misprice two of the three. This refines the recommendation in PRD section 16 with the observed data.",
-  "zoneNote": "Not separated by the player's home rating zone: kicker eligibility depends on attendance at the event actually entered, not on where the player lives.",
-  "regenerateWith": "node scripts/refresh-attendance.mjs",
+  "season": 2027,
+  "previousSeason": 2026,
+  "retrievedAt": "2026-08-28T14:13:00.441Z",
+  "statistic": "median",
+  "description": "Projected Masters field size for a PLANNED major, used only to decide which payout bands its kicker unlocks. Regionals and Specials are pooled per rating zone; each International is the median of its own last three seasons.",
+  "provenance": "Limitless (limitlesstcg.com, limitlessvgc.com), which permits crawling. Its player count is the Masters count, cross-checked against rk9 (Seattle 2026 VGC 822 vs 821 Masters with a final standing) and Victory Road (Gdansk 2026 VGC 418 vs \"Attendance 418 MA\").",
+  "onlineEvents": "Global/Grand Challenges and the GO Battle League Leaderboard Challenge have no published field size and are not regional. Every kicker is assumed met: Pokemon Champions has 10M+ downloads and the GO leaderboard is ranked globally.",
   "observations": {
-    "TCG": {
-      "regional": {
-        "events": 26,
-        "source": "limitlesstcg.com"
-      },
-      "special": {
-        "events": 7,
-        "source": "limitlesstcg.com"
-      },
-      "international": {
-        "events": 3,
-        "source": "limitlesstcg.com"
-      }
-    },
     "VGC": {
-      "regional": {
-        "events": 26,
-        "source": "limitlessvgc.com"
+      "NA": {
+        "events": 10,
+        "min": 99,
+        "max": 1013
       },
-      "special": {
-        "events": 6,
-        "source": "limitlessvgc.com"
+      "EU": {
+        "events": 9,
+        "min": 415,
+        "max": 940
       },
-      "international": {
-        "events": 3,
-        "source": "limitlessvgc.com"
+      "LA": {
+        "events": 9,
+        "min": 77,
+        "max": 282
+      },
+      "AP": {
+        "events": 4,
+        "min": 43,
+        "max": 291
       }
     },
-    "GO": {
-      "regional": {
-        "events": 26,
-        "eventsNamed": 26,
-        "basis": "registered",
-        "source": "rk9.gg"
+    "TCG": {
+      "NA": {
+        "events": 10,
+        "min": 356,
+        "max": 2919
       },
-      "special": {
-        "events": 2,
-        "eventsNamed": 6,
-        "basis": "registered",
-        "source": "rk9.gg"
+      "EU": {
+        "events": 9,
+        "min": 1337,
+        "max": 2433
       },
-      "international": {
-        "events": 3,
-        "eventsNamed": 3,
-        "basis": "registered",
-        "source": "rk9.gg"
+      "LA": {
+        "events": 9,
+        "min": 350,
+        "max": 1725
+      },
+      "AP": {
+        "events": 4,
+        "min": 80,
+        "max": 959
       }
     }
   },
   "baselines": {
-    "TCG": {
-      "regional": {
-        "attendance": 617,
-        "sourceEvent": "Regional Brisbane (01 Nov 25)",
-        "verified": true
+    "VGC": {
+      "zones": {
+        "NA": {
+          "attendance": 705,
+          "events": 10,
+          "basis": "median"
+        },
+        "EU": {
+          "attendance": 661,
+          "events": 9,
+          "basis": "median"
+        },
+        "LA": {
+          "attendance": 214,
+          "events": 9,
+          "basis": "median"
+        },
+        "AP": {
+          "attendance": 210,
+          "events": 4,
+          "basis": "median"
+        }
       },
-      "special": {
-        "attendance": 80,
-        "sourceEvent": "Special Event Auckland (24 Jan 26)",
-        "verified": true
-      },
-      "international": {
-        "attendance": 2117,
-        "sourceEvent": "LAIC 2025–26, São Paulo (21 Nov 25)",
-        "verified": true
+      "internationals": {
+        "NAIC": {
+          "attendance": 1096,
+          "zone": "NA",
+          "seasons": 3,
+          "basis": "median of last 3 seasons"
+        },
+        "EUIC": {
+          "attendance": 1257,
+          "zone": "EU",
+          "seasons": 3,
+          "basis": "median of last 3 seasons"
+        },
+        "LAIC": {
+          "attendance": 455,
+          "zone": "LA",
+          "seasons": 3,
+          "basis": "median of last 3 seasons"
+        }
       }
     },
-    "VGC": {
-      "regional": {
-        "attendance": 180,
-        "sourceEvent": "Regional Curitiba (14 Mar 26)",
-        "verified": true
+    "TCG": {
+      "zones": {
+        "NA": {
+          "attendance": 2270,
+          "events": 10,
+          "basis": "median"
+        },
+        "EU": {
+          "attendance": 2033,
+          "events": 9,
+          "basis": "median"
+        },
+        "LA": {
+          "attendance": 1449,
+          "events": 9,
+          "basis": "median"
+        },
+        "AP": {
+          "attendance": 617,
+          "events": 4,
+          "basis": "median"
+        }
       },
-      "special": {
-        "attendance": 43,
-        "sourceEvent": "Special Event Auckland (25 Jan 26)",
-        "verified": true
-      },
-      "international": {
-        "attendance": 518,
-        "sourceEvent": "LAIC 2025–26, São Paulo (21 Nov 25)",
-        "verified": true
+      "internationals": {
+        "NAIC": {
+          "attendance": 3752,
+          "zone": "NA",
+          "seasons": 3,
+          "basis": "median of last 3 seasons"
+        },
+        "EUIC": {
+          "attendance": 3361,
+          "zone": "EU",
+          "seasons": 3,
+          "basis": "median of last 3 seasons"
+        },
+        "LAIC": {
+          "attendance": 1810,
+          "zone": "LA",
+          "seasons": 3,
+          "basis": "median of last 3 seasons"
+        }
       }
     },
     "GO": {
-      "regional": {
-        "attendance": 38,
-        "sourceEvent": "Regional Brisbane — rk9 roster (this roster publishes no final standings, so the figure counts the roster rather than the field that played, and the direction of the error is UNRESOLVED: for Orlando 2026 GO this roster holds 156 where Liquipedia reports 174)",
-        "verified": false,
-        "basis": "registered"
-      },
-      "special": {
-        "attendance": 93,
-        "sourceEvent": "Special Event Seville — rk9 roster (this roster publishes no final standings, so the figure counts the roster rather than the field that played, and the direction of the error is UNRESOLVED: for Orlando 2026 GO this roster holds 156 where Liquipedia reports 174; only 2 of the 6 events in this category are on rk9 at all, so this is the lowest of a partial set, not of the season)",
-        "verified": false,
-        "basis": "registered"
-      },
-      "international": {
-        "attendance": 266,
-        "sourceEvent": "LAIC 2025–26, São Paulo — rk9 roster (this roster publishes no final standings, so the figure counts the roster rather than the field that played, and the direction of the error is UNRESOLVED: for Orlando 2026 GO this roster holds 156 where Liquipedia reports 174)",
-        "verified": false,
-        "basis": "registered"
-      }
+      "zones": {},
+      "internationals": {},
+      "unavailable": true
     }
   }
 }

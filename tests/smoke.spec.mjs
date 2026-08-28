@@ -1,8 +1,6 @@
 /**
- * End-to-end smoke test: drives the built app in a real browser and checks that
- * a plan can be entered, scored, and explained. Run against `vite preview`.
- *
- *   npm run build && npx vite preview --port 4188 &
+ * End-to-end smoke test: drives the built app in a real browser.
+ *   npm run build && npx vite preview --port 4188 --strictPort &
  *   node tests/smoke.spec.mjs
  */
 import { chromium } from 'playwright';
@@ -17,160 +15,161 @@ const check = async (name, fn) => {
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
-const consoleErrors = [];
-page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(m.text()); });
-page.on('pageerror', (e) => consoleErrors.push(String(e)));
-
+const errors = [];
+page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+page.on('pageerror', (e) => errors.push(String(e)));
 await page.goto(BASE, { waitUntil: 'networkidle' });
 
-const statValue = (label) =>
+const stat = (label) =>
   page.locator('.stat', { has: page.locator('.k', { hasText: new RegExp(`^${label}$`, 'i') }) })
     .locator('.v').innerText();
 
-await check('the app renders its heading', async () => {
-  assert.match(await page.locator('h1').first().innerText(), /Championship Points Calculator/);
+await check('the app renders', async () => {
+  assert.match(await page.locator('h1').first().innerText(), /Championship Points/);
 });
 
-await check('the previous-season cutoff loads from the bundled data', async () => {
-  assert.equal((await statValue('Previous cutoff')).trim(), '842');
+await check('the target defaults to the previous-season cutoff', async () => {
+  assert.equal(await page.getByLabel('Planning target in Championship Points').inputValue(), '842');
 });
 
-await check('the plan starts empty', async () => {
-  assert.match(await page.locator('.empty').innerText(), /No events yet/);
+// --- catalog -------------------------------------------------------------
+await check('the catalog lists zones collapsed, with counts', async () => {
+  const cat = page.locator('section', { has: page.getByRole('heading', { name: 'Events' }) });
+  assert.match(await cat.innerText(), /US and Canada/);
+  assert.match(await cat.innerText(), /0 of \d+/);
 });
 
-// --- Add a completed Regional win -----------------------------------------
-await page.getByRole('button', { name: '+ Regional Championship' }).click();
-const row = page.locator('.plan-row').first();
-await row.getByLabel('Status').selectOption('completed');
-await row.getByLabel('Event name').fill('Atlanta Regional');
-await row.getByLabel('Final placement').fill('1');
-
-await check('a Regional win scores 350 CP', async () => {
-  await page.waitForFunction(() =>
-    document.querySelector('.stat .v')?.textContent?.trim() === '350');
-  assert.equal((await statValue('Current CP')).trim(), '350');
+await check('bulk-add takes a whole zone', async () => {
+  const zone = page.locator('.zone', { hasText: 'US and Canada' });
+  await zone.getByRole('button', { name: 'Add all' }).click();
+  await page.waitForFunction(() => document.querySelectorAll('.plan-row').length > 5);
+  const n = await page.locator('.plan-row').count();
+  assert.ok(n >= 10, `expected a full zone, got ${n}`);
 });
 
-await check('a Regional win is reported as a direct invitation', async () => {
-  await page.locator('.callout.ok', { hasText: 'Direct invitation earned' }).waitFor({ timeout: 4000 });
-  assert.match(await row.innerText(), /Direct invitation earned/);
+await check('unchecking one event removes it again', async () => {
+  const before = await page.locator('.plan-row').count();
+  const zone = page.locator('.zone', { hasText: 'US and Canada' });
+  await zone.locator('.zone-list input[type=checkbox]').first().uncheck();
+  await page.waitForFunction((b) => document.querySelectorAll('.plan-row').length === b - 1, before);
+  assert.equal(await page.locator('.plan-row').count(), before - 1);
 });
 
-await check('the row explains the band and the points', async () => {
-  assert.match(await row.locator('.plan-explain').innerText(), /1st place → 1 band, worth 350 CP/);
+await check('Clear empties the zone', async () => {
+  await page.locator('.zone', { hasText: 'US and Canada' }).getByRole('button', { name: 'Clear' }).click();
+  await page.waitForFunction(() => document.querySelectorAll('.plan-row').length === 0);
 });
 
-// --- Add a planned Regional and check displacement -------------------------
-await page.getByRole('button', { name: '+ Regional Championship' }).click();
-const planned = page.locator('.plan-row').nth(1);
-await planned.getByLabel('Event name').fill('Orlando Regional');
-await planned.getByLabel('Final placement').fill('9');
+// --- the ladder ----------------------------------------------------------
+await check('a blank major is solved for by the ladder', async () => {
+  const zone = page.locator('.zone', { hasText: 'US and Canada' });
+  await zone.getByRole('button', { name: 'Add all' }).click();
+  const ladder = page.locator('section', { has: page.getByRole('heading', { name: 'What you need' }) });
+  await ladder.locator('tbody tr').first().waitFor({ timeout: 5000 });
+  assert.match(await ladder.innerText(), /Regional Championship/);
+});
 
-await check('a planned result moves projected CP but not current CP', async () => {
+await check('the ladder never demands a band the field cannot pay', async () => {
+  const ladder = page.locator('section', { has: page.getByRole('heading', { name: 'What you need' }) });
+  const text = await ladder.innerText();
+  // NA majors project from 705 players, so 257-512 (kicker 1,025) is impossible.
+  assert.doesNotMatch(text, /257-512|513-1024/);
+});
+
+// --- one number per event ------------------------------------------------
+await check('typing a CP records a result, with no status to toggle', async () => {
+  const row = page.locator('.plan-row').first();
+  await row.getByLabel('CP').fill('350');
   await page.waitForFunction(() =>
     [...document.querySelectorAll('.stat')].some((s) =>
-      s.querySelector('.k')?.textContent === 'Projected CP' && s.querySelector('.v')?.textContent.trim() === '550'));
-  assert.equal((await statValue('Current CP')).trim(), '350');
-  assert.equal((await statValue('Projected CP')).trim(), '550');
+      s.querySelector('.k')?.textContent === 'CP now' && s.querySelector('.v')?.textContent.trim() === '350'));
+  assert.equal((await stat('CP now')).trim(), '350');
 });
 
-await check('a planned major is projected from the observed previous-season low', async () => {
-  // Smallest 2026 VGC Regional Masters field: Curitiba, 180 players.
-  assert.match(await planned.innerText(), /180 players assumed/);
-  assert.doesNotMatch(await planned.innerText(), /Conditional on kicker/);
+await check('350 at a Regional is recognised as a direct invitation', async () => {
+  assert.match(await page.locator('.plan-row').first().innerText(), /Direct invite/);
 });
 
-await check('the baseline panel shows its provenance and what it unlocks', async () => {
-  const panel = page.locator('section', { has: page.getByRole('heading', { name: /Projected attendance/ }) });
-  const text = await panel.innerText();
-  assert.match(text, /Regional Curitiba/);      // where the baseline came from
-  assert.match(text, /Special Event Auckland/);
-  assert.match(text, /9–16/);                   // deepest band that still pays
+await check('placement works as the alternative input', async () => {
+  const row = page.locator('.plan-row').nth(1);
+  await row.getByLabel('Place').fill('9');
+  await page.waitForFunction(() =>
+    document.querySelectorAll('.plan-row')[1]?.textContent?.includes('200 CP'));
+  assert.match(await row.innerText(), /200 CP/);
 });
 
-// --- Best Finish Limit --------------------------------------------------
-await check('the shared major bucket reports its occupancy', async () => {
-  const bfl = page.locator('table', { has: page.getByText('Regional / Special / International') });
-  assert.match(await bfl.innerText(), /2 of 5/);
-});
-
-// --- Validation ------------------------------------------------------------
-await row.getByLabel('CP awarded').fill('999');
-await check('an impossible placement and CP combination is rejected', async () => {
+await check('an impossible CP value is rejected', async () => {
+  const row = page.locator('.plan-row').first();
+  await row.getByLabel('CP').fill('351');
   await row.locator('[role="alert"]').waitFor({ timeout: 4000 });
-  assert.match(await row.locator('[role="alert"]').innerText(), /not a possible award/);
-});
-await row.getByLabel('CP awarded').fill('');
-
-// --- Generated paths -------------------------------------------------------
-await check('three generated paths are offered', async () => {
-  assert.equal(await page.locator('.path-card').count(), 3);
-  assert.match(await page.locator('.path-card').first().innerText(), /Least demanding placements/);
+  assert.match(await row.locator('[role="alert"]').innerText(), /not one of them/);
+  await row.getByLabel('CP').fill('350');
 });
 
-await check('generated paths never demand a direct-invite finish', async () => {
-  const text = await page.locator('.paths').innerText();
-  for (const m of text.matchAll(/finish (\d+)/g)) assert.ok(Number(m[1]) > 1, `demanded finish ${m[1]}`);
+await check('a row asks for one number and nothing else', async () => {
+  const inputs = await page.locator('.plan-row').first().locator('input').count();
+  assert.equal(inputs, 2, `expected CP and Place only, got ${inputs}`);
 });
 
-// --- Persistence -----------------------------------------------------------
-await page.reload({ waitUntil: 'networkidle' });
+// --- BFL, persistence, chrome -------------------------------------------
+await check('the Best Finish Limit table reports occupancy', async () => {
+  const bfl = page.locator('table', { has: page.getByText('Regional / Special / International') });
+  assert.match(await bfl.innerText(), /of 5/);
+});
+
 await check('the plan survives a reload', async () => {
-  assert.equal(await page.locator('.plan-row').count(), 2);
-  assert.equal((await statValue('Current CP')).trim(), '350');
+  const before = await page.locator('.plan-row').count();
+  await page.reload({ waitUntil: 'networkidle' });
+  assert.equal(await page.locator('.plan-row').count(), before);
 });
 
-// --- Game separation -------------------------------------------------------
-await page.getByLabel('Game').selectOption('TCG');
-await check('switching game re-reads the cutoff for that game', async () => {
-  await page.waitForFunction(() =>
-    [...document.querySelectorAll('.stat')].some((s) =>
-      s.querySelector('.k')?.textContent === 'Previous cutoff' && s.querySelector('.v')?.textContent.trim() === '738'));
-  assert.equal((await statValue('Previous cutoff')).trim(), '738');
+await check('the version is present but quiet', async () => {
+  const v = page.locator('.version a');
+  assert.match(await v.innerText(), /^v\d+\.\d+\.\d+ · rules /);
+  const opacity = await v.evaluate((el) => Number(getComputedStyle(el).opacity));
+  assert.ok(opacity < 0.8, `version should be subtle, opacity was ${opacity}`);
 });
-await page.getByLabel('Game').selectOption('VGC');
 
-// --- Themes and responsiveness --------------------------------------------
-await check('the dark theme applies', async () => {
-  await page.getByRole('button', { name: /theme/i }).click();
+await check('the removed v1 sections are gone', async () => {
+  const body = await page.locator('main').innerText();
+  for (const gone of ['Method, sources and limits', 'Official sources',
+                      'Direct invitations', 'Ways to reach your target',
+                      'Projected attendance']) {
+    assert.doesNotMatch(body, new RegExp(gone), `"${gone}" should be removed`);
+  }
+});
+
+await check('the theme toggle is an icon and works', async () => {
+  const t = page.locator('.theme-toggle');
+  assert.equal(await t.locator('svg').count(), 1);
+  await t.click();
   await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark');
-  const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-  assert.equal(bg, 'rgb(13, 13, 13)');
+  assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(13, 13, 13)');
 });
 
-await check('the page does not scroll horizontally at 320px', async () => {
+await check('no horizontal scroll at 320px', async () => {
   await page.setViewportSize({ width: 320, height: 800 });
   await page.waitForTimeout(150);
-  const overflow = await page.evaluate(() =>
+  const over = await page.evaluate(() =>
     document.documentElement.scrollWidth - document.documentElement.clientWidth);
-  assert.ok(overflow <= 1, `overflows by ${overflow}px`);
+  assert.ok(over <= 1, `overflows by ${over}px`);
+  await page.setViewportSize({ width: 1280, height: 900 });
 });
-await page.setViewportSize({ width: 1280, height: 900 });
 
-await check('every form control has an accessible name', async () => {
+await check('every control has an accessible name', async () => {
   const unnamed = await page.evaluate(() =>
     [...document.querySelectorAll('input, select, textarea, button')]
       .filter((el) => el.offsetParent !== null)
-      .filter((el) => !(
-        el.getAttribute('aria-label') ||
-        el.getAttribute('aria-labelledby') ||
-        (el.id && document.querySelector(`label[for="${CSS.escape(el.id)}"]`)) ||
-        el.closest('label') ||
-        (el.tagName === 'BUTTON' && el.textContent.trim())
-      )).map((el) => el.tagName + (el.id ? `#${el.id}` : '') + `[${el.type ?? ''}]`));
+      .filter((el) => !(el.getAttribute('aria-label') || el.getAttribute('aria-labelledby')
+        || (el.id && document.querySelector(`label[for="${CSS.escape(el.id)}"]`))
+        || el.closest('label') || (el.tagName === 'BUTTON' && el.textContent.trim())))
+      .map((el) => el.tagName + (el.id ? `#${el.id}` : '')));
   assert.deepEqual(unnamed, []);
 });
 
-await check('the browser reported no errors', async () => {
-  assert.deepEqual(consoleErrors, []);
-});
+await check('the browser reported no errors', async () => assert.deepEqual(errors, []));
 
-await page.screenshot({ path: 'docs/screenshot-dark.png', fullPage: true });
-await page.getByRole('button', { name: /theme/i }).click();
-await page.waitForFunction(() => document.documentElement.dataset.theme === 'light');
-await page.screenshot({ path: 'docs/screenshot-light.png', fullPage: true });
-
+await page.screenshot({ path: 'docs/v2-light.png', fullPage: true });
 await browser.close();
 console.log(checks.join('\n'));
-console.log(process.exitCode ? '\nsmoke test FAILED' : `\nsmoke test passed (${checks.length} checks)`);
+console.log(process.exitCode ? '\nsmoke FAILED' : `\nsmoke passed (${checks.length} checks)`);

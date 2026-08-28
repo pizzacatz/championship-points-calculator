@@ -15,38 +15,23 @@ to, what counts, what gets displaced, and what finishes would put me near my tar
 
 ## What it does
 
-- **Scores results correctly.** Exact placement → published band → kicker check →
-  Best Finish Limit. League Challenges and League Cups get separate buckets of four;
-  Regionals, Specials and Internationals share one bucket of five.
-- **Explains every row.** Each result says what it is worth and why it counts, or why
-  it does not: below kicker, excluded by BFL, unverified attendance, needs correction.
-- **Shows displacement.** "This result adds 190 net CP by replacing Orlando Regional
-  worth 160 CP."
-- **Separates current from projected.** Planned results move projected CP and never
-  touch your current total.
-- **Generates three paths** from the events you added — least demanding placements,
-  fewest events, and best use of the events you marked committed — respecting the
-  best finish you allow it to assume for each event.
-- **Tracks direct invitations** separately from points, and never proposes one as an
-  ordinary path.
-- **Keeps a path per game.** Points never combine across VGC, TCG and GO, so neither
-  do paths. Everything is stored in your browser, with JSON export and import.
+**One question:** *if I attend these events, what is the worst I can do and still
+qualify?*
 
-## What it does not claim
+- **Pick events from a checklist**, grouped by rating zone and collapsed by default.
+  Add a whole zone at once, then uncheck what you cannot reach.
+- **One number per event** — the CP you earned, or your finishing place. Each
+  derives the other, because every CP value is unique within its payout table.
+  350 at a Regional *is* 1st place, no kicker, direct invitation.
+- **Leave an event blank** and it becomes what the app solves for.
+- **The ladder** tells you the lowest finishes that still reach your target,
+  relaxing the hardest events first: it will not ask for a top-32 at a
+  1,100-player International when winning two 40-player Cups is more realistic.
+- **Best Finish Limits and displacement** are handled throughout — adding twelve
+  Regionals cannot inflate anything, because only five ever count.
 
-Reaching your planning target is **not** qualification. The season-end cutoff is not
-knowable in advance, and this tool does not forecast one or state a probability of
-qualifying. It shows two benchmarks and lets you set your own target:
-
-- the **previous-season cutoff** — the CP total held by the player at the last Masters
-  invitation slot for your game and rating zone at the end of the 2026 season; and
-- the **live boundary** — the same figure for the current season, refreshed daily.
-
-The default target is the greater of the two, and is freely editable. Only a direct
-invitation guarantees a place.
-
-Also out of scope: Junior and Senior divisions, travel, cost, registration, and any
-match-win-rate-to-placement simulation.
+Plans are stored in your browser. Multiple plans, JSON export and import, no
+accounts, nothing sent anywhere.
 
 ## Data sources
 
@@ -76,9 +61,9 @@ the community databases that do, via
 
 | Game | Source | Status |
 |---|---|---|
-| TCG | [limitlesstcg.com](https://limitlesstcg.com/tournaments) | 36 events, final standings |
-| VGC | [limitlessvgc.com](https://limitlessvgc.com/tournaments) | 35 events, final standings |
-| GO | [rk9.gg](https://rk9.gg) rosters | 31 events, **roster counts** — see below |
+| TCG | [limitlesstcg.com](https://limitlesstcg.com/tournaments) | per-zone medians |
+| VGC | [limitlessvgc.com](https://limitlessvgc.com/tournaments) | per-zone medians |
+| GO | — | none published; a GO major asks for the CP instead |
 
 Limitless's player count is the Masters count. Two independent spot-checks against
 [rk9.gg](https://rk9.gg), the official tournament software, and

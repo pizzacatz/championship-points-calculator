@@ -23,20 +23,43 @@ export const tableFor = (rules: SeasonRules, rule: EventTypeRule): PlacementBand
   rules.placementTables[rule.table] ?? [];
 
 /**
- * The projected attendance for a planned major, before the player's adjustment.
+ * Projected field size for a planned major, used only to decide which payout
+ * bands its kicker unlocks.
  *
- * Regionals, Specials and Internationals each get their own baseline. They share
- * a payout table and a Best Finish Limit, but their field sizes differ by an
- * order of magnitude, so one shared figure would badly misprice two of the three.
+ * Regionals and Specials share their rating zone's median; each International
+ * carries the median of its own last three seasons. Online events have no
+ * baseline at all and assume every kicker is met.
  */
-export function baselineAttendance(
-  baselines: AttendanceBaselines, game: Game, rule: EventTypeRule,
-): { attendance: number; verified: boolean; sourceEvent: string | null } | null {
+export function projectedField(
+  baselines: AttendanceBaselines, game: Game, rule: EventTypeRule, path: QualificationPath,
+): number | null {
   if (rule.scale !== 'major') return null;
-  const entry = baselines.baselines[game]?.[rule.id as keyof AttendanceBaselines['baselines'][Game]];
-  if (!entry || entry.attendance == null) return null;
-  return { attendance: entry.attendance, verified: entry.verified, sourceEvent: entry.sourceEvent };
+  const forGame = baselines.baselines[game];
+  if (!forGame || forGame.unavailable) return null;
+
+  if (rule.id === 'international') {
+    // An International is projected from itself, not from a zone. Prefer the one
+    // hosted in the player's own zone; otherwise take the largest, which is the
+    // conservative choice for kickers.
+    const all = Object.values(forGame.internationals ?? {});
+    if (!all.length) return null;
+    const home = all.find((ic) => ic.zone === path.ratingZone);
+    return (home ?? all.reduce((x, y) => (y.attendance > x.attendance ? y : x))).attendance;
+  }
+  return forGame.zones?.[path.ratingZone]?.attendance ?? null;
 }
+
+/** Every CP value is distinct within a table, so an award identifies its band. */
+export const bandForPoints = (table: PlacementBand[], points: number): PlacementBand | null =>
+  table.find((b) => b.points === points) ?? null;
+
+/**
+ * A result is anything with a number on it. A blank row is an event the player
+ * intends to attend and has not played yet, which is what the ladder solves for.
+ * Nothing needs to be toggled — the presence of a number says which it is.
+ */
+export const isResult = (e: PlannedEvent): boolean =>
+  e.awardedPoints != null || (e.placement != null && e.placement >= 1);
 
 const ordinal = (n: number): string => {
   const rem100 = n % 100;
@@ -72,28 +95,52 @@ export function evaluateResult(
       error: `${rule.label} is not a ${path.game} event.`,
     };
   }
-  if (event.placement == null || !Number.isInteger(event.placement) || event.placement < 1) {
-    return { ...base, reason: 'incomplete', explanation: 'Enter a final placement.', error: 'A final placement is required.' };
+  const table = tableFor(rules, rule);
+
+  // One number, either kind. CP identifies its band outright; a placement gives
+  // the band directly. Whichever is supplied, the other is derived.
+  let band: PlacementBand | null = null;
+  if (event.placement != null && Number.isInteger(event.placement) && event.placement >= 1) {
+    band = bandFor(table, event.placement);
+  } else if (event.awardedPoints != null && event.awardedPoints > 0) {
+    band = bandForPoints(table, event.awardedPoints);
+    if (!band) {
+      return {
+        ...base, reason: 'invalid',
+        explanation: `${event.awardedPoints} CP is not a ${rule.label} payout.`,
+        error: `${rule.label} pays ${table.map((b) => b.points).join(', ')} or 0. `
+             + `${event.awardedPoints} is not one of them.`,
+      };
+    }
+  } else if (event.awardedPoints === 0) {
+    return {
+      ...base, reason: 'below-kicker', error: null,
+      explanation: 'Awarded 0 CP — the kicker was not met, or the finish was outside the table.',
+    };
+  } else {
+    return {
+      ...base, reason: 'incomplete',
+      explanation: 'Enter the CP you earned, or your finishing place.',
+      error: null,
+    };
   }
 
-  const table = tableFor(rules, rule);
-  const band = bandFor(table, event.placement);
-  const placed = `${ordinal(event.placement)} place`;
+  const placed = event.placement != null ? `${ordinal(event.placement)} place` : `${band!.points} CP`;
 
   if (!band) {
     const last = table[table.length - 1];
     return {
       ...base, reason: 'below-kicker',
-      explanation: `${placed} is outside the published payout table, which stops at ${bandLabel(last)}. Worth 0 CP.`,
+      explanation: `${placed} is outside the payout table, which stops at ${bandLabel(last)}. Worth 0 CP.`,
       error: null,
     };
   }
 
   const bandText = `${placed} → ${bandLabel(band)} band`;
-  const directInvite = event.status === 'completed' && event.placement <= rule.directInvitePlacesThrough;
+  const directInvite = isResult(event) && band.maxPlace <= rule.directInvitePlacesThrough;
 
-  // ---- Completed results ---------------------------------------------------
-  if (event.status === 'completed') {
+  // ---- Recorded results ----------------------------------------------------
+  if (isResult(event)) {
     if (event.awardedPoints != null) {
       // Validate the award against the published table before trusting it.
       if (event.awardedPoints !== band.points && event.awardedPoints !== 0) {
@@ -133,25 +180,32 @@ export function evaluateResult(
         explanation: `${bandText}, worth ${band.points} CP. This band has no kicker.`, error: null,
       };
     }
-    if (event.attendance == null) {
+    // No attendance entered: fall back to the projected field for this event
+    // type, which is what the form relies on now that attendance is never asked.
+    const known = event.attendance ?? projectedField(baselines, path.game, rule, path);
+    if (known == null) {
       return {
         ...base, band, directInvite, reason: 'unverified-attendance',
-        explanation: `${bandText} pays ${band.points} CP only if at least ${band.kicker} players attended. Enter the CP you were awarded, or the attendance.`,
-        error: `Enter the CP awarded or the total attendance — a ${bandLabel(band)} finish depends on a ${band.kicker}-player kicker.`,
+        explanation: `${bandText} pays ${band.points} CP only if at least ${band.kicker} players entered. Enter the CP you were awarded.`,
+        error: null,
       };
     }
-    if (event.attendance < band.kicker) {
+    if (known < band.kicker) {
       return {
-        ...base, band, directInvite, attendanceUsed: event.attendance, attendanceSource: 'entered',
+        ...base, band, directInvite,
         reason: 'below-kicker',
-        explanation: `${bandText} needs ${band.kicker} players; ${event.attendance} attended. Worth 0 CP.`,
+        attendanceUsed: known,
+        attendanceSource: event.attendance != null ? 'entered' : 'baseline',
+        explanation: `${bandText} needs ${band.kicker} players; ${known.toLocaleString()} ${event.attendance != null ? 'attended' : 'projected'}. Worth 0 CP.`,
         error: null,
       };
     }
     return {
       ...base, band, rawPoints: band.points, directInvite,
-      attendanceUsed: event.attendance, attendanceSource: 'entered', reason: 'counts',
-      explanation: `${bandText}, worth ${band.points} CP with ${event.attendance} players (kicker ${band.kicker}).`,
+      attendanceUsed: known,
+      attendanceSource: event.attendance != null ? 'entered' : 'baseline',
+      reason: 'counts',
+      explanation: `${bandText}, worth ${band.points} CP.`,
       error: null,
     };
   }
@@ -159,11 +213,9 @@ export function evaluateResult(
   // ---- Planned results -----------------------------------------------------
   // Planned majors fall back to the historical-low baseline plus the player's
   // adjustment; planned locals may instead assert a hypothetical CP outcome.
-  const baseline = baselineAttendance(baselines, path.game, rule);
-  const projected = event.attendance ?? (
-    baseline ? Math.max(0, baseline.attendance + path.attendanceAdjustment) : null
-  );
-  const attendanceSource = event.attendance != null ? 'entered' : baseline ? 'baseline' : 'unknown';
+  const field = projectedField(baselines, path.game, rule, path);
+  const projected = event.attendance ?? field;
+  const attendanceSource = event.attendance != null ? 'entered' : field != null ? 'baseline' : 'unknown';
 
   if (band.kicker === 0) {
     return {
@@ -183,7 +235,7 @@ export function evaluateResult(
         error: null,
       };
     }
-    const unverified = attendanceSource === 'baseline' && baseline && !baseline.verified;
+    const unverified = attendanceSource === 'baseline';
     return {
       ...base, band, rawPoints: band.points, reason: 'planned-counts',
       conditional: Boolean(unverified), attendanceUsed: projected, attendanceSource,
@@ -274,7 +326,7 @@ export function evaluatePath(
   const scored = path.events.map((e) => evaluateResult(e, rules, path, baselines));
 
   // Current CP uses completed results only; projected uses everything.
-  const completed = scored.filter((r) => r.event.status === 'completed');
+  const completed = scored.filter((r) => isResult(r.event));
   const current = applyBfl(completed, rules);
   const projected = applyBfl(scored, rules);
 
@@ -282,7 +334,7 @@ export function evaluatePath(
     const isCounted = projected.counted.has(r.event.id);
     if (r.rawPoints <= 0 || r.reason === 'invalid' || r.reason === 'incomplete') return r;
     if (isCounted) {
-      return { ...r, counted: true, reason: r.event.status === 'completed' ? 'counts' : 'planned-counts' };
+      return { ...r, counted: true, reason: isResult(r.event) ? 'counts' : 'planned-counts' };
     }
     return {
       ...r, counted: false, reason: 'excluded-by-bfl',
@@ -294,7 +346,7 @@ export function evaluatePath(
 
   // Displacement: what each planned result actually adds once the BFL settles.
   const displacements: Displacement[] = [];
-  const plannedIds = scored.filter((r) => r.event.status === 'planned' && r.rawPoints > 0);
+  const plannedIds = scored.filter((r) => r.rawPoints > 0);
   for (const r of plannedIds) {
     const without = scored.filter((x) => x.event.id !== r.event.id);
     const before = applyBfl(without, rules);
@@ -318,8 +370,8 @@ export function evaluatePath(
 
   return {
     results,
-    currentPoints: sum(current.buckets),
-    projectedPoints: sum(projected.buckets),
+    currentTotal: sum(current.buckets),
+    projectedTotal: sum(projected.buckets),
     buckets: projected.buckets,
     displacements,
     directInvites: results.filter((r) => r.directInvite),

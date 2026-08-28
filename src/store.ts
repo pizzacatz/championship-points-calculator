@@ -17,7 +17,6 @@ export function blankPath(game: Game = 'VGC', ratingZone: RatingZoneId = 'NA'): 
     ratingZone,
     ageDivision: 'MASTERS',
     targetOverride: null,
-    attendanceAdjustment: 0,
     events: [],
     updatedAt: new Date().toISOString(),
   };
@@ -26,16 +25,12 @@ export function blankPath(game: Game = 'VGC', ratingZone: RatingZoneId = 'NA'): 
 export function blankEvent(eventTypeId: string): PlannedEvent {
   return {
     id: newId(),
-    status: 'planned',
     name: '',
     eventTypeId,
     date: null,
     placement: null,
     awardedPoints: null,
     attendance: null,
-    committed: false,
-    bestFinishConstraint: null,
-    notes: '',
   };
 }
 
@@ -94,6 +89,21 @@ export function usePaths() {
     }));
   }, [active?.id]);
 
+  const addEvents = useCallback((events: PlannedEvent[]) => {
+    if (!events.length) return;
+    setPaths((all) => all.map((p) => p.id !== active?.id ? p : {
+      ...p, events: [...p.events, ...events], updatedAt: new Date().toISOString(),
+    }));
+  }, [active?.id]);
+
+  const removeEvents = useCallback((ids: string[]) => {
+    if (!ids.length) return;
+    const drop = new Set(ids);
+    setPaths((all) => all.map((p) => p.id !== active?.id ? p : {
+      ...p, events: p.events.filter((e) => !drop.has(e.id)), updatedAt: new Date().toISOString(),
+    }));
+  }, [active?.id]);
+
   const removeEvent = useCallback((id: string) => {
     setPaths((all) => all.map((p) => p.id !== active?.id ? p : {
       ...p, events: p.events.filter((e) => e.id !== id), updatedAt: new Date().toISOString(),
@@ -146,8 +156,8 @@ export function usePaths() {
   }, []);
 
   return {
-    paths, active, setActiveId, update, updateEvent, addEvent, removeEvent,
-    duplicateEvent, moveEvent, createPath, deletePath, importPath,
+    paths, active, setActiveId, update, updateEvent, addEvent, addEvents,
+    removeEvent, removeEvents, duplicateEvent, moveEvent, createPath, deletePath, importPath,
   };
 }
 

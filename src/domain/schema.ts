@@ -24,10 +24,6 @@ function parseEvent(raw: unknown, i: number, rules: SeasonRules, errors: string[
     errors.push(`${at('eventTypeId')} is not a known event type.`);
     return null;
   }
-  if (raw.status !== 'completed' && raw.status !== 'planned') {
-    errors.push(`${at('status')} must be "completed" or "planned".`);
-    return null;
-  }
   if (raw.placement != null && !isPosInt(raw.placement)) {
     errors.push(`${at('placement')} must be a positive whole number.`);
     return null;
@@ -37,16 +33,13 @@ function parseEvent(raw: unknown, i: number, rules: SeasonRules, errors: string[
 
   return {
     id: typeof raw.id === 'string' && raw.id ? raw.id : `imported-${i}`,
-    status: raw.status,
     name: typeof raw.name === 'string' ? raw.name : '',
     eventTypeId: typeId,
     date: typeof raw.date === 'string' ? raw.date : null,
     placement: (raw.placement as number | null) ?? null,
     awardedPoints: (raw.awardedPoints as number | null) ?? null,
     attendance: (raw.attendance as number | null) ?? null,
-    committed: raw.committed === true,
-    bestFinishConstraint: isPosInt(raw.bestFinishConstraint) ? raw.bestFinishConstraint : null,
-    notes: typeof raw.notes === 'string' ? raw.notes : '',
+    catalogName: typeof raw.catalogName === 'string' ? raw.catalogName : undefined,
   };
 }
 
@@ -87,7 +80,6 @@ export function parsePath(raw: unknown, rules: SeasonRules): Validation<Qualific
       ratingZone: raw.ratingZone as RatingZoneId,
       ageDivision: 'MASTERS',
       targetOverride: (raw.targetOverride as number | null) ?? null,
-      attendanceAdjustment: (raw.attendanceAdjustment as number) ?? 0,
       events,
       updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : new Date().toISOString(),
     },

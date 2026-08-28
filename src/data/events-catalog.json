@@ -1,0 +1,544 @@
+{
+  "season": 2027,
+  "retrievedAt": "2026-08-28T14:12:16.338Z",
+  "sources": {
+    "upcoming": "https://rk9.gg/events/pokemon",
+    "past": "https://limitlessvgc.com/tournaments and https://limitlesstcg.com/tournaments"
+  },
+  "note": "rk9 exposes no past-events view, so completed majors come from Limitless, which is only days behind and carries Masters player counts.",
+  "upcoming": [
+    {
+      "name": "Baltimore Pokémon Regional Championships",
+      "date": "September 18-20, 2026",
+      "location": "Baltimore, US",
+      "country": "US",
+      "zone": "NA",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "BA003-cfQnjLqUpqJEFq",
+        "TCG": "BA001-nEN1xl5ZJLGtFk",
+        "VGC": "BA002-JL3KVbvivVKNAc"
+      }
+    },
+    {
+      "name": "Brisbane Pokémon Regional Championships",
+      "date": "September 26-27, 2026",
+      "location": "South Brisbane, AU",
+      "country": "AU",
+      "zone": "AP",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "BR003-6CxLSFjQiTHuAh",
+        "TCG": "BR001-5YdU57MmWxTxaY",
+        "VGC": "BR002-IU5yO1W76UpdyA"
+      }
+    },
+    {
+      "name": "Frankfurt Pokémon Regional Championships",
+      "date": "September 26-27, 2026",
+      "location": "Frankfurt am Main, DE",
+      "country": "DE",
+      "zone": "EU",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "FR003-metsuLQs6Ef1M3",
+        "TCG": "FR001-qWsas6LjddfVxo",
+        "VGC": "FR002-fiunEHp9wx4mh4"
+      }
+    },
+    {
+      "name": "Recife Pokémon Regional Championships",
+      "date": "October 3-4, 2026",
+      "location": "Olinda, Pernambuco, BR",
+      "country": "BR",
+      "zone": "LA",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "RE003-YRP659W5Tmy2BA",
+        "TCG": "RE001-a2hqIrDZOyenzQ",
+        "VGC": "RE002-wN97aUf4Psz0ZJ"
+      }
+    },
+    {
+      "name": "Louisville Pokémon Regional Championships",
+      "date": "October 9-11, 2026",
+      "location": "Louisville, US",
+      "country": "US",
+      "zone": "NA",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "LO003-L3thKDKCBRaM6V",
+        "TCG": "LO001-piALjQswPD3x0J",
+        "VGC": "LO002-drfp6esCSpyU3s"
+      }
+    },
+    {
+      "name": "Nice Pokémon Regional Championships Registration opens August 19 at 19:00 CEST",
+      "date": "October 17-18, 2026",
+      "location": "Nice, FR",
+      "country": "FR",
+      "zone": "EU",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "NC003-UTcpkBmvfQW1G0",
+        "TCG": "NC001-2OXFgm7aAOcHKh",
+        "VGC": "NC002-zBMwK69ABS7RRV"
+      }
+    },
+    {
+      "name": "Puebla Pokémon Regional Championships Registration opens August 19 at 7:00 pm CST",
+      "date": "October 24-25, 2026",
+      "location": "Heroica Puebla de Zaragoza, Puebla, MX",
+      "country": "MX",
+      "zone": "LA",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "PB003-ou4y8Kdmmho1Hb",
+        "TCG": "PB001-35rH2yUmy8TR3M",
+        "VGC": "PB002-r871Zfmc4WQbIO"
+      }
+    },
+    {
+      "name": "North America Pokémon International Championships",
+      "date": "June 12-14, 2026",
+      "location": "New Orleans, US",
+      "country": "US",
+      "zone": "NA",
+      "category": "international",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "NA03wlgO0WXkknonXqGW",
+        "TCG": "NA01wMo4vxttnwEyqclr",
+        "VGC": "NA02wgUPFDXKmQmqILwS"
+      }
+    },
+    {
+      "name": "Turin Pokémon Special Championships",
+      "date": "June 6-7, 2026",
+      "location": "Torino TO, IT",
+      "country": "IT",
+      "zone": "EU",
+      "category": "special",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "TU03wQCIitkJpQDRLv4u",
+        "TCG": "TU01w1D52rjGebrE8szS",
+        "VGC": "TU02wKzv4cT2BBiI9dEg"
+      }
+    },
+    {
+      "name": "Indianapolis Pokémon Regional Championships",
+      "date": "May 29-31, 2026",
+      "location": "Indianapolis, US",
+      "country": "US",
+      "zone": "NA",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "IN03wJ7qOrT3lVq5RbEh",
+        "TCG": "IN01wT0IVRulcJxVUEZ0",
+        "VGC": "IN02wbUMQOt2eNv12cgC"
+      }
+    },
+    {
+      "name": "Melbourne Pokémon Regional Championships",
+      "date": "May 23-24, 2026",
+      "location": "South Wharf, AU",
+      "country": "AU",
+      "zone": "AP",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "MB03w3wsOKPhsl0cQS9K",
+        "TCG": "MB01wmlUs2CVS0PCE3d9",
+        "VGC": "MB02w71HQZzTvTOYLtXb"
+      }
+    },
+    {
+      "name": "Campinas Pokémon Regional Championships",
+      "date": "May 16-17, 2026",
+      "location": "Campinas - SP, BR",
+      "country": "BR",
+      "zone": "LA",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "CA03wTkrx1D5TMc3COM3",
+        "TCG": "CA01wQsCrDh1mbLzRAcv",
+        "VGC": "CA02wLAJ2mRyQI5kryVw"
+      }
+    },
+    {
+      "name": "Utrecht Pokémon Regional Championships",
+      "date": "May 16-17, 2026",
+      "location": "Utrecht, NL",
+      "country": "NL",
+      "zone": "EU",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "UT03w1lI1O10wI12TTJV",
+        "TCG": "UT01wfduzfUrh9rXVkAx",
+        "VGC": "UT02wFHDCjnKgZ9Gscu7"
+      }
+    },
+    {
+      "name": "Los Angeles Pokémon Regional Championships",
+      "date": "May 8-10, 2026",
+      "location": "Los Angeles, US",
+      "country": "US",
+      "zone": "NA",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "LS03w93tBlADh1JP9BSP",
+        "TCG": "LS01wQe8A4VHbkNmRSRG",
+        "VGC": "LS02w5lpCOiMwPPo7QWD"
+      }
+    },
+    {
+      "name": "Prague Pokémon Regional Championships",
+      "date": "April 25-26, 2026",
+      "location": "Praha, CZ",
+      "country": "CZ",
+      "zone": "EU",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "PR03wBAAkNpl56QfZsAH",
+        "TCG": "PR01w1kJAMjLB09Ftxyj",
+        "VGC": "PR02wayEt6qQBnpFi6cp"
+      }
+    },
+    {
+      "name": "Querétaro Pokémon Regional Championships",
+      "date": "April 4-5, 2026",
+      "location": "Santiago de Querétaro, MX",
+      "country": "MX",
+      "zone": "LA",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "QT03w3GloOA4Q9j3C4S2",
+        "TCG": "QT01w3mp1uQMDP3jCkOe",
+        "VGC": "QT02wgHCgGOEh4NP4jLE"
+      }
+    },
+    {
+      "name": "Orlando Pokémon Regional Championships",
+      "date": "April 3-5, 2026",
+      "location": "Orlando, US",
+      "country": "US",
+      "zone": "NA",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "OR03wjKlqkGsNkWUkp7t",
+        "TCG": "OR01wtIo4gvZNU3UircG",
+        "VGC": "OR02wF0GhaiorROTkFlu"
+      }
+    },
+    {
+      "name": "Seville Pokémon Special Championships",
+      "date": "March 28-29, 2026",
+      "location": "Sevilla, ES",
+      "country": "ES",
+      "zone": "EU",
+      "category": "special",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "SV03wD9m3c1SF6GuHo31",
+        "TCG": "SV01wTkt9yQGVSt6nlcu",
+        "VGC": "SV02wtoHf5SDBUM0ntB2"
+      }
+    },
+    {
+      "name": "Houston Pokémon Regional Championships",
+      "date": "March 20-22, 2026",
+      "location": "Houston, US",
+      "country": "US",
+      "zone": "NA",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "HO03wwJEldXRD7OO1Uh6",
+        "TCG": "HO01w20W3tGb1aAsLzwS",
+        "VGC": "HO02w2PgpC7mWHP8zYRI"
+      }
+    },
+    {
+      "name": "Curitiba Pokémon Regional Championships",
+      "date": "March 14-15, 2026",
+      "location": "Pinhais - PR, BR",
+      "country": "BR",
+      "zone": "LA",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "CU03wHRTDuyYHweTL5nq",
+        "TCG": "CU01wDygvn34WEPNJ3ou",
+        "VGC": "CU02wOcwtjVNH6QdhfNE"
+      }
+    },
+    {
+      "name": "Seattle Pokémon Regional Championships",
+      "date": "February 27-March 1, 2026",
+      "location": "Seattle, US",
+      "country": "US",
+      "zone": "NA",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "SE038vQFMED9cyWQw6Si",
+        "TCG": "SE01gUuRn8bJqbH9Wnt1",
+        "VGC": "SE027LIri9yqbewCPonE"
+      }
+    },
+    {
+      "name": "Europe Pokémon International Championships",
+      "date": "February 13-15, 2026",
+      "location": "London, UK",
+      "country": "UK",
+      "zone": "EU",
+      "category": "international",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "EU03mTNw4FZETNfaxXUm",
+        "TCG": "EU01mU0Z1galE2FATDYs",
+        "VGC": "EU02mADIyxk2QHCU8dqx"
+      }
+    },
+    {
+      "name": "Santiago Pokémon Regional Championships",
+      "date": "February 7-8, 2026",
+      "location": "Huechuraba, CL",
+      "country": "CL",
+      "zone": "LA",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "ST03Gz1KMoh4n8Av4tPY",
+        "TCG": "ST01bmgM9jIqCvBYdzy3",
+        "VGC": "ST02KJ5wqNl34q3KGE8N"
+      }
+    },
+    {
+      "name": "Sydney Pokémon Regional Championships",
+      "date": "February 7-8, 2026",
+      "location": "Sydney, AU",
+      "country": "AU",
+      "zone": "AP",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "SY03CfGNjvMRRdlFGbLs",
+        "TCG": "SY01X6aiblBgAp8tfhjx",
+        "VGC": "SY02sMDp6JmCcnCynSLn"
+      }
+    },
+    {
+      "name": "Mérida Pokémon Regional Championships",
+      "date": "January 24-25, 2026",
+      "location": "Mérida, MX",
+      "country": "MX",
+      "zone": "LA",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "ME03wLllB0lsH3fzwkOD",
+        "TCG": "ME01wMEKNaLIfrdxmnhb",
+        "VGC": "ME02w00ChbJUX07ROH4K"
+      }
+    },
+    {
+      "name": "Birmingham Pokémon Regional Championships",
+      "date": "January 24-25, 2026",
+      "location": "Birmingham, UK",
+      "country": "UK",
+      "zone": "EU",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "BH03m4RPDTqib2csWkvA",
+        "TCG": "BH01mjIWeSb7vxkM9Aer",
+        "VGC": "BH02mBOy0UgfISzHnNdU"
+      }
+    },
+    {
+      "name": "Toronto Pokémon Regional Championships",
+      "date": "January 16-18, 2026",
+      "location": "Toronto, CA",
+      "country": "CA",
+      "zone": "NA",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "TO03bkaDYVC8LBwm2JSr",
+        "TCG": "TO01yAfakDVFFDFAV2AS",
+        "VGC": "TO027Rvi7XmbN1f355Nc"
+      }
+    },
+    {
+      "name": "Stuttgart Pokémon Regional Championships",
+      "date": "November 29-30, 2025",
+      "location": "Stuttgart, DE",
+      "country": "DE",
+      "zone": "EU",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "SG03sbLG9sNOqeqewnTQ",
+        "TCG": "SG0167ss5UCjklsDaPrA",
+        "VGC": "SG02gVKM38QMVGTcAiZN"
+      }
+    },
+    {
+      "name": "Latin America Pokémon International Championships",
+      "date": "November 21-23, 2025",
+      "location": "São Paulo, BR",
+      "country": "BR",
+      "zone": "LA",
+      "category": "international",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "LA0326eMB6DeO1Axltwq",
+        "TCG": "LA0126uWiVw5bRySlkA2",
+        "VGC": "LA0226md2zDgZtmvexIY"
+      }
+    },
+    {
+      "name": "Las Vegas Pokémon Regional Championships",
+      "date": "November 14-16, 2025",
+      "location": "Las Vegas, US",
+      "country": "US",
+      "zone": "NA",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "LV03AaN4nmMTQLQM8fRX",
+        "TCG": "LV01YShqrqjMo62PxZPg",
+        "VGC": "LV02kSgge3zYTKAwlomv"
+      }
+    },
+    {
+      "name": "Gdańsk Pokémon Regional Championships",
+      "date": "November 1-2, 2025",
+      "location": "Gdańsk, PL",
+      "country": "PL",
+      "zone": "EU",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "GD03nnTv4dLzBkPysjgB",
+        "TCG": "GD01yAq3nBdy68dkmxVc",
+        "VGC": "GD02yFCaTDuKwnIR9IKd"
+      }
+    },
+    {
+      "name": "Brisbane Pokémon Regional Championships",
+      "date": "November 1-2, 2025",
+      "location": "South Brisbane, AU",
+      "country": "AU",
+      "zone": "AP",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "BR03m5yE7PoUQpZPPNNA",
+        "TCG": "BR01wWjeoRXmsLVtL56s",
+        "VGC": "BR02nX95OUm3tbvzmSPv"
+      }
+    },
+    {
+      "name": "Lille Pokémon Regional Championships",
+      "date": "October 25-26, 2025",
+      "location": "Lille, FR",
+      "country": "FR",
+      "zone": "EU",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "LL03oStWcwHOp1ZpMb0P",
+        "TCG": "LL01rJ9jmjd0vvZStqEI",
+        "VGC": "LL02aDtPZHuHLDewaIqy"
+      }
+    },
+    {
+      "name": "Milwaukee Pokémon Regional Championships",
+      "date": "October 10-12, 2025",
+      "location": "Milwaukee, US",
+      "country": "US",
+      "zone": "NA",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "MK03mgGBgpHALRuWCXSd",
+        "TCG": "MK01mzXPKCuqXfZ1ay6j",
+        "VGC": "MK02mx9kmM49UZ5g4JxH"
+      }
+    },
+    {
+      "name": "Belo Horizonte Pokémon Regional Championships",
+      "date": "October 11-12, 2025",
+      "location": "Gameleira, Belo Horizonte - MG, BR",
+      "country": "BR",
+      "zone": "LA",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "BE03wmBwWyTTfd6KYntC",
+        "TCG": "BE01wYmCBW1HzjObcfgo",
+        "VGC": "BE02wX9mUPbgJsSba2pR"
+      }
+    },
+    {
+      "name": "Pittsburgh Pokémon Regional Championships",
+      "date": "September 19-21, 2025",
+      "location": "Pittsburgh, US",
+      "country": "US",
+      "zone": "NA",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "PT03mwQjGEXzjRcVsDEO",
+        "TCG": "PT01klFH0Nj5f17R5myQ",
+        "VGC": "PT02mMVCgJGPQcHccDoy"
+      }
+    },
+    {
+      "name": "Monterrey Pokémon Regional Championships",
+      "date": "September 13-14, 2025",
+      "location": "Monterrey, MX",
+      "country": "MX",
+      "zone": "LA",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "MT03mAzmJP3oI88qMWrI",
+        "TCG": "MT01mfOxRw9XtaFtElAm",
+        "VGC": "MT02mEWqwYNpTSVPcblx"
+      }
+    },
+    {
+      "name": "Frankfurt Pokémon Regional Championships",
+      "date": "September 13-14, 2025",
+      "location": "Frankfurt am Main, DE",
+      "country": "DE",
+      "zone": "EU",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "FR03mYtLq9Vt6NHFHhsn",
+        "TCG": "FR01mpvNDKVaPxTTkdam",
+        "VGC": "FR02mk9EZ28MWiUNIsTN"
+      }
+    }
+  ],
+  "completed": []
+}

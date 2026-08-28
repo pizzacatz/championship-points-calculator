@@ -1,6 +1,6 @@
 {
   "name": "championship-points-calculator",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Kicker- and Best-Finish-Limit-aware Championship Point planning for the 2027 Play! Pokemon season.",
   "scripts": {
     "dev": "vite",
@@ -11,10 +11,12 @@
     "typecheck": "tsc --noEmit",
     "refresh:leaderboard": "node scripts/refresh-leaderboard.mjs",
     "refresh:attendance": "node scripts/refresh-attendance.mjs",
-    "harvest:rk9": "node scripts/harvest-rk9.mjs"
+    "harvest:rk9": "node scripts/harvest-rk9.mjs",
+    "refresh:catalog": "node scripts/refresh-catalog.mjs"
   },
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^26.4.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
     "@vitejs/plugin-react": "^5.2.0",

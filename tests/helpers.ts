@@ -10,15 +10,11 @@ export function ev(partial: Partial<PlannedEvent> & { eventTypeId: string }): Pl
   seq += 1;
   return {
     id: `e${seq}`,
-    status: 'completed',
     name: '',
     date: null,
     placement: null,
     awardedPoints: null,
     attendance: null,
-    committed: false,
-    bestFinishConstraint: null,
-    notes: '',
     ...partial,
   };
 }
@@ -32,7 +28,6 @@ export function path(events: PlannedEvent[], overrides: Partial<QualificationPat
     ratingZone: 'NA',
     ageDivision: 'MASTERS',
     targetOverride: null,
-    attendanceAdjustment: 0,
     events,
     updatedAt: '2026-08-28T00:00:00.000Z',
     ...overrides,
