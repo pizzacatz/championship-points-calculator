@@ -3,6 +3,40 @@
 All dates 2026-08-28 — the project was specified, built, reviewed and rebuilt in
 a single session.
 
+## 2.4.0
+
+- **Four figures at the top: CP NOW · TO GO · GOAL · AVAILABLE.**
+  - **TO GO** now measures against what is banked, not the projection. It read
+    `Reached` on a plan with 500 CP banked and six events unplayed.
+  - **AVAILABLE** is the most the unplayed events could still add, run through the
+    Best Finish Limit — a sixth major adds only what it displaces, and if it
+    displaces nothing it adds nothing. Eight blank majors show 1,750, not 2,800.
+  - Together they answer the product's question without reading the ladder: *I
+    need 342, my remaining events can still yield 1,050.*
+- **A goal line replaces the target line and two banners.**
+  `Championship Points Goal: [842] · Last season · This season`. The rank each
+  button reads from follows the game and zone — 90th for VGC in US and Canada,
+  140th for the TCG there. *This season* is disabled with its reason until the
+  2027 leaderboard period opens.
+- **Removed the "on plan to reach" callout.** It stated `goal − banked`, which is
+  exactly what TO GO shows — and it could not distinguish a plan with 1,225 CP of
+  headroom from one with 350. *Target reached* and *Direct invitation earned* stay:
+  each carries something no figure conveys.
+- **Removed the "below last season's minimum" banner.** That comparison is now
+  visible as numbers.
+- **The season line counts what is overdue** — *3 of 10 played · 2 need results ·
+  next: Baltimore on Sep 18*. An event past its date with nothing entered was in
+  neither the played count nor the next one coming.
+- **Filter the plan by event type.** A view filter only: it says so, and changes no
+  total, unlike the catalog checkboxes above it.
+- Header re-fitted for a fourth figure — the room came from the selects, not the
+  title padding, which is mostly text.
+- Mobile: the theme toggle sits beside the title; all four figures fit on one row;
+  event names truncate to a single line; every zone count lines up on the word
+  **of**, at both 390 and 1280.
+- Removed the category chips from the catalog, the manual Global Challenge button,
+  and the Below kicker chip. CP and Place inputs narrowed to four characters.
+
 ## 2.3.2
 
 - **Removed the displacement line from plan rows.** *"This result adds 190 net CP

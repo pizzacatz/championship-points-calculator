@@ -297,3 +297,11 @@ AVAILABLE is 1,750 — five wins, not eight. A naive sum would have promised 2,8
 One note for implementation: `goal − banked` goes negative once the goal is passed
 (1,350 banked against 842 gives −508). TO GO must floor at zero; the current
 callout only avoids it because a separate guard hides it in that state.
+
+---
+
+## 8. Catalog category chips — remove
+
+`Pokémon North America International Championships` carries an *international*
+chip; `Auckland Pokémon Special Championships` carries a *special* one. The name
+already says it, in both cases. Same cut as the event-type subtitle on plan rows.

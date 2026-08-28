@@ -8,7 +8,6 @@ import type { EvaluatedResult, EventTypeRule, PlannedEvent } from '../domain/typ
  * a local placement is now scored from an assumed turnout rather than refused.
  */
 const BADGE: Partial<Record<EvaluatedResult['reason'], { text: string; cls: string }>> = {
-  'below-kicker': { text: 'Below kicker', cls: 'warn' },
   'invalid': { text: 'Check this', cls: 'danger' },
 };
 
@@ -64,14 +63,14 @@ export function PlanRow({
         <span className="plan-inputs">
           <span className="field">
             <label htmlFor={`cp-${e.id}`}>CP</label>
-            <input id={`cp-${e.id}`} type="number" min={0} step={1} inputMode="numeric"
+            <input id={`cp-${e.id}`} type="number" min={0} step={1} inputMode="numeric" maxLength={4}
               value={e.awardedPoints ?? ''}
               onChange={(ev) => onChange({ awardedPoints: intOrNull(ev.target.value), placement: null })} />
           </span>
           <span className="field-or">or</span>
           <span className="field">
             <label htmlFor={`pl-${e.id}`}>Place</label>
-            <input id={`pl-${e.id}`} type="number" min={1} step={1} inputMode="numeric"
+            <input id={`pl-${e.id}`} type="number" min={1} step={1} inputMode="numeric" maxLength={4}
               value={e.placement ?? ''}
               onChange={(ev) => onChange({ placement: intOrNull(ev.target.value), awardedPoints: null })} />
           </span>

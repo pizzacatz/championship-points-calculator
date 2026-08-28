@@ -73,7 +73,8 @@ export function EventCatalog({
                 onClick={() => setOpen((o) => ({ ...o, [zone.id]: !isOpen }))}>
                 <span aria-hidden="true">{isOpen ? '▾' : '▸'}</span> {zone.label}
               </button>
-              <span className="zone-count">{added} of {events.length}</span>
+              {/* Split so every count lines up on the word "of" across zones. */}
+            <span className="zone-count"><b>{added}</b> of <b>{events.length}</b></span>
               <button type="button" className="ghost" onClick={() => onBulk(withTypes, true)}>Add all</button>
               <button type="button" className="ghost" onClick={() => onBulk(withTypes, false)}
                 disabled={added === 0}>Clear</button>
@@ -89,11 +90,9 @@ export function EventCatalog({
                       <input type="checkbox" id={id} checked={on}
                         onChange={() => onToggle(event, typeId, !on)} />
                       <label htmlFor={id}>
-                        {event.name}
+                        {/* No category chip: "…International Championships" already says so. */}
+                        <span className="ev-name">{event.name}</span>
                         <span className="zone-date">{event.date}</span>
-                        {event.category !== 'regional' && (
-                          <span className="badge muted">{event.category}</span>
-                        )}
                       </label>
                     </li>
                   );
@@ -111,7 +110,7 @@ export function EventCatalog({
               onClick={() => setOpen((o) => ({ ...o, online: !onlineOpen }))}>
               <span aria-hidden="true">{onlineOpen ? '▾' : '▸'}</span> Global &amp; Grand Challenges
             </button>
-            <span className="zone-count">{onlineAdded} of {online.length}</span>
+            <span className="zone-count"><b>{onlineAdded}</b> of <b>{online.length}</b></span>
             <button type="button" className="ghost"
               onClick={() => onBulk(online.map((e) => ({ event: e, typeId: e.eventTypeId! })), true)}>
               Add all
@@ -144,9 +143,12 @@ export function EventCatalog({
       )}
 
       <div className="row add-manual">
-        {manualTypes.map((t) => (
-          <button key={t.id} type="button" onClick={() => onAddManual(t.id)}>+ {t.label}</button>
-        ))}
+        {manualTypes
+          // Global and Grand Challenges have their own group above.
+          .filter((t) => t.id !== 'vgc-global-challenge')
+          .map((t) => (
+            <button key={t.id} type="button" onClick={() => onAddManual(t.id)}>+ {t.label}</button>
+          ))}
       </div>
     </section>
   );

@@ -37,8 +37,38 @@ await check('the totals live in the sticky header', async () => {
   assert.equal(await page.locator('.masthead .totals').count(), 1);
 });
 
-await check('the target defaults to the previous-season cutoff', async () => {
-  assert.equal(await page.getByLabel('Planning target in Championship Points').inputValue(), '842');
+await check('the goal defaults to the previous-season cutoff', async () => {
+  assert.equal(await page.getByLabel('Championship Points Goal:').inputValue(), '842');
+});
+
+await check('four figures, and TO GO measured against banked CP', async () => {
+  const t = (await page.locator('.totals').innerText()).replace(/\n/g, ' ');
+  for (const label of ['CP now', 'To go', 'Goal', 'Available']) {
+    assert.match(t, new RegExp(label, 'i'), `missing ${label}`);
+  }
+  // Nothing banked, so TO GO is the whole goal — not "reached" off a projection.
+  assert.equal((await stat('To go')).trim(), '842');
+});
+
+await check('the goal can be filled from last season, and this season is disabled', async () => {
+  const line = page.locator('.goal-line');
+  assert.equal(await line.getByRole('button', { name: 'Last season' }).isEnabled(), true);
+  // The 2027 leaderboard period is not published, so there is nothing to read.
+  assert.equal(await line.getByRole('button', { name: 'This season' }).isDisabled(), true);
+});
+
+await check('the zone counts all line up on the word "of"', async () => {
+  const xs = await page.evaluate(() => {
+    const out = [];
+    for (const z of document.querySelectorAll('.zone')) {
+      const c = z.querySelector('.zone-count'); if (!c) continue;
+      const of = [...c.childNodes].find((n) => n.nodeType === 3 && n.textContent.includes('of'));
+      const r = document.createRange(); r.selectNode(of);
+      out.push(Math.round(r.getBoundingClientRect().left));
+    }
+    return [...new Set(out)];
+  });
+  assert.equal(xs.length, 1, `counts at ${xs.length} different positions: ${xs}`);
 });
 
 // --- catalog -------------------------------------------------------------
@@ -269,12 +299,41 @@ await check('the official sources are back, collapsed', async () => {
   await det.locator('summary').click();
 });
 
+await check('the plan can be filtered by event type, without changing a total', async () => {
+  const before = await stat('CP now');
+  const filter = page.locator('.plan-filter');
+  assert.ok(await filter.count() > 0, 'no filter shown for a mixed plan');
+  const rows = await page.locator('.plan-row').count();
+  await filter.getByRole('button', { name: /^Cup/ }).click();
+  await page.waitForTimeout(500);
+  assert.ok(await page.locator('.plan-row').count() < rows, 'filter hid nothing');
+  assert.equal(await stat('CP now'), before, 'filtering changed a total');
+  assert.match(await page.locator('.filter-note').innerText(), /changes nothing that is counted/);
+  await filter.getByRole('button', { name: /^All/ }).click();
+  await page.waitForTimeout(400);
+  assert.equal(await page.locator('.plan-row').count(), rows);
+});
+
+await check('the season line names events needing results', async () => {
+  // An earlier check removes its overdue row, so make one.
+  const cat = page.locator('section', { has: page.getByRole('heading', { name: 'Events' }) });
+  await cat.getByRole('button', { name: '+ League Challenge' }).click();
+  await page.waitForTimeout(400);
+  const row = page.locator('.plan-row', { hasText: 'League Challenge' }).last();
+  await row.getByLabel('Date').fill('2026-02-14');
+  await page.waitForTimeout(700);
+  assert.match(await page.locator('.season-line').innerText(), /needs? results/);
+  await row.getByRole('button', { name: /Remove/ }).click();
+  await page.waitForTimeout(400);
+});
+
 await check('the removed v1 sections are gone', async () => {
   const body = await page.locator('main').innerText();
   for (const gone of ['Method, sources and limits', 'Official sources',
                       'Direct invitations', 'Ways to reach your target',
                       'Projected attendance', 'Add what you can get to',
-                      'Excluded by BFL', 'Needs the CP']) {
+                      'Excluded by BFL', 'Needs the CP', 'Below kicker',
+                      'On plan to reach', "Below last season"]) {
     assert.doesNotMatch(body, new RegExp(gone), `"${gone}" should be removed`);
   }
 });

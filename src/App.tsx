@@ -3,7 +3,7 @@ import rulesJson from './data/rules-2027.json';
 import baselinesJson from './data/attendance-baselines.json';
 import cutoffsJson from './data/cutoffs.json';
 import catalogJson from './data/events-catalog.json';
-import { evaluatePath, eventTypesForGame, gapTo, planningTarget, ruleFor } from './domain/calculate';
+import { evaluatePath, eventTypesForGame, planningTarget, ruleFor } from './domain/calculate';
 import { solveLadder } from './domain/ladder';
 import { parsePath } from './domain/schema';
 import type {
@@ -51,14 +51,21 @@ export default function App() {
   const liveBoundary = snapshot?.boundaries?.[path.game]?.[zone]?.championshipPoints ?? null;
 
   const evaluation = useMemo(() => evaluatePath(path, rules, baselines), [path]);
-  const { target, source } = planningTarget(path, previousCutoff, liveBoundary);
+  const { target } = planningTarget(path, previousCutoff, liveBoundary);
   const ladder = useMemo(() => solveLadder(path, rules, baselines, target), [path, target]);
 
-  const projected = ladder.projectedTotal;
-  const projectedGap = gapTo(target, projected);
+  // TO GO measures against what is banked, not the projection: a plan with six
+  // unplayed events has reached nothing yet. Floored, because the difference goes
+  // negative once the goal is passed.
+  const toGo = target == null ? null : Math.max(0, target - evaluation.currentTotal);
+  // AVAILABLE is the most the unplayed events could still add, run through the
+  // Best Finish Limit — a sixth major adds only what it displaces, and if it
+  // displaces nothing it adds nothing.
+  const available = Math.max(0, ladder.maxAttainable - evaluation.currentTotal);
   const zoneLabel = rules.ratingZones.find((z) => z.id === zone)?.label ?? zone;
-  const hasResults = evaluation.results.some((r) => r.rawPoints > 0);
-  const belowPrevious = hasResults && previousCutoff != null && projected < previousCutoff;
+  // The rank a boundary is read at is the invitation count, which differs by game
+  // and zone: 90th for VGC in US and Canada, 140th for the TCG there.
+  const invitationRank = rules.invitationSlots[path.game]?.[zone] ?? null;
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -96,13 +103,29 @@ export default function App() {
     const played = evaluation.results.filter((r) => r.rawPoints > 0 || r.event.awardedPoints === 0).length;
     const next = dated.filter((e) => e.date! >= today).sort((a, b) => a.date!.localeCompare(b.date!))[0];
     if (!path.events.length) return 'No events yet.';
+    // An event past its date with nothing entered sits in neither the played
+    // count nor the next one coming — the one state worth prompting about.
+    const needing = path.events.filter(
+      (e) => e.awardedPoints == null && e.placement == null && e.date != null && e.date < today,
+    ).length;
     const parts = [`${played} of ${path.events.length} events played`];
+    if (needing) parts.push(`${needing} need${needing === 1 ? 's' : ''} results`);
     if (next) {
       parts.push(`next: ${(next.name || '').replace(/ Pokémon .*/, '')} on `
         + new Date(`${next.date}T00:00:00`).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }));
     }
     return parts.join(' · ');
   }, [path.events, evaluation.results, today]);
+
+  // A view filter only: it hides rows, it never changes a total, the ladder or
+  // what is counted. Every other list control on this page does change the
+  // calculation, so the difference has to be obvious.
+  const [typeFilter, setTypeFilter] = useState<string | null>(null);
+  const typeCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const e of path.events) counts.set(e.eventTypeId, (counts.get(e.eventTypeId) ?? 0) + 1);
+    return counts;
+  }, [path.events]);
 
   const addedNames = useMemo(
     () => new Set(path.events.map((e) => e.catalogName).filter(Boolean) as string[]),
@@ -216,8 +239,9 @@ export default function App() {
 
           <div className="totals" role="group" aria-label="Championship Point totals">
             <span className="t"><b>{fmt(evaluation.currentTotal)}</b><i>CP now</i></span>
-            <span className="t hero"><b>{fmt(projected)}</b><i>Projected</i></span>
-            <span className="t"><b>{projectedGap === 0 ? '0' : fmt(projectedGap)}</b><i>To go</i></span>
+            <span className="t hero"><b>{fmt(toGo)}</b><i>To go</i></span>
+            <span className="t"><b>{fmt(target)}</b><i>Goal</i></span>
+            <span className="t"><b>{fmt(available)}</b><i>Available</i></span>
           </div>
 
           <button type="button" className="theme-toggle" onClick={toggle}
@@ -248,22 +272,30 @@ export default function App() {
 
           <p className="season-line">{seasonLine}</p>
 
-          <p className="target-line">
-            target{' '}
-            <input type="number" min={0} step={1} inputMode="numeric"
-              aria-label="Planning target in Championship Points"
+          <p className="goal-line">
+            <label htmlFor="goal">Championship Points Goal:</label>
+            <input id="goal" type="number" min={0} step={1} inputMode="numeric"
               value={path.targetOverride ?? target ?? ''}
               onChange={(e) => {
                 const v = e.target.value.trim();
                 store.update({ targetOverride: v ? Math.max(0, Math.trunc(Number(v))) : null });
               }} />
-            {' · '}
-            {source === 'override'
-              ? <>your own <button type="button" className="ghost"
-                  onClick={() => store.update({ targetOverride: null })}>reset</button></>
-              : source === 'live' ? 'live boundary'
-              : source === 'previous' ? `${cutoffs.season} cutoff · ${zoneLabel}`
-              : 'no benchmark available'}
+            <button type="button" className="ghost" disabled={previousCutoff == null}
+              onClick={() => store.update({ targetOverride: previousCutoff })}
+              title={previousCutoff == null
+                ? 'No previous-season figure for this game and rating zone'
+                : `${cutoffs.season} final cutoff — rank ${invitationRank ?? '?'} in ${zoneLabel}`}>
+              Last season
+            </button>
+            {/* Present but disabled until the season's leaderboard opens: absent,
+                a player wonders whether the feature exists at all. */}
+            <button type="button" className="ghost" disabled={liveBoundary == null}
+              onClick={() => store.update({ targetOverride: liveBoundary })}
+              title={liveBoundary == null
+                ? `The ${rules.season} leaderboard has not opened yet`
+                : `Live boundary — rank ${invitationRank ?? '?'} in ${zoneLabel}`}>
+              This season
+            </button>
           </p>
 
           {/* Banked and projected are different claims. The green banner is only
@@ -274,21 +306,6 @@ export default function App() {
               cutoff moves, and only a direct invitation guarantees a place.
             </div>
           )}
-          {target != null && evaluation.currentTotal < target && projectedGap === 0 && (
-            <div className="callout" role="status">
-              <strong>On plan to reach {fmt(target)}.</strong> {fmt(target - evaluation.currentTotal)} CP
-              of that is still to earn — the finishes below are what it would take.
-            </div>
-          )}
-
-          {belowPrevious && previousCutoff != null && (
-            <div className="callout warn">
-              <strong>Below last season's minimum.</strong> {fmt(projected)} CP against
-              the {cutoffs.season} boundary of {fmt(previousCutoff)}. That is a historical benchmark,
-              not a {rules.season} threshold.
-            </div>
-          )}
-
           {evaluation.directInvites.length > 0 && (
             <div className="callout ok">
               <strong>Direct invitation earned.</strong>{' '}
@@ -314,11 +331,32 @@ export default function App() {
             </span>
           </header>
 
+          {typeCounts.size > 1 && (
+            <div className="row plan-filter" role="group" aria-label="Filter the plan by event type">
+              <button type="button" className={typeFilter == null ? 'on' : ''}
+                aria-pressed={typeFilter == null} onClick={() => setTypeFilter(null)}>
+                All {path.events.length}
+              </button>
+              {/* Only types actually present — a filter for an absent type is noise. */}
+              {eventTypesForGame(rules, path.game)
+                .filter((t) => typeCounts.has(t.id))
+                .map((t) => (
+                  <button key={t.id} type="button" className={typeFilter === t.id ? 'on' : ''}
+                    aria-pressed={typeFilter === t.id}
+                    onClick={() => setTypeFilter(typeFilter === t.id ? null : t.id)}>
+                    {t.shortLabel} {typeCounts.get(t.id)}
+                  </button>
+                ))}
+            </div>
+          )}
+
           {path.events.length === 0 ? (
             <p className="empty">Pick events above, or add a Cup or Challenge.</p>
           ) : (
             <ol className="plan-list">
-              {ordered.map((result) => {
+              {ordered
+                .filter((r) => typeFilter == null || r.event.eventTypeId === typeFilter)
+                .map((result) => {
                 const rule = ruleFor(rules, result.event.eventTypeId);
                 if (!rule) return null;
                 const e = result.event;
@@ -334,6 +372,13 @@ export default function App() {
                 );
               })}
             </ol>
+          )}
+
+          {typeFilter && (
+            <p className="hint filter-note">
+              Showing {typeCounts.get(typeFilter) ?? 0} of {path.events.length} events.
+              Filtering changes nothing that is counted.
+            </p>
           )}
         </section>
 
