@@ -173,21 +173,46 @@ describe('planned versus completed', () => {
     expect(d.message).toMatch(/adds 190 net CP by replacing/);
   });
 
-  it('labels a planned major from the unverified baseline as conditional', () => {
+  it('projects a planned major from the verified previous-season low', () => {
     const plan = ev({ eventTypeId: 'regional', status: 'planned', placement: 9 });
     const r = of(path([plan]), plan.id);
+    // Smallest 2026 VGC Regional Masters field: Curitiba, 180 players.
     expect(r.attendanceSource).toBe('baseline');
-    expect(r.conditional).toBe(true);
-    expect(r.explanation).toMatch(/assuming the 33-player kicker is met/);
+    expect(r.attendanceUsed).toBe(180);
+    // The baseline is a real observation now, so the result is not conditional.
+    expect(r.conditional).toBe(false);
+    expect(r.rawPoints).toBe(200);
+  });
+
+  it('gives Regionals, Specials and Internationals their own baseline', () => {
+    // Field sizes differ by an order of magnitude, so one shared figure would
+    // misprice two of the three.
+    const at = (id: string) => {
+      const plan = ev({ eventTypeId: id, status: 'planned', placement: 9 });
+      return of(path([plan]), plan.id).attendanceUsed;
+    };
+    expect(at('regional')).toBe(180);
+    expect(at('special')).toBe(43);
+    expect(at('international')).toBe(518);
   });
 
   it('applies the attendance adjustment to the planned-major baseline', () => {
     const plan = ev({ eventTypeId: 'regional', status: 'planned', placement: 257 });
-    // VGC regional baseline is 300; 257–512 needs a 1,025-player kicker.
+    // VGC regional baseline is 180; the 257–512 band needs a 1,025-player kicker.
     expect(of(path([plan]), plan.id).rawPoints).toBe(0);
-    const raised = of(path([plan], { attendanceAdjustment: 800 }), plan.id);
-    expect(raised.attendanceUsed).toBe(1100);
+    const raised = of(path([plan], { attendanceAdjustment: 900 }), plan.id);
+    expect(raised.attendanceUsed).toBe(1080);
     expect(raised.rawPoints).toBe(45);
+  });
+
+  it('asks for an assumption when a game has no baseline yet', () => {
+    // Pokémon GO baselines are not sourced, so a planned GO major must not
+    // silently invent a field size.
+    const plan = ev({ eventTypeId: 'regional', status: 'planned', placement: 9 });
+    const r = of(path([plan], { game: 'GO' }), plan.id);
+    expect(r.attendanceUsed).toBeNull();
+    expect(r.reason).toBe('unverified-attendance');
+    expect(r.rawPoints).toBe(0);
   });
 
   it('marks a planned local positive CP outcome as conditional on the kicker', () => {

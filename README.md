@@ -2,7 +2,7 @@
 
 Plan a 2027 Play! Pokémon Worlds run without doing Best Finish Limit arithmetic by hand.
 
-**Live app → https://pizzacatz.github.io/championship-points-calculator/**
+**Live app → https://points.georgiaplayevents.com/**
 
 Adding up the published Championship Point value of every tournament you intend to
 enter gives the wrong answer. CP depends on attendance kickers, on which Best Finish
@@ -66,27 +66,50 @@ Cutoffs in [`src/data/cutoffs.json`](src/data/cutoffs.json) are read from the of
 leaderboard API, not from community tables. The app displays its rules version and
 verification date, and says so when the live boundary is stale or unavailable.
 
-### The one unverified input
+### Projected attendance for planned majors
 
-[`src/data/attendance-baselines.json`](src/data/attendance-baselines.json) holds the
-projected field size used for **planned** major events. Play! Pokémon publishes no
-machine-readable attendance feed, so unlike everything else here these numbers could
-not be sourced — they are conservative placeholders, flagged `"verified": false`.
+[`src/data/attendance-baselines.json`](src/data/attendance-baselines.json) holds the field
+size assumed for a **planned** major: the smallest Masters field observed in that category
+during the previous season. Play! Pokémon publishes no attendance feed, so these come from
+the community databases that do, via
+[`scripts/refresh-attendance.mjs`](scripts/refresh-attendance.mjs):
 
-Consequently every planned-major projection that relies on them is labelled
-*conditional on the kicker being met* in the UI, and the footer says so plainly.
-Entering a real attendance on a planned event, or using the attendance-adjustment
-control, replaces the projection. Completed events always use actual attendance and
-are never affected.
+| Game | Source | Status |
+|---|---|---|
+| TCG | [limitlesstcg.com](https://limitlesstcg.com/tournaments) | observed, 36 events |
+| VGC | [limitlessvgc.com](https://limitlessvgc.com/tournaments) | observed, 35 events |
+| GO | — | **not sourced** |
 
-To verify them: for each game and category, find the smallest Masters field among the
-previous season's events, and record it with the event that produced it.
+Limitless's player count is the Masters count. Two independent spot-checks against
+[rk9.gg](https://rk9.gg), the official tournament software, and
+[Victory Road](https://victoryroad.pro):
+
+| Event | Limitless | Cross-check |
+|---|---:|---|
+| Seattle 2026 VGC | 822 | 821 Masters with a final standing (rk9 roster) |
+| Gdańsk 2026 VGC | 418 | "Attendance 418 MA" (Victory Road) |
+
+Regionals, Specials and Internationals each carry their own baseline. They share a payout
+table and one Best Finish Limit, but their fields differ by an order of magnitude — the
+smallest 2026 VGC Regional held 180 players and the smallest Special 43 — so one shared
+figure would misprice two of the three. That refines the recommendation in PRD §16 with the
+observed data. Baselines are *not* split by the player's home rating zone: kicker
+eligibility depends on attendance at the event actually entered.
+
+**Pokémon GO has no baseline.** Limitless does not cover it, and Liquipedia — which does,
+via its `player_number` field — rate-limits hard enough that the sweep has not completed.
+Rather than invent a field size, a planned GO major asks you to assume an attendance or a
+CP outcome, and the app says so. Completed GO events are unaffected, since they use actual
+attendance. To fill it in: `node scripts/refresh-attendance.mjs`.
+
+Note this data is only ever used for *planned* majors. Completed events always use their
+actual attendance, and entering an attendance on a planned event overrides the projection.
 
 ## Local setup
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173/championship-points-calculator/
+npm run dev        # http://localhost:5173/
 ```
 
 | Script | Purpose |
@@ -95,6 +118,7 @@ npm run dev        # http://localhost:5173/championship-points-calculator/
 | `npm run typecheck` | strict TypeScript, no emit |
 | `npm run build` | typecheck, then production build to `dist/` |
 | `npm run refresh:leaderboard` | re-read the live boundary from the official API |
+| `npm run refresh:attendance` | rebuild the attendance baselines from Limitless and Liquipedia |
 
 The end-to-end smoke test drives the built app in a real browser:
 
@@ -129,6 +153,7 @@ src/
 ├── store.ts       localStorage persistence
 └── App.tsx
 scripts/           refresh-leaderboard.mjs — daily boundary refresh
+                   refresh-attendance.mjs  — previous-season attendance baselines
 tests/             52 unit and fixture tests, plus a browser smoke test
 ```
 
@@ -136,6 +161,10 @@ The engine is deliberately pure: `evaluatePath()` and `generatePaths()` take rul
 baselines and a path, and return totals, per-row explanations, bucket occupancy and
 displacement. That is what makes the acceptance fixtures in `tests/calculate.test.ts`
 possible, and it is why the rules live in JSON rather than in components.
+
+The site is served from `points.georgiaplayevents.com` at the domain root — `public/CNAME`
+holds the custom domain, and `vite.config.ts` therefore builds with `base: '/'`. The DNS
+record is a `CNAME` from `points` to `pizzacatz.github.io`.
 
 The site is fully static. A scheduled GitHub Action reads the official leaderboard
 once a day and commits a snapshot, so there is no runtime backend and no user account

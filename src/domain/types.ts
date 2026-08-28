@@ -71,8 +71,8 @@ export type AttendanceBaselines = {
   description: string;
   provenance: string;
   howToVerify: string;
-  baselines: Record<Game, Record<'regionalSpecial' | 'international', {
-    attendance: number; sourceEvent: string | null; verified: boolean;
+  baselines: Record<Game, Record<'regional' | 'special' | 'international', {
+    attendance: number | null; sourceEvent: string | null; verified: boolean;
   }>>;
   note: string;
 };

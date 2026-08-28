@@ -1,10 +1,9 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// Served from https://pizzacatz.github.io/championship-points-calculator/,
-// so every asset URL needs that prefix.
+// Served from https://points.georgiaplayevents.com/ at the domain root.
 export default defineConfig({
-  base: '/championship-points-calculator/',
+  base: '/',
   plugins: [react()],
   build: { outDir: 'dist', sourcemap: true },
   test: { environment: 'node', include: ['tests/**/*.test.ts'] },

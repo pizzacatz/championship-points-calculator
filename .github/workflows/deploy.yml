@@ -41,7 +41,7 @@ jobs:
         run: |
           npx playwright install --with-deps chromium
           npx vite preview --port 4188 --strictPort &
-          npx wait-on -t 60000 http://localhost:4188/championship-points-calculator/
+          npx wait-on -t 60000 http://localhost:4188/
           node tests/smoke.spec.mjs
 
       - uses: actions/upload-pages-artifact@v3

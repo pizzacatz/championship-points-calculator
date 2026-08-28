@@ -22,14 +22,20 @@ export const eventTypesForGame = (rules: SeasonRules, game: Game): EventTypeRule
 export const tableFor = (rules: SeasonRules, rule: EventTypeRule): PlacementBand[] =>
   rules.placementTables[rule.table] ?? [];
 
-/** The projected attendance for a planned major, before the player's adjustment. */
+/**
+ * The projected attendance for a planned major, before the player's adjustment.
+ *
+ * Regionals, Specials and Internationals each get their own baseline. They share
+ * a payout table and a Best Finish Limit, but their field sizes differ by an
+ * order of magnitude, so one shared figure would badly misprice two of the three.
+ */
 export function baselineAttendance(
   baselines: AttendanceBaselines, game: Game, rule: EventTypeRule,
-): { attendance: number; verified: boolean } | null {
+): { attendance: number; verified: boolean; sourceEvent: string | null } | null {
   if (rule.scale !== 'major') return null;
-  const key = rule.id === 'international' ? 'international' : 'regionalSpecial';
-  const entry = baselines.baselines[game]?.[key];
-  return entry ? { attendance: entry.attendance, verified: entry.verified } : null;
+  const entry = baselines.baselines[game]?.[rule.id as keyof AttendanceBaselines['baselines'][Game]];
+  if (!entry || entry.attendance == null) return null;
+  return { attendance: entry.attendance, verified: entry.verified, sourceEvent: entry.sourceEvent };
 }
 
 const ordinal = (n: number): string => {

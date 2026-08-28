@@ -8,7 +8,7 @@
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
 
-const BASE = process.env.SMOKE_URL ?? 'http://localhost:4188/championship-points-calculator/';
+const BASE = process.env.SMOKE_URL ?? 'http://localhost:4188/';
 const checks = [];
 const check = async (name, fn) => {
   try { await fn(); checks.push(`  ok   ${name}`); }
@@ -75,8 +75,18 @@ await check('a planned result moves projected CP but not current CP', async () =
   assert.equal((await statValue('Projected CP')).trim(), '550');
 });
 
-await check('a planned major from the baseline is labelled conditional', async () => {
-  assert.match(await planned.innerText(), /Conditional on kicker/);
+await check('a planned major is projected from the observed previous-season low', async () => {
+  // Smallest 2026 VGC Regional Masters field: Curitiba, 180 players.
+  assert.match(await planned.innerText(), /180 players assumed/);
+  assert.doesNotMatch(await planned.innerText(), /Conditional on kicker/);
+});
+
+await check('the baseline panel shows its provenance and what it unlocks', async () => {
+  const panel = page.locator('section', { has: page.getByRole('heading', { name: /Projected attendance/ }) });
+  const text = await panel.innerText();
+  assert.match(text, /Regional Curitiba/);      // where the baseline came from
+  assert.match(text, /Special Event Auckland/);
+  assert.match(text, /9–16/);                   // deepest band that still pays
 });
 
 // --- Best Finish Limit --------------------------------------------------

@@ -1,22 +1,107 @@
 {
   "season": 2026,
   "verified": false,
-  "description": "Projected Masters-division attendance for PLANNED major events, defined by the PRD as the single lowest Masters attendance observed during the previous season, held separately by game and major-event category.",
-  "provenance": "PROVISIONAL. Play! Pokémon publishes no machine-readable attendance feed, so these figures could not be sourced the way the CP tables and leaderboard cutoffs were. They are conservative placeholders, not observations. Until they are replaced with verified counts, every planned-major projection that depends on them is labelled unverified in the app, and the player is expected to override them.",
-  "howToVerify": "For each game and category, find the smallest Masters field among the previous season's events (official event standings pages list final Masters standings; the highest final placement is a lower bound on attendance) and record it below with the event that produced it.",
-  "baselines": {
-    "VGC": {
-      "regionalSpecial": { "attendance": 300, "sourceEvent": null, "verified": false },
-      "international":   { "attendance": 700, "sourceEvent": null, "verified": false }
-    },
+  "retrievedAt": "2026-08-28T10:29:53.479Z",
+  "description": "Projected Masters attendance for PLANNED major events: the single lowest Masters attendance observed during the previous season, held separately per game and major-event category.",
+  "provenance": "Play! Pok\u00e9mon publishes no machine-readable attendance feed. TCG and VGC counts come from Limitless (limitlesstcg.com, limitlessvgc.com); Pok\u00e9mon GO comes from Liquipedia, which Limitless does not cover. Spot-checked against rk9.gg, the official tournament software: Seattle 2026 VGC reads 822 on Limitless and 821 Masters with a final standing on the rk9 roster.",
+  "categoryNote": "Regional, Special and International each carry their own baseline. They share a payout table and one Best Finish Limit, but their field sizes differ by an order of magnitude (2026 VGC: smallest Regional 180, smallest Special 43), so a single shared figure would badly misprice two of the three. This refines the recommendation in PRD section 16 with the observed data.",
+  "zoneNote": "Not separated by the player's home rating zone: kicker eligibility depends on attendance at the event actually entered, not on where the player lives.",
+  "regenerateWith": "node scripts/refresh-attendance.mjs",
+  "observations": {
     "TCG": {
-      "regionalSpecial": { "attendance": 500, "sourceEvent": null, "verified": false },
-      "international":   { "attendance": 900, "sourceEvent": null, "verified": false }
+      "regional": {
+        "events": 26,
+        "source": "limitlesstcg.com"
+      },
+      "special": {
+        "events": 7,
+        "source": "limitlesstcg.com"
+      },
+      "international": {
+        "events": 3,
+        "source": "limitlesstcg.com"
+      }
+    },
+    "VGC": {
+      "regional": {
+        "events": 26,
+        "source": "limitlessvgc.com"
+      },
+      "special": {
+        "events": 6,
+        "source": "limitlessvgc.com"
+      },
+      "international": {
+        "events": 3,
+        "source": "limitlessvgc.com"
+      }
     },
     "GO": {
-      "regionalSpecial": { "attendance": 60,  "sourceEvent": null, "verified": false },
-      "international":   { "attendance": 150, "sourceEvent": null, "verified": false }
+      "regional": {
+        "events": 0,
+        "source": null
+      },
+      "special": {
+        "events": 0,
+        "source": null
+      },
+      "international": {
+        "events": 0,
+        "source": null
+      }
     }
   },
-  "note": "Separated by game and major-event category, but not by the player's home rating zone: kicker eligibility depends on attendance at the event actually entered, not on where the player lives. This resolves the two open data questions in PRD section 16."
+  "baselines": {
+    "TCG": {
+      "regional": {
+        "attendance": 617,
+        "sourceEvent": "Regional Brisbane (01 Nov 25)",
+        "verified": true
+      },
+      "special": {
+        "attendance": 80,
+        "sourceEvent": "Special Event Auckland (24 Jan 26)",
+        "verified": true
+      },
+      "international": {
+        "attendance": 2117,
+        "sourceEvent": "LAIC 2025\u201326, S\u00e3o Paulo (21 Nov 25)",
+        "verified": true
+      }
+    },
+    "VGC": {
+      "regional": {
+        "attendance": 180,
+        "sourceEvent": "Regional Curitiba (14 Mar 26)",
+        "verified": true
+      },
+      "special": {
+        "attendance": 43,
+        "sourceEvent": "Special Event Auckland (25 Jan 26)",
+        "verified": true
+      },
+      "international": {
+        "attendance": 518,
+        "sourceEvent": "LAIC 2025\u201326, S\u00e3o Paulo (21 Nov 25)",
+        "verified": true
+      }
+    },
+    "GO": {
+      "regional": {
+        "attendance": null,
+        "sourceEvent": null,
+        "verified": false
+      },
+      "special": {
+        "attendance": null,
+        "sourceEvent": null,
+        "verified": false
+      },
+      "international": {
+        "attendance": null,
+        "sourceEvent": null,
+        "verified": false
+      }
+    }
+  }
 }

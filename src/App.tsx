@@ -11,6 +11,7 @@ import type {
 } from './domain/types';
 import { blankEvent, usePaths, useTheme } from './store';
 import { PlanRow } from './components/PlanRow';
+import { AttendanceBaselinesPanel } from './components/AttendanceBaselines';
 
 const rules = rulesJson as unknown as SeasonRules;
 const baselines = baselinesJson as unknown as AttendanceBaselines;
@@ -64,6 +65,9 @@ export default function App() {
     evaluation.displacements.find((d) => d.eventId === id)?.message ?? null;
 
   const zoneLabel = rules.ratingZones.find((z) => z.id === zone)?.label ?? zone;
+  // Baselines are sourced per game; TCG and VGC are observed, GO is not yet.
+  const gameBaselines = Object.values(baselines.baselines[path.game] ?? {});
+  const baselinesMissing = gameBaselines.filter((b) => b.attendance == null).length;
   // Only worth saying once the player has actually entered something to score.
   const hasScoringEvents = evaluation.results.some((r) => r.rawPoints > 0);
   const belowPrevious = hasScoringEvents && previousCutoff != null
@@ -354,6 +358,10 @@ export default function App() {
           )}
         </section>
 
+        <AttendanceBaselinesPanel
+          baselines={baselines} rules={rules} game={path.game}
+          adjustment={path.attendanceAdjustment} />
+
         {/* ---- 5. Generated paths ----------------------------------------- */}
         <section className="panel" aria-labelledby="paths-h">
           <header>
@@ -446,12 +454,18 @@ export default function App() {
         <footer className="site panel" aria-labelledby="method-h">
           <h2 id="method-h">Method, sources and limits</h2>
 
-          {!baselines.verified && (
+          {baselinesMissing > 0 ? (
             <div className="callout warn">
-              <strong>Projected attendance for planned majors is unverified.</strong>{' '}
-              {baselines.provenance} Set an attendance on any planned major, or use the
-              attendance adjustment, to replace the projection with your own figure.
+              <strong>No attendance baseline for {path.game} majors yet.</strong>{' '}
+              Play! Pokémon publishes no attendance feed, and the community databases that
+              cover the TCG and the video game do not cover {path.game}. Planned {path.game}{' '}
+              majors therefore ask you to assume an attendance or a CP outcome rather than
+              inventing a field size.
             </div>
+          ) : (
+            <p>
+              <strong>Projected attendance.</strong> {baselines.provenance}
+            </p>
           )}
 
           <p>
