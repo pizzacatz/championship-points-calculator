@@ -283,33 +283,85 @@ there is nothing to compare. An SO player adds whatever events they intend to en
 the same as anyone else. Their target is still lower (VGC 257) and their slots fewer
 (5), but that is data shown plainly, not a structural implication in the UI.
 
-### Bulk-add makes "fewest events" the important output
+### The output is one ladder, not strategies
 
-The two ideas fit together better than either does alone. Bulk-add produces a
-*generous* candidate list — click NA/CAN and you have twelve Regionals you are
-certainly not all attending. The job of the output is then to prune it:
+There are no strategies, no tabs and no generator. There is one question, asked two
+ways — *"if I attend all these events, what is the worst I can do and still
+qualify?"* and *"given what is left in the season, how well do I need to do?"* —
+and they are the same computation. The second is the first, after results are logged.
 
-> "To reach 842, you need these three: Orlando top 16, Charlotte top 32,
->  Baltimore top 64."
+**Fewest events answers a question nobody asked.** The checklist already settled
+what you are attending; you unchecked what you cannot reach. By the time you are
+reading output the event list is a given. You want the bar, not a shorter list.
 
-So **fewest events** stops being a secondary strategy and becomes the primary
-answer, precisely because the input is now over-generous by design. *Least
-demanding* remains the complement: the easiest finishes if you attend everything
-on the list.
+#### What it computes
 
-This also explains why no commitment flag is needed. You add everything you
-*could* attend; the calculator tells you which you *need* to. The pruning lives in
-the output, not in a per-row field.
+The **lowest finishes that still reach the target**, minimised lexicographically by
+event type in this order:
 
-> Note: the Best Finish Limit already caps the damage from over-adding. Twelve
-> added Regionals cannot inflate a projection beyond the best five, because they
-> share one bucket of five. Adding generously is safe.
+> International -> Regional / Special -> Grand Challenge -> Cup -> Challenge
 
-> **Open:** with plans collapsed, what does the strategy switcher show? "Best use of
-> committed events" is still degenerate — commitment is implied by adding. That
-> leaves **fewest events** and **least demanding**, which are genuinely different
-> and both useful over one list. Two tabs, or default to fewest-events with least-
-> demanding behind a toggle.
+Relax the hardest events first. The planner should never open by demanding a top-32
+at a 1,100-player International when winning two 40-player Cups is the more
+realistic ask.
+
+**Consequence, intended:** whatever sits last in that order absorbs the residual
+demand. Relaxing ICs and Regionals pushes the requirement onto the small events,
+which is why a solved plan often asks you to *win* your Cups. Correct advice, not a
+bug.
+
+#### Only offer bands whose kicker is met
+
+Essential, not a detail. Without it the solver relaxes an International to the
+513-1024 band, which needs 2,049 players against a projected field of 1,096 and so
+pays **nothing**. Restrict each event type to the bands its projected field unlocks:
+
+| | Projected field | Deepest band that pays |
+|---|---:|---|
+| International (NAIC) | 1,096 | 257-512, 85 CP |
+| Regional / Special (NA) | 707 | 129-256, 60 CP |
+| League Cup | ~40 | 5-8, 25 CP |
+
+#### Online events: assume the kickers are met
+
+Neither Global/Grand Challenges nor the GO Battle League Leaderboard Challenge has a
+published field size, and no regional median applies — they are not regional.
+
+**Assume every kicker is met for both.** Pokemon Champions, the 2027 video game
+title, has 10M+ downloads; any plausible slice of that clears the deepest kicker in
+the table (2,049). The GO Battle League leaderboard is ranked globally, so the same
+holds more strongly still.
+
+> Caveat, recorded not acted on: VGC Global Challenge CP is awarded on "final
+> ranking of eligible competitors **per rating zone**", not globally, and Grand
+> Challenges are limited to TPCi-managed regions — so the relevant field is one
+> zone's slice. At 10M+ downloads this does not bite, and the exposure if it ever
+> did is bounded: the bands in question pay 3-13 CP.
+
+#### Worked example
+
+Target 842, 232 CP banked, remaining: 1 IC, 3 Regionals, 2 Grand Challenges, 2 Cups,
+2 Challenges.
+
+| Event | | Finish | CP each |
+|---|---|---|---:|
+| International | x1 | 257-512 | 85 |
+| Regional | x3 | 33-64 | 120 |
+| Grand Challenge | x2 | 9-16 | 25 |
+| League Cup | x2 | **1st** | 50 |
+| League Challenge | x2 | 5-8 | 8 |
+
+843 against a target of 842. Bands are discrete, so a small overshoot is normal.
+
+#### What this deletes
+
+The 250-line generator, three strategies, the 200,000-combination search, the "best
+finish to assume" field, the commitment flag, the strategy tabs and the
+Cup/Challenge auto-fill. Replaced by running the existing engine once per band per
+event type and taking the boundary.
+
+> Bulk-add stays safe regardless: twelve added Regionals cannot inflate a
+> projection, because they share one Best Finish Limit bucket of five.
 
 ### Blank solves, filled constrains
 
@@ -320,26 +372,12 @@ the output, not in a per-row field.
 
 So a plan is a mix of knowns and unknowns, and the generator fills the unknowns.
 
-### Cups and Challenges: auto-filled default
+### No auto-fill for Cups and Challenges
 
-A planned Cup or Challenge auto-fills with **the middle CP a player can earn,
-assuming they earn anything at all** — the midpoint of that event's payout tiers
-excluding 0, rounded **down** when the count is even.
-
-| Event | Tiers (excluding 0) | Default | Finish |
-|---|---|---:|---|
-| League Challenge | 4, 6, 8, 10, 12, 15 | **8 CP** | 5th–8th |
-| League Cup | 13, 16, 20, 25, 32, 40, 50 | **25 CP** | 5th–8th |
-
-Both land on a 5th–8th finish, which is a sane default for a planned local.
-
-This is not a statistical mean over the player's history. It is the middle of the
-table — a neutral assumption that needs no history and works for a first-time user.
-
-The rationale for defaulting at all: Cups and Challenges carry their own Best
-Finish Limit of 4 each, so a finish below what a player typically manages does not
-improve their total. Filling in a mid-table result models the realistic case rather
-than a bottom-of-table one that would be discarded by the BFL anyway.
+Superseded. There is no assumed default CP for a planned Cup or Challenge — the
+ladder decides what they must return, like every other event type. The earlier
+"middle of the payout table" rule (Cup 25, Challenge 8) is dropped: it contradicted
+the ladder, which will demand a Cup win if that is what reaches the target.
 
 ### Kept as-is
 
@@ -411,72 +449,22 @@ tournament id per game, so a VGC path attaches the VGC one.
 > events move down into the plan and unchecking is the remove action. Fewer panels,
 > no repetition — but it makes the catalog's contents shift as you work.
 
-### Kept as-is
-
-Multi-path, JSON export/import and the theme toggle all stay. The toggle needs to
-look better than a text button — a sun/moon icon.
-
-### Live attendance and kickers from rk9
-
-For events that use rk9, read actual attendance and recompute kickers from it
-rather than from any projection. This is what makes placement-only entry work for
-majors, and it turns a registration count into a live kicker forecast for events
-still filling up.
-
-Scope it deliberately: only events in the user's own plan, once a day, cached.
-Sweeping every event continuously is a lot of traffic against live tournament
-infrastructure, on a path its `robots.txt` disallows.
-
-### Auto-fill by region
-
-Buttons that add every published Regional for a region in one click — one for
-North America/Canada, one for Europe, one for Latin America, and so on.
-
-Source: `rk9.gg/events/pokemon`, which **robots.txt permits**. It returns 39
-upcoming 2027 events with date, event name, location and one tournament id per
-game:
-
-```
-September 18-20, 2026 | 2027 Baltimore Pokemon Regional | Baltimore, US      | 3 games
-September 26-27, 2026 | 2027 Brisbane Pokemon Regional  | South Brisbane, AU | 3 games
-October 3-4, 2026     | 2027 Recife Pokemon Regional    | Olinda, PE, BR     | 3 games
-```
-
-Region comes from the trailing country code in the location, via a country ->
-rating-zone map. The page is upcoming-only, which is exactly right for planning a
-season in progress.
-
 ### Panels
 
 - **Best Finish Limit breakdown** — keep the table, move it to the bottom.
-- **Generated paths** — keep all three strategies. Default to *least demanding*
-  alone, with radio buttons or tabs to switch, and a "View all 3" button after.
-- **Attendance baselines panel** — remove. The verified baselines keep working
-  silently in the background for planned majors; they just get no UI.
+- **Generated paths** — removed entirely, replaced by the ladder above.
+- **Attendance baselines panel** — remove. The medians keep working silently for
+  planned majors; they get no UI.
 - **Method and sources / Direct invitations / Official sources** — remove, per the
   section above.
 
 ### Consequences to handle
 
-- The generator currently reads a **best finish to assume** and a **commitment**
-  flag from every event row. Keeping all three strategies means deciding where
-  those live now that rows have no fields — an advanced toggle, a global default,
-  or drop the constraint entirely.
-- With attendance gone from the form, planned majors rely entirely on the silent
-  baseline to know which bands are reachable. That is the one place the removed
-  data still does real work.
 - Direct-invite detection currently keys off placement. It must key off CP instead
   (350 at a Regional, 500/480/420/380 at an International).
-
-## Carried over from v1
-
-Unfinished business that survives any redesign:
-
-- **Pokémon GO attendance is unresolved.** rk9 says 156 for Orlando 2026 GO,
-  Liquipedia says 174 — an 11.5% disagreement in the unintuitive direction. All GO
-  baselines are flagged unverified. Needs a Liquipedia sweep from an unblocked IP.
-- **The GO Special baseline (93) is from 2 of 6 events.** The other four are not on
-  rk9 at all. Auckland — absent here — was the smallest field for both other games
-  (80 TCG, 43 VGC), so 93 is very likely too high.
-- **The 2027 leaderboard period was not open** as of 2026-08-28, so there is no
-  live boundary yet. Whatever replaces the refresh job needs to handle that state.
+- With attendance gone from the form, planned majors rely entirely on the silent
+  per-region median to know which bands are reachable. That is the one place the
+  removed data still does real work.
+- The ladder needs a projected field size per event type. Regions have medians;
+  online events assume kickers met; Cups and Challenges have no source at all, so
+  their kicker status is unresolved until a real attendance is entered.
