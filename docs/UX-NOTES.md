@@ -360,9 +360,9 @@ the calculator.
 and the archive (§7.3) all land first, and they are what make a local catalog
 useful when it arrives.
 
-### 7.5 The six open items, with a recommendation each
+### 7.5 The six items — all confirmed 2026-08-28
 
-#### 1. The ladder should say "5 of 9", not "×9"  — **do it**
+#### 1. The ladder says "5 of 9", not "×9"  ✅
 
 Nine added Regionals show as one row reading `×9` at 200 CP each. Only the best
 five majors ever count, so that row implies 1,800 CP where the truth is 1,000.
@@ -370,7 +370,7 @@ It is not unclear, it is **wrong**: it asks for a top-16 at nine tournaments whe
 five would do, and prints a requirement for an International whose 85 CP does not
 make the cut at all. Everything else on this list is polish; this is a defect.
 
-#### 2. Sort plan rows by date  — **do it**
+#### 2. Plan rows sort by date  ✅
 
 Bulk-add happens to produce date order only because the catalog is sorted. Add a
 Cup by hand and it lands at the bottom whatever its date. A plan is a schedule and
@@ -380,7 +380,11 @@ It is also a prerequisite for the overdue highlight (§7.2): greying past events
 only reads as a boundary if the list is chronological. Out of order, grey and
 white rows interleave at random and look like a rendering fault.
 
-#### 3. Drop past unlogged events from the ladder  — **do it**
+#### 3. Past unlogged events drop out of the ladder  ✅
+
+This should never have been raised as a choice — you cannot go back and compete
+in a tournament that has finished, so a ladder that asks you to is simply broken.
+Recorded here as a defect, not a decision.
 
 Once Baltimore's date has passed and no result was entered, the ladder still
 solves for it — it will tell you to finish top 16 at a tournament that is over,
@@ -388,7 +392,7 @@ and count those points toward your target. That does not just look wrong, it
 reports you as on track when you are not. Same rule as §7.2, so the two land
 together.
 
-#### 4. Confirm before a removal discards a result  — **do it, but narrowly**
+#### 4. Confirm before a removal discards a result  ✅
 
 *Clear* on a zone deletes every event in it, logged results included, with no
 warning and no undo.
@@ -399,7 +403,7 @@ trains people to dismiss the dialog without reading, which is worse than no
 dialog — the warning has to stay rare to stay meaningful. Removing an empty row
 should remain instant.
 
-#### 5. Stop using green for two different things  — **do it, by deleting a badge**
+#### 5. Delete the Counts badge; green means direct invite only  ✅
 
 **Counts** and **Direct invite** are both green. One is routine bookkeeping, the
 other the most significant outcome in the product.
@@ -410,7 +414,7 @@ no information. Delete it. Keep the badges that mark **exceptions**: *Excluded b
 BFL*, *Below kicker*, *Check this*. Green then belongs to *Direct invite* alone,
 and the plan list loses a badge from most of its rows, which serves §1 as well.
 
-#### 6. A season line  — **do it, in its smallest form**
+#### 6. A season line, smallest form  ✅
 
 One line under the totals:
 
@@ -439,9 +443,66 @@ Correctness first, because two of these are wrong rather than ugly:
 
 ---
 
-## 8. Still open from the v2 round
+## 8. Still open
 
-- The catalog and the plan list both name the same event. Checking Baltimore in
-  the catalog makes "Baltimore" appear twice on the page.
-- Nothing separates results you have banked from events you have not played yet
-  beyond a small badge — the two sit in one flat list.
+Everything in §1–§7 is decided. These are not.
+
+### 8.1 The assumed local field size has two incompatible jobs — **needs a decision**
+
+§2 sets a Challenge to 8 players and a Cup to 17, so the ladder will ask for a top
+4 and a top 8 and no deeper. That is right for *planning*.
+
+But the same number is also used to **score a result you enter by placement**. Put
+"13th" against a Cup and the engine reads a 9th–16th finish, checks the kicker of
+48 against an assumed field of 17, and scores it **0 CP** — silently, and wrongly,
+if that Cup actually drew 60 players and paid you 20.
+
+The two uses need separating:
+
+| Use | Figure |
+|---|---|
+| Which bands the ladder may ask for | the assumption — 8 and 17 |
+| Scoring a placement the player entered | **no assumption**; ask for the CP if the kicker cannot be resolved |
+
+Recommended: apply the assumption to the ladder only, and keep the existing
+behaviour for entered results — a local placement whose band depends on an unmet
+kicker asks for the CP rather than guessing. Otherwise the app quietly zeroes real
+points.
+
+### 8.2 "3rd place" has no band to attach to — **needs confirming**
+
+The instruction was *"after top 4, use 1st place – 2nd place – 3rd place"*. Every
+payout table bands 3rd and 4th **together**, so there is no 3rd-place band in any
+game. The rule as implemented reads:
+
+> Top 32 · Top 16 · Top 8 · **Top 4** · 2nd place · 1st place
+
+Which is a decision I made rather than one you gave me. The alternative is to name
+the 3–4 band *"3rd place"* — accurate as the best finish in it, but the ladder
+states the **worst** you can do, and the worst in that band is 4th.
+
+### 8.3 The catalog and the plan name the same event twice
+
+Open since v2 and raised twice without a decision. Checking Baltimore in the
+catalog makes "Baltimore" appear again in the plan list a few hundred pixels below.
+The alternative is that the catalog only ever shows what has *not* been added, so
+checking an event moves it down and unchecking is the remove action.
+
+### 8.4 Proposed in §5, never explicitly confirmed
+
+- **§5.4** trim the explanation line — it repeats "200 CP" three times in a row
+  that already shows it twice.
+- **§5.5** the `+ League Challenge` buttons sit inside the plan panel; they belong
+  with the catalog.
+- **§5.6** *Delete plan* looks identical to *New plan* beside it; the `CP`/`Place`
+  micro-labels repeat on every row; the Plan dropdown shows one entry until a
+  second plan exists.
+- **§5.7** the ladder needs a narrow-screen treatment; no approach chosen.
+
+### 8.5 Data, unchanged from the v2 round
+
+- **Pokémon GO attendance baselines** are unverified. rk9 says 156 for Orlando
+  2026 GO where Liquipedia says 174 — an 11% disagreement, unexplained, and the
+  Liquipedia block never lifted.
+- **No live Worlds boundary** until the 2027 leaderboard period is published. The
+  previous-season cutoff carries the target until then.

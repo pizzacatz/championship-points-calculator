@@ -1,5 +1,8 @@
 # Notes for the next version
 
+> **Superseded in part.** v2 shipped on 2026-08-28. Where this file and
+> `UX-NOTES.md` disagree, UX-NOTES is current.
+
 Working notes, not a spec. Nothing here is implemented — the deployed site is
 unchanged. Raised 2026-08-28 after the first version was judged over-engineered
 and over-designed.
@@ -136,13 +139,9 @@ that is how you ask "what do I need at the events I'm already going to?"
 Every added event is assumed attended. **Commitment is implied by adding it**, so
 the commitment field disappears.
 
-> Consequence: this makes the third generator strategy degenerate. "Best use of
-> committed events" maximises committed events used and minimises optional ones —
-> but if everything is committed there are no optional ones left to minimise. It
-> collapses toward "use every event", which is close to what least-demanding
-> already returns. Either reframe it as an explicit *spread across everything*
-> (maximise event count, then minimise difficulty — a genuinely different axis from
-> least-demanding's ordering) or drop to two strategies. **Open.**
+> Consequence: this made the third generator strategy degenerate — with everything
+> committed there were no optional events left to minimise. **Resolved by deleting
+> the generator entirely**; the ladder replaced all three strategies.
 
 ### Kill the field subtitles
 
@@ -443,7 +442,8 @@ Region comes from the trailing country code in rk9's location string
 rating-zone map that needs building. Game filtering is free: each event lists one
 tournament id per game, so a VGC path attaches the VGC one.
 
-> **Open:** does the checklist *replace* the plan list, or sit above it? Checking a
+> **Still open — carried into `UX-NOTES.md` §8.** Does the checklist *replace* the
+> plan list, or sit above it? Checking a
 > box and then seeing the same event again in a separate table is duplication. One
 > option is that the catalog only ever shows what has **not** been added, so checked
 > events move down into the plan and unchecking is the remove action. Fewer panels,
@@ -451,7 +451,8 @@ tournament id per game, so a VGC path attaches the VGC one.
 
 ### Panels
 
-- **Best Finish Limit breakdown** — keep the table, move it to the bottom.
+- **Best Finish Limit breakdown** — superseded: the table is **deleted** and folded
+  into the ladder. See `UX-NOTES.md` §3.3.
 - **Generated paths** — removed entirely, replaced by the ladder above.
 - **Attendance baselines panel** — remove. The medians keep working silently for
   planned majors; they get no UI.
