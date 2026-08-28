@@ -38,7 +38,8 @@ accounts, nothing sent anywhere.
 | | |
 |---|---|
 | [`Championship-Points-Calculator-PRD.md`](Championship-Points-Calculator-PRD.md) | Current spec (v2) |
-| [`docs/PRD-DIFF-v1-to-v2.md`](docs/PRD-DIFF-v1-to-v2.md) | What changed from v1, and why |
+| [`docs/PRD-DIFF-v1-to-v2.md`](docs/PRD-DIFF-v1-to-v2.md) | What changed between the two specs |
+| [`docs/DESIGN-RATIONALE.md`](docs/DESIGN-RATIONALE.md) | Why each decision was made, then unmade |
 | [`docs/PRD-v1.0-2026-08-28.md`](docs/PRD-v1.0-2026-08-28.md) | v1, archived |
 | [`docs/DATA-SOURCES.md`](docs/DATA-SOURCES.md) | Every endpoint and cross-check |
 | [`docs/NEXT-VERSION.md`](docs/NEXT-VERSION.md) | Design notes and open questions |
