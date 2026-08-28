@@ -60,18 +60,93 @@ Limit pass as everything else. **The ladder already computes this** — it is th
 figure behind *"winning every event you have added reaches N CP"* — so this is a
 display change, not new arithmetic.
 
-### 1.4 Open — what to call it
+### 1.4 It is called AVAILABLE  ✅
 
-`AVAILABLE` is short and clear. `STILL WINNABLE` says more but is long for a stat
-label. `IN PLAY`, `REMAINING`, `UPSIDE` also fit. It should not read as something
-already achieved.
+### 1.5 The Plan selector comes out of the header  ✅
 
-### 1.5 Consequence — the header gets crowded
+That is where the fourth figure's room comes from.
 
-Three figures currently share the sticky header with a title, three selects and
-the theme toggle, and it is already tight at 1280 px. A fourth needs room from
-somewhere. The **Plan** selector is the obvious candidate: it shows a single entry
-until a second plan exists, so it could appear only when there is a choice to make.
+> **Open — where does switching plans go?** Multiple plans, export and import were
+> all confirmed as staying. With no selector there is no way to switch between
+> them, so the control has to live somewhere — most naturally beside *New plan*,
+> *Export*, *Import* and *Delete plan* at the foot of the page, where the rest of
+> the plan management already is. Unless multi-plan is being dropped as well,
+> which would also remove export and import's reason to exist.
+
+---
+
+## 3. The goal line
+
+**Now:** a warning banner saying the plan is below last season's minimum, plus a
+line reading `target [842] · 2026 cutoff · US and Canada`.
+
+**Next:** drop the banner. The line becomes:
+
+> **Championship Points Goal:** `[ 842 ]`  ·  *Last season*  ·  *This season*
+
+Two buttons that fill the field with the invitation boundary — last season's final
+figure, and the current season's live one.
+
+### 3.1 "90th rank" is only right for VGC in US and Canada
+
+The rank that matters is the number of Masters invitations for the selected game
+and zone, and it is not 90 everywhere:
+
+| | Rank | Last season's cutoff |
+|---|---:|---:|
+| VGC, US and Canada | 90 | 842 |
+| TCG, US and Canada | 140 | 738 |
+| GO, US and Canada | 75 | 744 |
+| VGC, Oceania | 20 | 808 |
+| VGC, Middle East & South Africa | 5 | 257 |
+
+So the buttons cannot say "90th". They should either stay generic — *Last season*
+— or name the rank they are filling from, which changes as the game and zone
+selectors change: *Last season (90th)*.
+
+### 3.2 "This season" has nothing to fill from yet
+
+The 2027 qualification period is not published on the official leaderboard, so
+there is no live boundary to read. The refresh job already records this as
+`periodPublished: false`.
+
+The button should be **present but disabled**, saying why — *the 2027 leaderboard
+has not opened* — rather than absent. Absent, a player wonders whether the feature
+exists; disabled with a reason, they know to come back.
+
+### 3.3 Losing the banner loses a real warning
+
+The banner said, in effect, *this plan does not reach what it took last year*.
+With **TO GO** measured against banked CP and **AVAILABLE** beside it, that
+comparison is now visible as numbers rather than prose — which is the better
+place for it. Worth checking after the change that a plan which cannot reach its
+goal still reads as such at a glance.
+
+---
+
+## 4. Championship Points do not differ by division
+
+Confirmed against the official pages: the Regional and Special table is a single
+*Placement / Kicker / Championship Points* table covering the TCG, the video game
+and GO, with no division split anywhere. Only the **prize money** tables divide
+into Junior & Senior versus Masters.
+
+The engine is therefore already division-agnostic, and nothing about the CP
+arithmetic needs to change to support Juniors or Seniors.
+
+**But division is not free**, and two things do depend on it:
+
+1. **Invitation slots, and so the goal.** VGC in US and Canada is 90 for Masters
+   but 40 for each of Juniors and Seniors — a different rank, a different cutoff.
+   The slot counts for all three divisions are already in `rules-2027.json`.
+2. **Kickers, badly.** Attendance is counted *per division*, and the smaller
+   divisions are tiny: Seattle 2026 VGC drew 821 Masters, **35 Seniors and 24
+   Juniors**. At 24 entrants a Junior Regional pays nothing below 8th, so the
+   attendance baselines cannot be shared.
+
+So supporting all three divisions is cheap in the engine and real work in the
+data. Worth doing only if Junior and Senior players are an audience — the PRD has
+scoped them out since v1.
 
 ---
 
