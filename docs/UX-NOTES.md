@@ -46,11 +46,14 @@ What that unlocks, given the published kickers:
 | Challenge @ 32 | 9th–16th (kicker 25) | 6 |
 | Cup @ 60 | 9th–16th (kicker 48) | 20 |
 
-> **Open — which number is the assumption?** Two readings, and they produce very
-> different demands. Taking the floor (Challenge = 8) is conservative but makes
-> the ladder demand a top-4 at every Challenge. Taking the "rarely more than"
-> ceiling (Challenge = 32, Cup = 60) is more realistic and lets the ladder ask
-> for a 9th–16th. A floor of 8 is stated; no floor was given for Cups.
+**Decided:** the ladder may ask for a **top 4** at a Challenge and a **top 8** at
+a Cup, and no deeper. Set the assumed field to the kicker that unlocks exactly
+that band and no further:
+
+| | Assumed field | Deepest band it unlocks | |
+|---|---:|---|---:|
+| League Challenge | **8** | 3rd–4th | 10 CP |
+| League Cup | **17** | 5th–8th | 25 CP |
 
 ---
 
@@ -63,10 +66,20 @@ What that unlocks, given the published kickers:
 ### 3.2 "Top X", not a range
 
 `17–32` becomes **Top 32** — the finish you have to beat, which is the number a
-player actually holds in their head.
+player actually holds in their head. Below a top 4 the band is small enough to
+name outright:
 
-> **Open — what does the top band read as?** "Top 1" is wrong. Candidates: **Win
-> it**, **1st**, or **Champion**.
+| Band | Reads as |
+|---|---|
+| 17–32 | Top 32 |
+| 9–16 | Top 16 |
+| 5–8 | Top 8 |
+| 3–4 | Top 4 |
+| 2 | 2nd place |
+| 1 | 1st place |
+
+Rule: a band whose worst finish is 4th or deeper reads `Top {worst}`; otherwise
+it is named by that placement.
 
 ### 3.3 Fold the Best Finish Limit table into the ladder
 
@@ -74,19 +87,43 @@ Delete the standalone table at the bottom. Show BFL state as `BFL: 3/4` for a
 result inside the limit, and `BFL: -/4` for one outside it, ranking ties by order
 of addition.
 
-> **Open — this is per-result, but the ladder is per-event-type.** A ladder row
-> today reads "Regional Championship ×9": nine events sharing one bucket of five,
-> so a single BFL figure for the row has no meaning. Two ways out:
->
-> **(a) Put the BFL badge on the plan list** — one per event, where the concept
-> actually lives — and delete the bottom table. The ladder stays a summary.
->
-> **(b) Make the ladder list individual events** rather than event types, each
-> with its own finish and BFL slot. Answers "what do I need *at Baltimore*" and
-> carries BFL naturally, but the table grows from four rows to thirty.
->
-> (a) is the smaller change and keeps the ladder readable; (b) is what the
-> instruction literally asks for.
+**This is not cosmetic — the ladder is currently giving wrong advice.** It groups
+by event *type*, so nine added Regionals collapse into one row reading `×9`. But
+only the best five majors ever count. Measured, with 9 Regionals and NAIC added
+against a target of 842:
+
+| The table says | Implies |
+|---|---:|
+| International ×1 — Top 512 — 85 CP | 85 |
+| Regional ×9 — Top 16 — 200 CP each | 1,800 |
+| | **1,885** |
+
+The real projected total is **1,000** — five Regionals at 200. The other four
+contribute nothing, and the International's 85 CP does not make the top five, so
+that row asks for a finish worth zero. **885 CP of that table does not exist.**
+
+The fix is two-part, because BFL means different things before and after a result
+exists:
+
+**Blank events are interchangeable.** Nine unplayed Regionals are identical, so
+naming *which* five count is arbitrary. What matters is the count. The ladder
+should say **5 of 9**, and total honestly:
+
+```
+EVENT                       COUNTING   FINISH NEEDED   CP EACH   CP TOTAL
+Regional Championship         5 of 9   Top 16              200      1,000
+International Championship    0 of 1   —                     —          —
+```
+
+A row contributing nothing should say so rather than print a requirement.
+
+**Logged results have a determinate rank.** Once a result carries a number it has
+a real position in its bucket, so the *plan list* is where `BFL: 3/5` belongs —
+per event, ties broken by order of addition, `BFL: –/5` for anything outside.
+
+Together those answer "which events contribute to the total", on the surface where
+each question is actually asked. The standalone BFL table at the bottom is then
+redundant and goes.
 
 ### 3.4 The alignment is bad
 
