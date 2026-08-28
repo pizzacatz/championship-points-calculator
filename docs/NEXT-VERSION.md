@@ -61,19 +61,90 @@ Open questions for whoever builds it:
   almost certainly asking "are the point values current?", which argues for
   surfacing the rules version, or both.
 
-## Open decisions
+## The form — decided 2026-08-28
 
-Still undecided; these change what gets built.
+The stack is fine. React, Vite, TypeScript, the refresh scripts and the CP engine
+all stay. **The problem is the form**: 7 settings fields, 9 fields per event, 7
+panels and 6 stat cards. Logging three events means facing 34 inputs.
 
-1. **How far to strip the stack.** Single HTML file with no build (smallest,
-   ~15 KB, edit one file) / vanilla TS with a minimal Vite build (keeps types on
-   the CP logic, ~20 KB) / keep React and only delete features (least churn,
-   still ~180 KB, since React alone is ~140 KB of that).
-2. **Which cuts to take** from the table above — all four, or some.
-3. **What happens to the data-collection scripts** (~500 lines): keep them out of
-   the way in a `tools/` folder, delete them and rely on `DATA-SOURCES.md` to
-   rebuild them, or keep only the leaderboard one since cutoffs are the only
-   figures worth re-pulling.
+### CP is the input; placement is output
+
+The key realisation. The engine needs, per completed result, only the **event type**
+and the **CP awarded** — nothing else. Because:
+
+> Every CP value is distinct within its event type's table. Verified across all
+> five tables: League Challenge (6 bands), League Cup (7), Regional/Special (11),
+> International (11), Online Challenge (11). No duplicates anywhere.
+
+So CP is a unique key into the payout table, and typing it recovers the placement
+band, the kicker threshold and direct-invite eligibility for free:
+
+```
+Regional, 350 CP  ->  1st          kicker 0      direct invitation
+Regional, 200 CP  ->  9-16 band    kicker 33
+Regional,  45 CP  ->  257-512      kicker 1,025
+```
+
+This deletes three fields at once. **Placement** is redundant. **Attendance** is
+redundant, because a valid positive CP award already proves the kicker was met —
+that logic is in `evaluateResult` today. And validation gets *stronger* while
+getting simpler: a value is legal iff it appears in that event type's table (or is
+0). No cross-field checks, no impossible placement/CP combinations to reconcile.
+
+Placement moves to where it belongs — the generator's output. "Finish top 16 at
+Orlando" is the answer, not the question.
+
+### Resulting form
+
+| | Today | Next |
+|---|---:|---|
+| Settings fields | 7 | Game, rating zone. Age division is always Masters — drop the disabled control |
+| Fields per completed event | 9 | **1** — the CP |
+| Fields per planned event | 9 | **0** — add it and let the generator say what you need |
+| Stat cards | 6 | **3** — CP now, projected, to go |
+
+The three target-related cards (planning target, previous cutoff, live boundary)
+are one concept, not three. Collapse to a line under the cards:
+`target 842 · 2026 cutoff · edit`.
+
+### Worth considering: make the CP field a dropdown
+
+Since the legal values are a short fixed list per event type, the input could be a
+`<select>` rather than a number box, each option labelled with both facts:
+
+```
+Regional Championship
+  [ 350 — 1st                    v ]
+    325 — 2nd
+    300 — 3rd–4th
+    200 — 9th–16th
+      0 — below kicker
+```
+
+Zero typing, zero validation errors possible, and it serves both mental models —
+pick by CP or pick by finish. Undecided.
+
+### Panels
+
+- **Best Finish Limit breakdown** — keep the table, move it to the bottom.
+- **Generated paths** — keep all three strategies. Default to *least demanding*
+  alone, with radio buttons or tabs to switch, and a "View all 3" button after.
+- **Attendance baselines panel** — remove. The verified baselines keep working
+  silently in the background for planned majors; they just get no UI.
+- **Method and sources / Direct invitations / Official sources** — remove, per the
+  section above.
+
+### Consequences to handle
+
+- The generator currently reads a **best finish to assume** and a **commitment**
+  flag from every event row. Keeping all three strategies means deciding where
+  those live now that rows have no fields — an advanced toggle, a global default,
+  or drop the constraint entirely.
+- With attendance gone from the form, planned majors rely entirely on the silent
+  baseline to know which bands are reachable. That is the one place the removed
+  data still does real work.
+- Direct-invite detection currently keys off placement. It must key off CP instead
+  (350 at a Regional, 500/480/420/380 at an International).
 
 ## Carried over from v1
 
