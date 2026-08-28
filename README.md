@@ -96,11 +96,17 @@ figure would misprice two of the three. That refines the recommendation in PRD �
 observed data. Baselines are *not* split by the player's home rating zone: kicker
 eligibility depends on attendance at the event actually entered.
 
-**Pokémon GO has no baseline.** Limitless does not cover it, and Liquipedia — which does,
-via its `player_number` field — rate-limits hard enough that the sweep has not completed.
+**Pokémon GO has no baseline yet.** Limitless does not cover it. Liquipedia does — its
+`player_number` field gives, for example, 174 for Orlando 2026 GO — but it rate-limits
+`action=parse` to one request every 30 seconds, and an early sweep tripped an IP block that
+had not lifted by the end of the session. The script now batches through `action=query`
+instead (50 titles per request, one request every two seconds), so the whole sweep is about
+two requests rather than 108; that request and response shape is verified against another
+MediaWiki, but the GO figures themselves are still outstanding.
+
 Rather than invent a field size, a planned GO major asks you to assume an attendance or a
-CP outcome, and the app says so. Completed GO events are unaffected, since they use actual
-attendance. To fill it in: `node scripts/refresh-attendance.mjs`.
+CP outcome, and the app explains why. Completed GO events are unaffected, since they use
+actual attendance. To fill it in once the block clears: `npm run refresh:attendance`.
 
 Note this data is only ever used for *planned* majors. Completed events always use their
 actual attendance, and entering an attendance on a planned event overrides the projection.
