@@ -155,12 +155,13 @@ npm run dev        # http://localhost:5173/
 
 | Script | Purpose |
 |---|---|
-| `npm test` | 52 unit and fixture tests over the rules data, engine and generator |
+| `npm test` | 62 unit and fixture tests over the rules data, engine and generator |
 | `npm run typecheck` | strict TypeScript, no emit |
 | `npm run build` | typecheck, then production build to `dist/` |
 | `npm run refresh:leaderboard` | re-read the live boundary from the official API |
 | `npm run refresh:attendance` | rebuild the attendance baselines from Limitless and Liquipedia |
 | `npm run refresh:catalog` | rebuild the season's Regional / Special / International list |
+| `npm run refresh:event-attendance` | count the real field size of majors that have finished (dry run; `-- --write` to save) |
 
 The end-to-end smoke test drives the built app in a real browser:
 

@@ -32,14 +32,14 @@ describe('kickers', () => {
 });
 
 describe('completed local results', () => {
-  // PRD fixture 9.
-  it('accepts 13th place plus the published award with no roster size', () => {
-    const e = ev({ eventTypeId: 'league-cup', placement: 13, awardedPoints: 20 });
+  // PRD fixture 9, in the v2.8 input model: the player supplies the turnout
+  // rather than the CP, and 13th at a 60-player Cup clears the 48 kicker.
+  it('pays 13th at a Cup once the turnout is entered', () => {
+    const e = ev({ eventTypeId: 'league-cup', placement: 13, attendance: 60 });
     const r = evaluateResult(e, rules, path([e]), baselines);
     expect(r).toMatchObject({ rawPoints: 20, reason: 'counts', error: null });
-    // The award proves only that the kicker minimum was met — no invented roster.
-    expect(r.attendanceUsed).toBe(48);
-    expect(r.attendanceSource).toBe('implied-by-award');
+    expect(r.attendanceUsed).toBe(60);
+    expect(r.attendanceSource).toBe('entered');
   });
 
   it('scores a local placement from the assumed turnout', () => {
@@ -64,10 +64,13 @@ describe('completed local results', () => {
     expect(evaluateResult(unpaid, rules, path([unpaid]), baselines).rawPoints).toBe(0);
   });
 
-  it('lets an entered CP override the assumption', () => {
-    // The evidence that the turnout was bigger than assumed is the award itself.
-    const e = ev({ eventTypeId: 'league-cup', awardedPoints: 20 });   // a 9th-16th
-    expect(evaluateResult(e, rules, path([e]), baselines).rawPoints).toBe(20);
+  it('lets an entered turnout override the assumption in both directions', () => {
+    // 32 is assumed. A larger real field unlocks a band it does not reach; a
+    // smaller one takes away a band it does.
+    const bigger = ev({ eventTypeId: 'league-cup', placement: 13, attendance: 48 });
+    const smaller = ev({ eventTypeId: 'league-cup', placement: 6, attendance: 12 });
+    expect(evaluateResult(bigger, rules, path([bigger]), baselines).rawPoints).toBe(20);
+    expect(evaluateResult(smaller, rules, path([smaller]), baselines).rawPoints).toBe(0);
   });
 
   it('scores an online placement, since its kickers are assumed met', () => {
@@ -83,42 +86,44 @@ describe('completed local results', () => {
     expect(r.attendanceSource).toBe('baseline');
   });
 
-  it('resolves a completed result from the CP alone', () => {
-    // Every CP value is unique within a table, so the award identifies the band.
-    const e = ev({ eventTypeId: 'league-cup', awardedPoints: 20 });
-    const r = evaluateResult(e, rules, path([e]), baselines);
-    expect(r.rawPoints).toBe(20);
-    expect(r.band).toMatchObject({ minPlace: 9, maxPlace: 16 });
-  });
-
-  it('rejects a CP value that is not a payout for that event type', () => {
-    const e = ev({ eventTypeId: 'league-cup', awardedPoints: 35 });
+  it('rejects a turnout smaller than the placement', () => {
+    const e = ev({ eventTypeId: 'league-cup', placement: 40, attendance: 32 });
     const r = evaluateResult(e, rules, path([e]), baselines);
     expect(r.reason).toBe('invalid');
-    expect(r.error).toMatch(/not one of them/);
+    expect(r.error).toMatch(/cannot finish 40th in a field of 32/);
   });
 
-  it('detects a direct invitation from the CP alone', () => {
-    const e = ev({ eventTypeId: 'regional', awardedPoints: 350 });
+  it('rejects a placement that is not a whole number of at least 1', () => {
+    const e = ev({ eventTypeId: 'league-cup', placement: 0 });
+    expect(evaluateResult(e, rules, path([e]), baselines).reason).toBe('invalid');
+  });
+
+  it('detects a direct invitation from the placement', () => {
+    const e = ev({ eventTypeId: 'regional', placement: 1 });
     expect(evaluateResult(e, rules, path([e]), baselines).directInvite).toBe(true);
   });
 
-  it('keeps roster optional for a completed 0 CP result', () => {
-    const e = ev({ eventTypeId: 'league-cup', placement: 13, awardedPoints: 0 });
+  it('scores a placement the assumed turnout cannot pay as a clean zero', () => {
+    const e = ev({ eventTypeId: 'league-cup', placement: 13 });
     const r = evaluateResult(e, rules, path([e]), baselines);
     expect(r).toMatchObject({ rawPoints: 0, reason: 'below-kicker', error: null });
+    // The row has to say what it assumed, or the zero is unexplainable.
+    expect(r.attendanceUsed).toBe(32);
+    expect(r.explanation).toMatch(/needs 48 players; 32 assumed/);
   });
 });
 
 describe('Best Finish Limits', () => {
-  const challenge = (place: number, points: number) =>
-    ev({ eventTypeId: 'league-challenge', placement: place, awardedPoints: points });
+  // A turnout large enough for every Challenge band, so these fixtures test the
+  // Best Finish Limit and nothing else.
+  const challenge = (place: number) =>
+    ev({ eventTypeId: 'league-challenge', placement: place, attendance: 64 });
 
   // PRD fixture 1.
   it('adds nothing when a fifth League Challenge is weaker than the counted four', () => {
-    const four = [challenge(1, 15), challenge(1, 15), challenge(2, 12), challenge(2, 12)];
+    const four = [challenge(1), challenge(1), challenge(2), challenge(2)];
     const before = score(path(four)).currentTotal;
-    const weaker = challenge(17, 4);
+    const weaker = challenge(17);
     const after = score(path([...four, weaker]));
     expect(before).toBe(54);
     expect(after.currentTotal).toBe(54);
@@ -127,17 +132,17 @@ describe('Best Finish Limits', () => {
 
   // PRD fixture 2.
   it('adds new CP minus displaced CP when a fifth League Challenge is stronger', () => {
-    const four = [challenge(1, 15), challenge(2, 12), challenge(2, 12), challenge(17, 4)];
+    const four = [challenge(1), challenge(2), challenge(2), challenge(17)];
     const before = score(path(four)).currentTotal; // 15+12+12+4 = 43
-    const stronger = challenge(1, 15);
+    const stronger = challenge(1);
     const after = score(path([...four, stronger])).currentTotal; // drops the 4
     expect(before).toBe(43);
     expect(after).toBe(before + 15 - 4);
   });
 
   it('keeps League Challenge and League Cup limits independent', () => {
-    const challenges = Array.from({ length: 5 }, () => challenge(1, 15));
-    const cups = Array.from({ length: 5 }, () => ev({ eventTypeId: 'league-cup', placement: 1, awardedPoints: 50 }));
+    const challenges = Array.from({ length: 5 }, () => challenge(1));
+    const cups = Array.from({ length: 5 }, () => ev({ eventTypeId: 'league-cup', placement: 1 }));
     const result = score(path([...challenges, ...cups]));
     expect(result.currentTotal).toBe(4 * 15 + 4 * 50);
     const buckets = Object.fromEntries(result.buckets.map((b) => [b.bucket, b.slotsUsed]));
@@ -195,10 +200,10 @@ describe('Best Finish Limits', () => {
 
 describe('results versus blanks', () => {
   it('treats a row with a number as a result and a blank row as intent', () => {
-    const done = ev({ eventTypeId: 'regional', awardedPoints: 350 });
+    const done = ev({ eventTypeId: 'regional', placement: 1 });
     const blank = ev({ eventTypeId: 'regional' });
     const result = score(path([done, blank]));
-    // No status to toggle: the presence of a number is what distinguishes them.
+    // No status to toggle: the presence of a placement is what distinguishes them.
     expect(result.currentTotal).toBe(350);
     expect(result.results[1].reason).toBe('incomplete');
     expect(result.results[1].rawPoints).toBe(0);
@@ -208,14 +213,14 @@ describe('results versus blanks', () => {
     // The arithmetic still has to be right; it is simply no longer narrated
     // on the row, since the totals and the BFL slots already show it.
     const five = [
-      ev({ eventTypeId: 'regional', awardedPoints: 325 }),
-      ev({ eventTypeId: 'regional', awardedPoints: 300 }),
-      ev({ eventTypeId: 'regional', awardedPoints: 280 }),
-      ev({ eventTypeId: 'regional', awardedPoints: 200 }),
-      ev({ eventTypeId: 'regional', awardedPoints: 160 }),
+      ev({ eventTypeId: 'regional', placement: 2 }),    // 325
+      ev({ eventTypeId: 'regional', placement: 3 }),    // 300
+      ev({ eventTypeId: 'regional', placement: 5 }),    // 280
+      ev({ eventTypeId: 'regional', placement: 9 }),    // 200
+      ev({ eventTypeId: 'regional', placement: 17 }),   // 160
     ];
     const before = score(path(five)).currentTotal;
-    const sixth = ev({ eventTypeId: 'regional', awardedPoints: 350, name: 'Atlanta Regional' });
+    const sixth = ev({ eventTypeId: 'regional', placement: 1, name: 'Atlanta Regional' });
     const after = score(path([...five, sixth]));
     expect(after.currentTotal).toBe(before - 160 + 350);
     expect(after.results.find((r) => r.event.id === sixth.id)!.counted).toBe(true);

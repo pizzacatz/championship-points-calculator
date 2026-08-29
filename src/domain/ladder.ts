@@ -78,17 +78,17 @@ export function payableBands(
 
 const applyBand = (events: PlannedEvent[], ids: Set<string>, band: PlacementBand | null): PlannedEvent[] =>
   events.map((e) => (ids.has(e.id)
-    ? { ...e, placement: band ? band.minPlace : null, awardedPoints: band ? band.points : null }
+    ? { ...e, placement: band ? band.minPlace : null }
     : e));
 
 /**
  * Solve the ladder. Events the player left blank are the unknowns; anything with
- * a CP or placement already entered is a fixed constraint the solver works around.
+ * a placement already entered is a fixed constraint the solver works around.
  */
 export function solveLadder(
   path: QualificationPath, rules: SeasonRules, baselines: AttendanceBaselines, target: number | null,
 ): Ladder {
-  // Blank rows are the unknowns; anything carrying a number is a fixed constraint.
+  // Blank rows are the unknowns; anything carrying a placement is a fixed constraint.
   // An event whose date has passed with no result entered is neither: it cannot be
   // played any more, so solving for it would inflate the projection with points
   // that are no longer available.
@@ -142,7 +142,7 @@ export function solveLadder(
   const solvedEvents = path.events.map((e) => {
     const g = groups.find((x) => x.events.some((y) => y.id === e.id));
     const band = g ? assign.get(g.rule.id) ?? null : null;
-    return band ? { ...e, placement: band.minPlace, awardedPoints: null } : e;
+    return band ? { ...e, placement: band.minPlace } : e;
   });
   const counted = new Set(
     evaluatePath({ ...path, events: solvedEvents }, rules, baselines)

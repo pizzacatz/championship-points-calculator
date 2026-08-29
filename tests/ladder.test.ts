@@ -62,7 +62,7 @@ describe('the ladder', () => {
   });
 
   it('solves only blank events and treats filled ones as constraints', () => {
-    const done = ev({ eventTypeId: 'regional', awardedPoints: 350 });
+    const done = ev({ eventTypeId: 'regional', placement: 1 });
     const open = blank('regional');
     const l = solve([done, open], 500);
     expect(l.rows).toHaveLength(1);
@@ -98,8 +98,8 @@ describe('the ladder', () => {
 
   it('reproduces the worked example from the PRD', () => {
     const events = [
-      ev({ eventTypeId: 'regional', awardedPoints: 200 }),   // banked
-      ev({ eventTypeId: 'league-cup', awardedPoints: 32 }),  // banked
+      ev({ eventTypeId: 'regional', placement: 9 }),   // banked, 200
+      ev({ eventTypeId: 'league-cup', placement: 3 }),  // banked, 32
       blank('international'),
       ...Array.from({ length: 3 }, () => blank('regional')),
       ...Array.from({ length: 2 }, () => blank('vgc-global-challenge')),
@@ -129,7 +129,7 @@ describe('v2.1 — counting, locals and past events', () => {
     // Five Regionals fill the major bucket; an International worth less cannot
     // displace any of them.
     const events = [
-      ...Array.from({ length: 5 }, () => ev({ eventTypeId: 'regional', awardedPoints: 350 })),
+      ...Array.from({ length: 5 }, () => ev({ eventTypeId: 'regional', placement: 1 })),
       blank('international'),
     ];
     const l = solve(events, 842);
@@ -153,7 +153,7 @@ describe('v2.1 — counting, locals and past events', () => {
   });
 
   it('still solves a past event once its result is entered', () => {
-    const played = ev({ eventTypeId: 'regional', date: '2020-01-01', awardedPoints: 350 });
+    const played = ev({ eventTypeId: 'regional', date: '2020-01-01', placement: 1 });
     const l = solve([played, blank('regional')], 400);
     expect(l.projectedTotal).toBeGreaterThanOrEqual(400);
   });

@@ -179,39 +179,66 @@ await check('the standalone Best Finish Limit table is gone', async () => {
   assert.doesNotMatch(body, /Best Finish Limits\n/);
 });
 
-// --- one number per event ------------------------------------------------
-await check('typing a CP records a result, with no status to toggle', async () => {
+// --- placement and turnout ------------------------------------------------
+await check('typing a placement records a result, with no status to toggle', async () => {
   const row = page.locator('.plan-row').first();
-  await row.getByLabel('CP').fill('350');
+  await row.getByLabel('Placement').fill('1');
   await page.waitForFunction(() =>
     [...document.querySelectorAll('.totals .t')].some((s) =>
       s.querySelector('i')?.textContent === 'CP now' && s.querySelector('b')?.textContent.trim() === '350'));
   assert.equal((await stat('CP now')).trim(), '350');
 });
 
-await check('350 at a Regional is recognised as a direct invitation', async () => {
+await check('winning a Regional is recognised as a direct invitation', async () => {
   assert.match(await page.locator('.plan-row').first().innerText(), /Direct invite/);
 });
 
-await check('placement works as the alternative input', async () => {
+await check('a placement is priced against the zone median until it is changed', async () => {
   const row = page.locator('.plan-row').nth(1);
-  await row.getByLabel('Place').fill('9');
+  await row.getByLabel('Placement').fill('9');
   await page.waitForFunction(() =>
     document.querySelectorAll('.plan-row')[1]?.textContent?.includes('200 CP'));
   assert.match(await row.innerText(), /200 CP/);
+  // The assumption has to be visible, not implied: 705 is the VGC NA median.
+  assert.equal(await row.getByLabel('Players').inputValue(), '705');
 });
 
-await check('an impossible CP value is rejected', async () => {
-  const row = page.locator('.plan-row').first();
-  await row.getByLabel('CP').fill('351');
+await check('the assumed turnout reads as an assumption until it is touched', async () => {
+  const row = page.locator('.plan-row').nth(1);
+  const assumed = await row.getByLabel('Players').getAttribute('class');
+  assert.match(assumed ?? '', /assumed/, 'an untouched default is not marked');
+  await row.getByLabel('Players').fill('700');
+  await page.waitForTimeout(500);
+  assert.doesNotMatch(await row.getByLabel('Players').getAttribute('class') ?? '', /assumed/);
+  // Clearing it goes back to the default rather than leaving the row unscoreable.
+  await row.getByLabel('Players').fill('');
+  await page.waitForTimeout(500);
+  assert.equal(await row.getByLabel('Players').inputValue(), '705');
+});
+
+await check('a turnout smaller than the placement is rejected', async () => {
+  const row = page.locator('.plan-row').nth(1);
+  await row.getByLabel('Players').fill('5');
   await row.locator('[role="alert"]').waitFor({ timeout: 4000 });
-  assert.match(await row.locator('[role="alert"]').innerText(), /not one of them/);
-  await row.getByLabel('CP').fill('350');
+  assert.match(await row.locator('[role="alert"]').innerText(), /cannot finish 9th in a field of 5/);
+  await row.getByLabel('Players').fill('');
 });
 
-await check('a row asks for one number and nothing else', async () => {
-  const inputs = await page.locator('.plan-row').first().locator('input').count();
-  assert.equal(inputs, 2, `expected CP and Place only, got ${inputs}`);
+await check('there is no way to type a CP value', async () => {
+  const labels = await page.locator('.plan-row').first().locator('.plan-inputs label')
+    .allInnerTexts();
+  assert.deepEqual(labels, ['Placement', 'Players'], `row inputs are ${labels.join(', ')}`);
+});
+
+await check('an unplayed row asks for the placement only', async () => {
+  const cat = page.locator('section', { has: page.getByRole('heading', { name: 'Events' }) });
+  await cat.getByRole('button', { name: '+ League Challenge' }).click();
+  await page.waitForTimeout(400);
+  const row = page.locator('.plan-row', { hasText: 'League Challenge' }).last();
+  const labels = await row.locator('.plan-inputs label').allInnerTexts();
+  assert.deepEqual(labels, ['Placement'], 'turnout is asked for before there is a finish');
+  await row.getByRole('button', { name: /Remove/ }).click();
+  await page.waitForTimeout(400);
 });
 
 await check('the CP field is four characters wide, with no spinner', async () => {
@@ -267,7 +294,7 @@ await check('a past event with no result is marked overdue and left out of the l
 
 await check('entering its result clears the overdue state', async () => {
   const row = page.locator('.plan-row', { hasText: 'League Cup' });
-  await row.getByLabel('CP').fill('50');
+  await row.getByLabel('Placement').fill('1');
   await page.waitForTimeout(700);
   assert.doesNotMatch(await row.getAttribute('class'), /overdue/);
 });
@@ -309,9 +336,10 @@ await check('a local placement scores from the assumed turnout', async () => {
   // An earlier check leaves a dated Cup behind; the new one is undated, so it
   // sorts last.
   const row = page.locator('.plan-row', { hasText: 'League Cup' }).last();
-  await row.getByLabel('Place').fill('6');            // 5th-8th, kicker 17
+  await row.getByLabel('Placement').fill('6');        // 5th-8th, kicker 17
   await page.waitForTimeout(700);
   assert.match(await row.innerText(), /25 CP/);
+  assert.equal(await row.getByLabel('Players').inputValue(), '32');
   assert.doesNotMatch(await row.innerText(), /Needs the CP/);
 });
 
@@ -419,6 +447,11 @@ await check('a plan saved before the rename is migrated on load', async () => {
       displayDate: 'Sept. 18\u201320',            // an old official range
       placement: null, awardedPoints: null, attendance: null, catalogName: 'legacy',
     });
+    // A pre-v2.8 result, recorded as CP with no placement and no turnout.
+    raw[0].events.push({
+      id: 'legacy-cp', name: 'Legacy Cup', eventTypeId: 'league-cup',
+      date: '2026-10-04', placement: null, awardedPoints: 20, attendance: null,
+    });
     localStorage.setItem('cpc.paths.v1', JSON.stringify(raw));
   });
   await page.reload({ waitUntil: 'networkidle' });
@@ -457,8 +490,8 @@ await check('on mobile the CP is pinned bottom right, with the BFL chip to its l
   await page.waitForTimeout(500);
   // Two and three digit values on Regional rows, so a shifting width would show.
   const regionals = page.locator('.plan-row', { hasText: 'Regional Championships' });
-  await regionals.nth(0).getByLabel('CP').fill('80');
-  await regionals.nth(1).getByLabel('CP').fill('350');
+  await regionals.nth(0).getByLabel('Placement').fill('65');   // 80 CP
+  await regionals.nth(1).getByLabel('Placement').fill('1');    // 350 CP
   await page.waitForTimeout(700);
   const m = await page.evaluate(() => {
     const out = [];
@@ -526,6 +559,15 @@ await check('the removed v1 sections are gone', async () => {
                       'On plan to reach', "Below last season"]) {
     assert.doesNotMatch(body, new RegExp(gone), `"${gone}" should be removed`);
   }
+});
+
+await check('a result saved as CP survives as a placement and a turnout', async () => {
+  const row = page.locator('.plan-row', { hasText: 'Legacy Cup' });
+  // 20 CP at a Cup is the 9th-16th band, whose kicker is 48. Both are recovered,
+  // and the CP the plan was worth is unchanged.
+  assert.equal(await row.getByLabel('Placement').inputValue(), '9');
+  assert.equal(await row.getByLabel('Players').inputValue(), '48');
+  assert.match(await row.innerText(), /20 CP/);
 });
 
 await check('the theme toggle is an icon and works', async () => {

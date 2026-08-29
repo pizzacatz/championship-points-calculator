@@ -3,7 +3,7 @@ import rulesJson from './data/rules-2027.json';
 import baselinesJson from './data/attendance-baselines.json';
 import cutoffsJson from './data/cutoffs.json';
 import catalogJson from './data/events-catalog.json';
-import { evaluatePath, eventTypesForGame, planningTarget, ruleFor } from './domain/calculate';
+import { defaultAttendance, evaluatePath, eventTypesForGame, isResult, planningTarget, ruleFor } from './domain/calculate';
 import { solveLadder } from './domain/ladder';
 import { parsePath } from './domain/schema';
 import type {
@@ -51,9 +51,45 @@ export default function App() {
   const previousCutoff = cutoffs.boundaries[path.game]?.[zone]?.championshipPoints ?? null;
   const liveBoundary = snapshot?.boundaries?.[path.game]?.[zone]?.championshipPoints ?? null;
 
-  const evaluation = useMemo(() => evaluatePath(path, rules, baselines), [path]);
+  /**
+   * Real Masters turnout for a completed major, counted from its rk9 roster and
+   * refreshed daily. Kept in the catalog rather than copied onto the plan when
+   * the event is added, so a figure that only lands after the event still
+   * reaches a row added months earlier.
+   */
+  const catalogAttendance = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const list of [catalog.upcoming, catalog.online, catalog.completed]) {
+      for (const e of list ?? []) {
+        const n = e.attendance?.[path.game];
+        if (n != null && n > 0) map.set(keyOf(e), n);
+      }
+    }
+    return map;
+  }, [path.game]);
+
+  /** What the Players field shows on a row the player has not overridden. */
+  const defaultFor = useMemo(() => (event: typeof path.events[number]): number | null => {
+    const scraped = event.catalogName ? catalogAttendance.get(event.catalogName) : undefined;
+    if (scraped != null) return scraped;
+    const rule = ruleFor(rules, event.eventTypeId);
+    return rule ? defaultAttendance(baselines, path.game, rule, path) : null;
+  }, [catalogAttendance, path]);
+
+  // Scoring works from the same turnout the row displays. Injecting the scraped
+  // figure here rather than inside the engine keeps the engine a pure function of
+  // the plan and the season's data.
+  const scored = useMemo(() => ({
+    ...path,
+    events: path.events.map((e) =>
+      (e.attendance == null && e.catalogName && catalogAttendance.has(e.catalogName)
+        ? { ...e, attendance: catalogAttendance.get(e.catalogName)! }
+        : e)),
+  }), [path, catalogAttendance]);
+
+  const evaluation = useMemo(() => evaluatePath(scored, rules, baselines), [scored]);
   const { target } = planningTarget(path, previousCutoff, liveBoundary);
-  const ladder = useMemo(() => solveLadder(path, rules, baselines, target), [path, target]);
+  const ladder = useMemo(() => solveLadder(scored, rules, baselines, target), [scored, target]);
 
   // TO GO measures against what is banked, not the projection: a plan with six
   // unplayed events has reached nothing yet. Floored, because the difference goes
@@ -101,13 +137,13 @@ export default function App() {
 
   const seasonLine = useMemo(() => {
     const dated = path.events.filter((e) => e.date);
-    const played = evaluation.results.filter((r) => r.rawPoints > 0 || r.event.awardedPoints === 0).length;
+    const played = evaluation.results.filter((r) => isResult(r.event)).length;
     const next = dated.filter((e) => e.date! >= today).sort((a, b) => a.date!.localeCompare(b.date!))[0];
     if (!path.events.length) return 'No events yet.';
     // An event past its date with nothing entered sits in neither the played
     // count nor the next one coming — the one state worth prompting about.
     const needing = path.events.filter(
-      (e) => e.awardedPoints == null && e.placement == null && e.date != null && e.date < today,
+      (e) => e.placement == null && e.date != null && e.date < today,
     ).length;
     const parts = [`${played} of ${path.events.length} events played`];
     if (needing) parts.push(`${needing} need${needing === 1 ? 's' : ''} results`);
@@ -151,7 +187,7 @@ export default function App() {
    *  just teaches people to dismiss it. */
   function confirmDiscard(ids: string[]): boolean {
     const losing = path.events.filter(
-      (e) => ids.includes(e.id) && (e.awardedPoints != null || e.placement != null),
+      (e) => ids.includes(e.id) && e.placement != null,
     ).length;
     if (!losing) return true;
     return confirm(
@@ -363,12 +399,13 @@ export default function App() {
                 const rule = ruleFor(rules, result.event.eventTypeId);
                 if (!rule) return null;
                 const e = result.event;
-                const isResult = e.awardedPoints != null || e.placement != null;
                 return (
                   <PlanRow key={e.id} result={result} rule={rule}
                     bfl={bflSlots.get(e.id) ?? (result.rawPoints > 0
                       ? { slot: null, limit: rule.bestFinishLimit } : null)}
-                    overdue={!isResult && e.date != null && e.date < today}
+                    defaultAttendance={defaultFor(e)}
+                    entered={path.events.find((x) => x.id === e.id)?.attendance ?? null}
+                    overdue={!isResult(e) && e.date != null && e.date < today}
                     needsDate={!e.catalogName && rule.scale !== 'major'}
                     onChange={(patch) => store.updateEvent(e.id, patch)}
                     onRemove={() => { if (confirmDiscard([e.id])) store.removeEvent(e.id); }} />

@@ -3,6 +3,43 @@
 All dates 2026-08-28 — the project was specified, built, reviewed and rebuilt in
 a single session.
 
+## 2.8.0
+
+- **A result is a placement and a turnout. There is no CP field any more.** The
+  row used to accept either the CP you were awarded or where you finished; it now
+  asks only where you finished, and prices that against how many people were
+  there. CP becomes output.
+- **The turnout arrives filled in.** A Cup assumes 32, a Challenge 16, a major
+  its real attendance where that has been counted and its rating zone's median
+  where it has not. An untouched figure is greyed, so an assumption never passes
+  for something the player confirmed. Clearing the field returns it to the
+  default rather than leaving the row unscoreable.
+- **Real attendance is counted for majors that have finished.**
+  `refresh-event-attendance.mjs` reads each completed event's rk9 roster using the
+  tournament ids the catalog already holds and records the Masters who carried a
+  final standing. It runs in the daily refresh. Orlando 2026 TCG: 2,733 of 2,734.
+- **This fixes results that were silently overstated.** A rating zone median is
+  wrong in the one direction nothing can catch. VGC Asia-Pacific medians 210
+  players against real fields as small as 43, so 17th place — kicker 65,
+  genuinely worth nothing — scored 160 CP with no mention of attendance, because
+  by the app's own logic the number could not matter. Every major mispricing
+  measured ran that way.
+- **Pokémon GO majors still fall back to the median.** GO rosters never carry a
+  standings column, and rk9's Orlando 2026 GO roster holds 156 where Liquipedia
+  reports 174 — unresolved in direction as well as size.
+- **A turnout below the placement is rejected.** You cannot finish 40th in a
+  field of 32.
+- **Plans saved before this release are converted on load.** A stored award
+  becomes the placement and turnout that produced it, preserving the total
+  exactly: 20 CP at a Cup becomes 9th of 48. The placement is a floor rather
+  than a recollection — the player may have finished 13th — and both score 20.
+- **The scoring function no longer contains a judgment.** With turnout always
+  present, `(placement, turnout) → CP` is a lookup. The `unverified-attendance`
+  and `implied-by-award` cases are gone, and with them the property v2 was built
+  on: that every CP value is unique within a payout table, so an award identified
+  its own band. That was genuinely useful, and it only ever answered *which
+  band*, never *was the kicker met* — the question that was getting results wrong.
+
 ## 2.6.2
 
 - **On mobile the earned CP is pinned to the bottom right**, with the Best Finish

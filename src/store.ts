@@ -1,6 +1,10 @@
 /** Local persistence. Multiple independent paths, one game each, no accounts. */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { Game, PlannedEvent, QualificationPath, RatingZoneId } from './domain/types';
+import { bandForPoints, ruleFor, tableFor } from './domain/calculate';
+import rulesJson from './data/rules-2027.json';
+import type { Game, PlannedEvent, QualificationPath, RatingZoneId, SeasonRules } from './domain/types';
+
+const rules = rulesJson as unknown as SeasonRules;
 
 const KEY = 'cpc.paths.v1';
 const ACTIVE = 'cpc.activePath.v1';
@@ -29,7 +33,6 @@ export function blankEvent(eventTypeId: string): PlannedEvent {
     eventTypeId,
     date: null,
     placement: null,
-    awardedPoints: null,
     attendance: null,
   };
 }
@@ -48,23 +51,61 @@ const write = (key: string, value: unknown): void => {
 };
 
 /**
- * Plans saved before dates were unified on ISO carry the old official range —
- * "Sept. 18-20" — which would keep showing forever, ragged, beside the ISO dates
- * around it. Only a month-precision date (2026-09-00) has a display form of its
- * own now; everything else falls back to its ISO date.
+ * Load-time repair of plans written by older versions. Every one of these exists
+ * because a release changed what the app produces without changing what storage
+ * already held, and stale data has no other way out.
  */
+
+/**
+ * v2.8 retired CP entry. A saved award is converted into the placement and
+ * turnout that would have produced it, so the total is preserved exactly.
+ *
+ * The placement is a floor rather than a recollection: 20 CP at a Cup becomes
+ * 9th, when the player may well have finished 13th. Both score 20, which is the
+ * property being preserved. The turnout becomes the band's kicker, which is the
+ * smallest field consistent with having been paid at all.
+ */
+function migrateAward(e: PlannedEvent): PlannedEvent {
+  if (e.awardedPoints == null) return e;
+  const { awardedPoints, ...rest } = e;
+  const rule = ruleFor(rules, e.eventTypeId);
+  const table = rule ? tableFor(rules, rule) : [];
+
+  if (awardedPoints > 0) {
+    const band = bandForPoints(table, awardedPoints);
+    if (band) {
+      return {
+        ...rest,
+        placement: e.placement ?? band.minPlace,
+        attendance: e.attendance ?? (band.kicker > 0 ? band.kicker : null),
+      };
+    }
+    return rest;                        // not a payout this table can produce
+  }
+
+  // A zero award. With a placement, the only state that reproduces the zero is a
+  // turnout one short of that band's kicker. Without one, nothing identifies the
+  // event at all and the row goes back to unplayed.
+  if (e.placement == null) return { ...rest, placement: null, attendance: null };
+  const band = table.find((b) => e.placement! >= b.minPlace && e.placement! <= b.maxPlace);
+  return {
+    ...rest,
+    attendance: e.attendance ?? (band && band.kicker > 0 ? band.kicker - 1 : null),
+  };
+}
+
 const migrate = (all: QualificationPath[]): QualificationPath[] => all.map((p) => ({
   ...p,
   events: p.events.map((e) => {
-    let next = e;
+    let next = migrateAward(e);
     // Old official ranges — "Sept. 18-20" — would keep showing beside the ISO
     // dates around them. Only a month-precision date has a display form now.
-    if (e.displayDate && !/^\d{4}-\d{2}-00$/.test(e.displayDate)) {
+    if (next.displayDate && !/^\d{4}-\d{2}-00$/.test(next.displayDate)) {
       next = { ...next, displayDate: undefined };
     }
     // Global Challenges used to carry their month in the name, which the date
     // column already says. Stored plans keep the old form otherwise.
-    const dated = / [—-] (January|February|March|April|May|June|July|August|September|October|November|December) \d{4}$/;
+    const dated = / [\u2014-] (January|February|March|April|May|June|July|August|September|October|November|December) \d{4}$/;
     if (dated.test(next.name)) next = { ...next, name: next.name.replace(dated, '') };
     return next;
   }),

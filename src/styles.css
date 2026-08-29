@@ -353,10 +353,19 @@ footer.site li { margin-bottom: 0.25rem; }
   color: var(--text-muted); font-weight: 400; font-size: 0.78rem; margin-left: 0.5rem;
   font-variant-numeric: tabular-nums; white-space: nowrap;
 }
-.plan-inputs { display: flex; align-items: flex-end; gap: 0.3rem; }
+.plan-inputs { display: flex; align-items: flex-end; gap: 0.55rem; }
+/* The label sets the width of the group and the input stays narrow inside it.
+   Sizing the group to the input instead let "Placement" overflow its box and run
+   straight into "Players" next door. */
+.plan-inputs .field { width: auto; }
 /* Four tabular digits plus padding and border. The spinner arrows are gone
    (see input[type=number] above), which is what made this look twice as wide. */
-.plan-inputs .field { width: 2.9rem; }
+.plan-inputs .field input { width: 2.9rem; }
+/* Turnout runs to four digits at a large TCG International. */
+.plan-inputs .field:nth-child(2) input { width: 3.4rem; }
+/* An untouched default is the app's assumption, not something the player said.
+   Muting it is the whole signal: a figure in full contrast has been confirmed. */
+.plan-inputs input.assumed { color: var(--text-muted); }
 
 /* The date input stays rendered so the picker has something to open, but it is
    the button that is seen and pressed. */
@@ -374,7 +383,6 @@ footer.site li { margin-bottom: 0.25rem; }
 .field-date { width: 7.6rem; }
 .plan-inputs label, .field-date label { font-size: 0.62rem; margin-bottom: 0.08rem; }
 .plan-inputs input, .field-date input { padding: 0.22rem 0.3rem; }
-.field-or { font-size: 0.7rem; color: var(--text-muted); padding-bottom: 0.4rem; }
 .plan-result { display: flex; align-items: center; gap: 0.35rem;
                font-variant-numeric: tabular-nums; min-width: 9rem; justify-content: flex-end; }
 .plan-result .zero { color: var(--text-muted); font-weight: 500; }

@@ -13,8 +13,8 @@ const ZONES: RatingZoneId[] = ['NA', 'EU', 'LA', 'AP', 'SO'];
 const isObj = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
 const isPosInt = (v: unknown): v is number => Number.isInteger(v) && (v as number) >= 1;
-const isNullableInt = (v: unknown): v is number | null =>
-  v === null || (Number.isInteger(v) && (v as number) >= 0);
+const isNullableInt = (v: unknown): v is number | null | undefined =>
+  v == null || (Number.isInteger(v) && (v as number) >= 0);
 
 function parseEvent(raw: unknown, i: number, rules: SeasonRules, errors: string[]): PlannedEvent | null {
   if (!isObj(raw)) { errors.push(`events[${i}] is not an object.`); return null; }
@@ -29,6 +29,8 @@ function parseEvent(raw: unknown, i: number, rules: SeasonRules, errors: string[
     return null;
   }
   if (!isNullableInt(raw.awardedPoints)) { errors.push(`${at('awardedPoints')} must be a whole number or null.`); return null; }
+  // awardedPoints is accepted so plans exported before v2.8 still import; the
+  // load-time migration turns it into a placement and a turnout.
   if (!isNullableInt(raw.attendance)) { errors.push(`${at('attendance')} must be a whole number or null.`); return null; }
 
   return {
@@ -37,7 +39,9 @@ function parseEvent(raw: unknown, i: number, rules: SeasonRules, errors: string[
     eventTypeId: typeId,
     date: typeof raw.date === 'string' ? raw.date : null,
     placement: (raw.placement as number | null) ?? null,
-    awardedPoints: (raw.awardedPoints as number | null) ?? null,
+    // Carried through only so the load-time migration can convert it. Files
+    // written by v2.8 and later do not have it.
+    awardedPoints: (raw.awardedPoints as number | null | undefined) ?? undefined,
     attendance: (raw.attendance as number | null) ?? null,
     catalogName: typeof raw.catalogName === 'string' ? raw.catalogName : undefined,
   };

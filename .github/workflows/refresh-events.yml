@@ -14,6 +14,7 @@ on:
     paths:
       - '.github/workflows/refresh-events.yml'
       - 'scripts/refresh-catalog.mjs'
+      - 'scripts/refresh-event-attendance.mjs'
 
 permissions:
   contents: write
@@ -36,6 +37,15 @@ jobs:
       - name: Read the published season
         id: scrape
         run: node scripts/refresh-catalog.mjs
+        continue-on-error: true
+
+      # Real Masters attendance for majors that have finished, so a completed
+      # event is priced from its own field rather than its rating zone's median.
+      # Only ever adds figures to events already in the catalog, so a failure
+      # here leaves a correct-but-less-precise catalog rather than a broken one.
+      - name: Count attendance for events that have finished
+        if: steps.scrape.outcome == 'success'
+        run: node scripts/refresh-event-attendance.mjs --write
         continue-on-error: true
 
       # A failed scrape must never publish: the last good catalog stays live and

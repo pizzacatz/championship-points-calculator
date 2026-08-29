@@ -5,8 +5,9 @@ import type { EvaluatedResult, EventTypeRule, PlannedEvent } from '../domain/typ
  * Only what the row cannot otherwise say.
  *
  * "Excluded by BFL" is dropped because the row already carries `BFL –/4`, in the
- * same vocabulary as every other row's `BFL 2/4`. "Needs the CP" is gone because
- * a local placement is now scored from an assumed turnout rather than refused.
+ * same vocabulary as every other row's `BFL 2/4`. "Needs the CP" is gone with CP
+ * entry itself: a placement is scored against a turnout the row shows and the
+ * player can correct, so there is nothing left for the app to be unsure about.
  */
 const BADGE: Partial<Record<EvaluatedResult['reason'], { text: string; cls: string }>> = {
   'invalid': { text: 'Check this', cls: 'danger' },
@@ -28,10 +29,19 @@ const dateLabel = (e: { date: string | null; displayDate?: string }) =>
   e.displayDate ?? e.date ?? null;
 
 export function PlanRow({
-  result, rule, bfl, overdue, needsDate, onChange, onRemove,
+  result, rule, bfl, overdue, needsDate, defaultAttendance, entered, onChange, onRemove,
 }: {
   result: EvaluatedResult;
   rule: EventTypeRule;
+  /**
+   * Turnout the row scores against until the player overrides it — the scraped
+   * roster count for a major, the assumed field for a Cup or Challenge. Shown in
+   * the Players field so the assumption is never invisible. Null for online
+   * events, which have no field size and hide the input entirely.
+   */
+  defaultAttendance: number | null;
+  /** The turnout the player typed, if any. Null means the default is in force. */
+  entered: number | null;
   /** Position in its Best Finish Limit bucket, once the result is real. */
   bfl: { slot: number | null; limit: number | null } | null;
   /** Past its date with nothing entered — it cannot be played any more. */
@@ -105,18 +115,26 @@ export function PlanRow({
 
         <span className="plan-inputs">
           <span className="field">
-            <label htmlFor={`cp-${e.id}`}>CP</label>
-            <input id={`cp-${e.id}`} type="number" min={0} step={1} inputMode="numeric" maxLength={4}
-              value={e.awardedPoints ?? ''}
-              onChange={(ev) => onChange({ awardedPoints: intOrNull(ev.target.value), placement: null })} />
-          </span>
-          <span className="field-or">or</span>
-          <span className="field">
             <label htmlFor={`pl-${e.id}`}>Placement</label>
             <input id={`pl-${e.id}`} type="number" min={1} step={1} inputMode="numeric" maxLength={4}
               value={e.placement ?? ''}
-              onChange={(ev) => onChange({ placement: intOrNull(ev.target.value), awardedPoints: null })} />
+              onChange={(ev) => onChange({ placement: intOrNull(ev.target.value) })} />
           </span>
+          {/* Turnout only matters once there is a finish to price, and only where
+              a field size exists at all — an online event has none. Blanking it
+              falls back to the default rather than leaving the row unscoreable. */}
+          {e.placement != null && defaultAttendance != null && (
+            <span className="field">
+              <label htmlFor={`at-${e.id}`}>Players</label>
+              <input id={`at-${e.id}`} type="number" min={1} step={1} inputMode="numeric" maxLength={5}
+                className={entered == null ? 'assumed' : ''}
+                title={entered == null
+                  ? `Assumed turnout. Change it if ${title} was a different size.`
+                  : 'Turnout you entered. Clear it to go back to the assumption.'}
+                value={entered ?? defaultAttendance}
+                onChange={(ev) => onChange({ attendance: intOrNull(ev.target.value) })} />
+            </span>
+          )}
         </span>
 
         <span className="plan-result">

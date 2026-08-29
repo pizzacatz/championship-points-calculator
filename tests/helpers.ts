@@ -13,7 +13,6 @@ export function ev(partial: Partial<PlannedEvent> & { eventTypeId: string }): Pl
     name: '',
     date: null,
     placement: null,
-    awardedPoints: null,
     attendance: null,
     ...partial,
   };

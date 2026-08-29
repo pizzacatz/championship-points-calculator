@@ -52,9 +52,15 @@ export type PlannedEvent = {
   date: string | null;
   /** Exact final standing, a positive integer. */
   placement: number | null;
-  /** CP actually awarded (completed) or the hypothetical outcome (planned). */
-  awardedPoints: number | null;
-  /** Actual players, when known — read from rk9 for majors, never asked for. */
+  /**
+   * Legacy. Nothing scores from CP since v2.8; this is read once at load and
+   * converted into a placement and a turnout, then never written again.
+   */
+  awardedPoints?: number | null;
+  /**
+   * Players in the field. Null means "use the default for this event type",
+   * which is what the Players field shows until it is edited.
+   */
   attendance: number | null;
   /** Set when the row came from the published catalog rather than manual entry. */
   catalogName?: string;
@@ -100,7 +106,8 @@ export type CatalogEvent = {
   status: 'upcoming' | 'completed';
   rk9?: Partial<Record<Game, string>>;
   game?: Game;
-  attendance?: number;
+  /** Masters players per game, counted from the rk9 roster once the event has run. */
+  attendance?: Partial<Record<Game, number>>;
 };
 
 export type EventsCatalog = {
@@ -172,11 +179,11 @@ export type EvaluatedResult = {
   explanation: string;
   /** Set when the result earns a direct Worlds invitation. */
   directInvite: boolean;
-  /** True when positive CP is contingent on a kicker that has not been shown to be met. */
+  /** Unused since v2.8: the turnout a row scored against is shown on the row. */
   conditional: boolean;
-  /** Attendance actually used, and where it came from. */
+  /** Turnout actually used, and whether the player supplied it. */
   attendanceUsed: number | null;
-  attendanceSource: 'entered' | 'baseline' | 'implied-by-award' | 'unknown';
+  attendanceSource: 'entered' | 'baseline' | 'unknown';
   /** A validation problem the player must fix. */
   error: string | null;
 };

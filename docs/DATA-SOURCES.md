@@ -208,6 +208,27 @@ leaderboard API wants `division=all`). It also has no Standing column, which mat
 For TCG and VGC, every registered player carried a final standing and the row count equalled
 the highest standing, so **roster count = attendance** for those two.
 
+**Per-event attendance (added v2.8).** `scripts/refresh-event-attendance.mjs` uses the same
+rosters, but for a different purpose: not a season-wide baseline, but the actual field size
+of one named event, so a completed major is priced from itself rather than from its rating
+zone's median. It is driven by the rk9 tournament ids already stored in
+`events-catalog.json`, so it costs one request per event per game, once, cached — no
+discovery pass and no request to Limitless.
+
+It only asks about events whose date has passed, which is also the only time a placement can
+be entered for them. A roster it finds empty is an event rk9 has not published rather than
+one nobody entered, and is skipped: writing `0` would price every finish there as worthless.
+
+Verified against a populated roster: Orlando 2026 TCG returns 2,734 Masters registered and
+2,733 carrying a final standing, against 299 Seniors and 218 Juniors correctly excluded by
+the Division column.
+
+**`/tournament/<id>` was re-checked and is still not standings.** It is the registration and
+pricing page — division deadlines, entry fees, venue. Nothing on rk9 outside the disallowed
+`/pairings/` publishes final placings, so for Pokémon GO, whose rosters carry no Standing
+column, the registration count is the only figure available. See §4.3 for why that is not
+treated as verified.
+
 ### 3.3 Liquipedia — MediaWiki API (GO)
 
 `https://liquipedia.net/pokemon/api.php`, standard MediaWiki.

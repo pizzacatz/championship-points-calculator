@@ -55,17 +55,21 @@ export function projectedField(
   return forGame.zones?.[path.ratingZone]?.attendance ?? null;
 }
 
-/** Every CP value is distinct within a table, so an award identifies its band. */
+/**
+ * Every CP value is distinct within a table, so an award identifies its band.
+ * Nothing scores from CP any more — this survives only so the storage migration
+ * can turn a saved award back into the placement and turnout that produced it.
+ */
 export const bandForPoints = (table: PlacementBand[], points: number): PlacementBand | null =>
   table.find((b) => b.points === points) ?? null;
 
 /**
- * A result is anything with a number on it. A blank row is an event the player
- * intends to attend and has not played yet, which is what the ladder solves for.
- * Nothing needs to be toggled — the presence of a number says which it is.
+ * A result is a placement. A blank row is an event the player intends to attend
+ * and has not played yet, which is what the ladder solves for. Nothing needs to
+ * be toggled — the presence of a placement says which it is.
  */
 export const isResult = (e: PlannedEvent): boolean =>
-  e.awardedPoints != null || (e.placement != null && e.placement >= 1);
+  e.placement != null && Number.isInteger(e.placement) && e.placement >= 1;
 
 const ordinal = (n: number): string => {
   const rem100 = n % 100;
@@ -74,12 +78,25 @@ const ordinal = (n: number): string => {
 };
 
 /**
+ * The turnout a row scores against when the player has not overridden it.
+ *
+ * This is what the Players field shows before it is touched, and what the engine
+ * falls back to. Online events return null because no field size exists for
+ * them: every kicker is assumed met.
+ */
+export function defaultAttendance(
+  baselines: AttendanceBaselines, game: Game, rule: EventTypeRule, path: QualificationPath,
+): number | null {
+  return projectedField(baselines, game, rule, path);
+}
+
+/**
  * Resolve one result to the CP it is worth, independent of any Best Finish Limit.
  *
- * The rules here follow PRD §6: a completed local result is settled by its
- * awarded CP alone (a positive award is itself proof the kicker was met), and
- * attendance is only ever demanded when it is the sole way to resolve a
- * kicker-dependent band.
+ * Two inputs, both required on a played row: where you finished and how many
+ * people were there. That makes this a lookup rather than a judgment — there is
+ * no case here that decides whether an assumption is safe enough to use, because
+ * the turnout is always a value the player can see and correct.
  */
 export function evaluateResult(
   event: PlannedEvent, rules: SeasonRules, path: QualificationPath, baselines: AttendanceBaselines,
@@ -103,35 +120,24 @@ export function evaluateResult(
   }
   const table = tableFor(rules, rule);
 
-  // One number, either kind. CP identifies its band outright; a placement gives
-  // the band directly. Whichever is supplied, the other is derived.
-  let band: PlacementBand | null = null;
-  if (event.placement != null && Number.isInteger(event.placement) && event.placement >= 1) {
-    band = bandFor(table, event.placement);
-  } else if (event.awardedPoints != null && event.awardedPoints > 0) {
-    band = bandForPoints(table, event.awardedPoints);
-    if (!band) {
-      return {
-        ...base, reason: 'invalid',
-        explanation: `${event.awardedPoints} CP is not a ${rule.label} payout.`,
-        error: `${rule.label} pays ${table.map((b) => b.points).join(', ')} or 0. `
-             + `${event.awardedPoints} is not one of them.`,
-      };
-    }
-  } else if (event.awardedPoints === 0) {
+  if (event.placement != null && !(Number.isInteger(event.placement) && event.placement >= 1)) {
     return {
-      ...base, reason: 'below-kicker', error: null,
-      explanation: 'Awarded 0 CP — the kicker was not met, or the finish was outside the table.',
+      ...base, reason: 'invalid',
+      explanation: 'A placement has to be a whole number, 1 or more.',
+      error: 'A placement has to be a whole number, 1 or more.',
     };
-  } else {
+  }
+
+  if (event.placement == null) {
     return {
       ...base, reason: 'incomplete',
-      explanation: 'Enter the CP you earned, or your finishing place.',
+      explanation: 'Enter where you finished.',
       error: null,
     };
   }
 
-  const placed = event.placement != null ? `${ordinal(event.placement)} place` : `${band!.points} CP`;
+  const band = bandFor(table, event.placement);
+  const placed = `${ordinal(event.placement)} place`;
 
   if (!band) {
     const last = table[table.length - 1];
@@ -143,143 +149,59 @@ export function evaluateResult(
   }
 
   const bandText = `${placed} → ${bandLabel(band)} band`;
-  const directInvite = isResult(event) && band.maxPlace <= rule.directInvitePlacesThrough;
+  const directInvite = band.maxPlace <= rule.directInvitePlacesThrough;
 
-  // ---- Recorded results ----------------------------------------------------
-  if (isResult(event)) {
-    if (event.awardedPoints != null) {
-      // Validate the award against the published table before trusting it.
-      if (event.awardedPoints !== band.points && event.awardedPoints !== 0) {
-        return {
-          ...base, band, reason: 'invalid',
-          explanation: `${bandText} pays ${band.points} CP, but ${event.awardedPoints} CP was entered.`,
-          error: `A ${bandLabel(band)} finish pays ${band.points} CP (or 0 if the kicker was not met). ${event.awardedPoints} CP is not a possible award — correct the placement or the CP.`,
-        };
-      }
-      if (event.awardedPoints === 0) {
-        return {
-          ...base, band, reason: 'below-kicker', directInvite,
-          attendanceUsed: event.attendance, attendanceSource: event.attendance != null ? 'entered' : 'unknown',
-          explanation: band.kicker > 0
-            ? `${bandText}, awarded 0 CP — the ${band.kicker}-player kicker was not met.`
-            : `${bandText}, awarded 0 CP.`,
-          error: null,
-        };
-      }
-      // A positive, valid award proves the kicker minimum was met. Nothing more.
-      return {
-        ...base, band, rawPoints: band.points, directInvite,
-        attendanceUsed: band.kicker > 0 ? band.kicker : null,
-        attendanceSource: band.kicker > 0 ? 'implied-by-award' : 'unknown',
-        reason: 'counts',
-        explanation: band.kicker > 0
-          ? `${bandText}, worth ${band.points} CP. The award confirms at least ${band.kicker} players attended.`
-          : `${bandText}, worth ${band.points} CP.`,
-        error: null,
-      };
-    }
-
-    // No awarded CP. Only kicker-dependent bands then need attendance.
-    if (band.kicker === 0) {
-      return {
-        ...base, band, rawPoints: band.points, directInvite, reason: 'counts',
-        explanation: `${bandText}, worth ${band.points} CP. This band has no kicker.`, error: null,
-      };
-    }
-    // Online events publish no field size and assume every kicker is met, so a
-    // placement at one always scores.
-    if (rule.scale === 'online') {
-      return {
-        ...base, band, rawPoints: band.points, directInvite, reason: 'counts',
-        explanation: `${bandText}, worth ${band.points} CP.`, error: null,
-      };
-    }
-
-    // Otherwise fall back to the projected field for this event type — a zone
-    // median for a major, an assumed turnout for a local.
-    const known = event.attendance ?? projectedField(baselines, path.game, rule, path);
-    if (known == null) {
-      return {
-        ...base, band, directInvite, reason: 'unverified-attendance',
-        explanation: `${bandText} pays ${band.points} CP only if at least ${band.kicker} players entered. Enter the CP you were awarded.`,
-        error: null,
-      };
-    }
-    if (known < band.kicker) {
-      return {
-        ...base, band, directInvite,
-        reason: 'below-kicker',
-        attendanceUsed: known,
-        attendanceSource: event.attendance != null ? 'entered' : 'baseline',
-        explanation: `${bandText} needs ${band.kicker} players; ${known.toLocaleString()} ${event.attendance != null ? 'attended' : 'projected'}. Worth 0 CP.`,
-        error: null,
-      };
-    }
+  // Online events publish no field size at all — Pokémon Champions has 10M+
+  // downloads and the GO Battle League leaderboard is ranked globally — so every
+  // kicker is taken as met and no turnout is asked for.
+  if (rule.scale === 'online' || band.kicker === 0) {
     return {
-      ...base, band, rawPoints: band.points, directInvite,
-      attendanceUsed: known,
-      attendanceSource: event.attendance != null ? 'entered' : 'baseline',
-      reason: 'counts',
-      explanation: `${bandText}, worth ${band.points} CP.`,
+      ...base, band, rawPoints: band.points, directInvite, reason: 'counts',
+      explanation: band.kicker === 0
+        ? `${bandText}, worth ${band.points} CP. This band has no kicker.`
+        : `${bandText}, worth ${band.points} CP.`,
       error: null,
     };
   }
 
-  // ---- Planned results -----------------------------------------------------
-  // Planned majors fall back to the historical-low baseline plus the player's
-  // adjustment; planned locals may instead assert a hypothetical CP outcome.
-  const field = projectedField(baselines, path.game, rule, path);
-  const projected = event.attendance ?? field;
-  const attendanceSource = event.attendance != null ? 'entered' : field != null ? 'baseline' : 'unknown';
+  const fallback = defaultAttendance(baselines, path.game, rule, path);
+  const turnout = event.attendance ?? fallback;
+  const source = event.attendance != null ? 'entered' as const : 'baseline' as const;
 
-  if (band.kicker === 0) {
+  if (turnout == null) {
+    // No assumption exists for this event type and none was entered. Rather than
+    // invent one, say so — this is the only unscoreable shape left.
     return {
-      ...base, band, rawPoints: band.points, reason: 'planned-counts',
-      attendanceUsed: projected, attendanceSource,
-      explanation: `Planned ${bandText}, worth ${band.points} CP. This band has no kicker.`, error: null,
-    };
-  }
-
-  if (projected != null) {
-    if (projected < band.kicker) {
-      return {
-        ...base, band, reason: 'below-kicker', attendanceUsed: projected, attendanceSource,
-        explanation: attendanceSource === 'baseline'
-          ? `Planned ${bandText} needs ${band.kicker} players; the projected field is ${projected}. Worth 0 CP at this projection.`
-          : `Planned ${bandText} needs ${band.kicker} players; ${projected} assumed. Worth 0 CP.`,
-        error: null,
-      };
-    }
-    const unverified = attendanceSource === 'baseline';
-    return {
-      ...base, band, rawPoints: band.points, reason: 'planned-counts',
-      conditional: Boolean(unverified), attendanceUsed: projected, attendanceSource,
-      explanation: unverified
-        ? `Planned ${bandText}, worth ${band.points} CP — assuming the ${band.kicker}-player kicker is met. The ${projected}-player projection is an unverified baseline.`
-        : `Planned ${bandText}, worth ${band.points} CP with ${projected} players assumed (kicker ${band.kicker}).`,
+      ...base, band, directInvite, reason: 'unverified-attendance',
+      explanation: `${bandText} pays ${band.points} CP only if at least ${band.kicker} players entered. Enter the turnout.`,
       error: null,
     };
   }
 
-  // A hypothetical positive CP outcome with no attendance: explicitly conditional.
-  if (event.awardedPoints != null && event.awardedPoints > 0) {
-    if (event.awardedPoints !== band.points) {
-      return {
-        ...base, band, reason: 'invalid',
-        explanation: `${bandText} pays ${band.points} CP, but ${event.awardedPoints} CP was entered.`,
-        error: `A ${bandLabel(band)} finish pays ${band.points} CP. Correct the placement or the hypothetical CP.`,
-      };
-    }
+  if (turnout < event.placement) {
     return {
-      ...base, band, rawPoints: band.points, reason: 'planned-counts', conditional: true,
-      explanation: `Planned ${bandText}, worth ${band.points} CP — assuming the ${band.kicker}-player kicker is met.`,
+      ...base, band, directInvite, reason: 'invalid',
+      attendanceUsed: turnout, attendanceSource: source,
+      explanation: `${placed} in a field of ${turnout.toLocaleString()} is not possible.`,
+      error: `You cannot finish ${ordinal(event.placement)} in a field of ${turnout.toLocaleString()}. Correct the placement or the turnout.`,
+    };
+  }
+
+  if (turnout < band.kicker) {
+    return {
+      ...base, band, directInvite, reason: 'below-kicker',
+      attendanceUsed: turnout, attendanceSource: source,
+      explanation: `${bandText} needs ${band.kicker} players; ${turnout.toLocaleString()} `
+        + `${source === 'entered' ? 'attended' : 'assumed'}. Worth 0 CP.`,
       error: null,
     };
   }
 
   return {
-    ...base, band, reason: 'unverified-attendance',
-    explanation: `Planned ${bandText} pays ${band.points} CP only if at least ${band.kicker} players attend. Assume an attendance or a CP outcome.`,
+    ...base, band, rawPoints: band.points, directInvite, reason: 'counts',
+    attendanceUsed: turnout, attendanceSource: source,
+    explanation: `${bandText}, worth ${band.points} CP `
+      + `with ${turnout.toLocaleString()} players ${source === 'entered' ? 'entered' : 'assumed'} (kicker ${band.kicker}).`,
     error: null,
   };
 }
