@@ -178,14 +178,11 @@ export function evaluateResult(
     };
   }
 
-  if (turnout < event.placement) {
-    return {
-      ...base, band, directInvite, reason: 'invalid',
-      attendanceUsed: turnout, attendanceSource: source,
-      explanation: `${placed} in a field of ${turnout.toLocaleString()} is not possible.`,
-      error: `You cannot finish ${ordinal(event.placement)} in a field of ${turnout.toLocaleString()}. Correct the placement or the turnout.`,
-    };
-  }
+  // A turnout below the placement is a contradiction, and it needs no error of
+  // its own: a band's kicker is always larger than its own last place, so a
+  // turnout too small to hold the placement is necessarily too small to pay it.
+  // The row already scores it 0 for the right reason. Complaining as well only
+  // ever fired at someone half-way through retyping a number.
 
   if (turnout < band.kicker) {
     return {

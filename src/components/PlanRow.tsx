@@ -53,13 +53,28 @@ export function PlanRow({
 }) {
   const e = result.event;
   const dateInput = useRef<HTMLInputElement>(null);
-  // Half-typed numbers are not mistakes. Backspacing 640 down to 6 passes through
-  // "6 players", which is a real contradiction of a 130th place and would fire a
-  // red alert on every keystroke of a correction. The row holds its verdict until
-  // the player has stopped editing it.
   const [editing, setEditing] = useState(false);
-  const held = editing ? null : result.error;
-  const badge = editing ? undefined : BADGE[result.reason];
+
+  /**
+   * What the turnout field is showing, when that differs from what is stored.
+   *
+   * Null means "show the stored value, or the default if there is none". A
+   * string means the player is holding something the store cannot represent —
+   * in practice the empty string, because clearing the field stores null, and
+   * null is also how "use the default" is stored. Without this the last digit
+   * could not be deleted: the field refilled itself with the default the instant
+   * it went empty.
+   */
+  const [draft, setDraft] = useState<string | null>(null);
+  const shown = draft ?? String(entered ?? defaultAttendance ?? '');
+  const blank = shown === '';
+
+  // Half-typed numbers are not mistakes, so the row holds its verdict until the
+  // player has stopped editing it.
+  const held = editing ? null
+    : blank ? 'Enter how many players were in the field.'
+      : result.error;
+  const badge = editing || blank ? undefined : BADGE[result.reason];
 
   // showPicker is the supported way to open the native calendar on demand;
   // where it is missing, focusing the input is the next best thing.
@@ -127,7 +142,8 @@ export function PlanRow({
         </span>
 
         <span className="plan-inputs"
-          onFocus={() => setEditing(true)} onBlur={() => setEditing(false)}>
+          onFocus={() => setEditing(true)}
+          onBlur={() => { setEditing(false); if (draft !== '') setDraft(null); }}>
           <span className="field">
             <label htmlFor={`pl-${e.id}`}>Placement</label>
             <input id={`pl-${e.id}`} type="number" min={1} step={1} inputMode="numeric" maxLength={4}
@@ -141,12 +157,15 @@ export function PlanRow({
             <span className="field">
               <label htmlFor={`at-${e.id}`}>Players</label>
               <input id={`at-${e.id}`} type="number" min={1} step={1} inputMode="numeric" maxLength={5}
-                className={entered == null ? 'assumed' : ''}
+                className={draft == null && entered == null ? 'assumed' : ''}
                 title={entered == null
                   ? `Assumed turnout. Change it if ${title} was a different size.`
-                  : 'Turnout you entered. Clear it to go back to the assumption.'}
-                value={entered ?? defaultAttendance}
-                onChange={(ev) => onChange({ attendance: intOrNull(ev.target.value) })} />
+                  : 'Turnout you entered.'}
+                value={shown}
+                onChange={(ev) => {
+                  setDraft(ev.target.value);
+                  onChange({ attendance: intOrNull(ev.target.value) });
+                }} />
             </span>
           )}
         </span>

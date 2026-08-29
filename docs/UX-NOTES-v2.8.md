@@ -40,8 +40,11 @@ in it:
 | Result, online | — no field size exists | no |
 | Planned event | ladder assumption, not per-row | no |
 
-Blanking the field returns it to the default rather than leaving a hole, so the
-default is always recoverable and the row can never be in an unscoreable state.
+The field can be emptied like any other, and an empty one is the single thing a
+row complains about. An earlier build had it refill itself with the default the
+moment it went empty, on the reasoning that the row should never be in an
+unscoreable state. That made the last digit undeletable, which is a worse problem
+than the one it solved: a field that fights the backspace key is not a field.
 
 The always-blank alternative was rejected on friction. It buys one thing: it
 forces you to confront a wrong default instead of accepting it. It costs typing
@@ -115,7 +118,12 @@ A stored `awardedPoints` is converted at load:
 
 ## Validation
 
-Two rules, both on the row:
+One rule: a played row needs a turnout, and an empty one says so.
 
-- turnout must be at least the placement — you cannot finish 40th in a field of 32
-- both must be positive whole numbers
+The obvious second rule — that the turnout must be at least the placement — was
+written and then removed, because it can never change an answer. Every band's
+kicker is larger than that band's own last place (33-64 needs 129; 9-16 needs 48),
+so a field too small to hold the placement is always too small to pay it. Those
+rows already scored 0 for the right reason. The check earned nothing and fired at
+people half-way through retyping a number. `tests/calculate.test.ts` asserts the
+invariant across every payout table so the reasoning stays checked.

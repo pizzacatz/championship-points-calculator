@@ -3,13 +3,29 @@
 All dates 2026-08-28 — the project was specified, built, reviewed and rebuilt in
 a single session.
 
+## 2.8.2
+
+- **The turnout field can be emptied.** It refilled itself with the default the
+  instant it went empty, so the last digit could not be deleted — backspace after
+  backspace and the number came back. It now stays empty, like any other field.
+  The v2.8.1 note about clearing it to restore the assumption described that bug
+  as a feature; it was not one.
+- **An empty turnout is the only thing a row complains about.** The
+  contradiction error is gone: a turnout too small to hold the placement is
+  necessarily too small to pay it, because every band's kicker is larger than its
+  own last place. The row already scored those 0 for the right reason, so the
+  error changed no answer and only ever fired at someone half-way through
+  retyping a number. There is now a test asserting that invariant across every
+  payout table.
+
 ## 2.8.1
 
 - **A row holds its verdict until you stop typing.** Backspacing a turnout from
   640 down passes through "6 players", which genuinely contradicts a 13th place,
   so a red callout appeared under the row on every keystroke of a correction. The
   error and the *Check this* badge now wait for the field to lose focus. Nothing
-  about what counts as valid changed.
+  about what counts as valid changed. (This was the wrong fix for the wrong
+  problem; see 2.8.2.)
 - **A Cup or Challenge carries its date beside its name**, on both mobile and
   desktop, where a catalog event has always printed its own. The control was out
   by the inputs, so one kind of row put its date beside the name and another put

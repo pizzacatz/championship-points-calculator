@@ -86,11 +86,25 @@ describe('completed local results', () => {
     expect(r.attendanceSource).toBe('baseline');
   });
 
-  it('rejects a turnout smaller than the placement', () => {
+  it('scores a turnout smaller than the placement as zero, without an error', () => {
+    // A contradiction, but one that needs no error of its own: a band's kicker is
+    // always larger than its own last place, so a field too small to hold the
+    // placement is necessarily too small to pay it. The zero is already right,
+    // and complaining as well only ever fired mid-retype.
     const e = ev({ eventTypeId: 'league-cup', placement: 40, attendance: 32 });
     const r = evaluateResult(e, rules, path([e]), baselines);
-    expect(r.reason).toBe('invalid');
-    expect(r.error).toMatch(/cannot finish 40th in a field of 32/);
+    expect(r).toMatchObject({ rawPoints: 0, reason: 'below-kicker', error: null });
+  });
+
+  it('never pays a band whose kicker a placement-sized field could reach', () => {
+    // The property the check above relies on, asserted over every table: a band
+    // that pays at all needs more players than its own last place.
+    for (const table of Object.values(rules.placementTables)) {
+      for (const band of table) {
+        if (band.kicker === 0) continue;
+        expect(band.kicker).toBeGreaterThan(band.maxPlace);
+      }
+    }
   });
 
   it('rejects a placement that is not a whole number of at least 1', () => {

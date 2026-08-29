@@ -211,27 +211,49 @@ await check('the assumed turnout reads as an assumption until it is touched', as
   await page.waitForTimeout(500);
   assert.doesNotMatch(await row.getByLabel('Players').getAttribute('class') ?? '', /assumed/);
   // Clearing it goes back to the default rather than leaving the row unscoreable.
+  // Emptying it leaves it empty. It is a required field, not one that argues.
   await row.getByLabel('Players').fill('');
   await page.waitForTimeout(500);
-  assert.equal(await row.getByLabel('Players').inputValue(), '705');
+  assert.equal(await row.getByLabel('Players').inputValue(), '');
+  await row.getByLabel('Players').fill('705');
+  await row.getByLabel('Players').blur();
 });
 
-await check('a turnout smaller than the placement is rejected, once editing stops', async () => {
+await check('the turnout can be emptied one digit at a time', async () => {
   const row = page.locator('.plan-row').nth(1);
   const players = row.getByLabel('Players');
   await players.click();
-  await players.fill('5');
-  await page.waitForTimeout(600);
-  // Half-typed numbers are not mistakes: backspacing 705 down to 7 passes through
-  // states that contradict the placement, and firing on each would put a red
-  // callout under the row on every keystroke of a correction.
+  await page.keyboard.press('End');
+  // The whole complaint: the field used to refill itself with the default the
+  // instant it went empty, so the last digit could not be deleted.
+  for (const expected of ['70', '7', '']) {
+    await page.keyboard.press('Backspace');
+    await page.waitForTimeout(250);
+    assert.equal(await players.inputValue(), expected,
+      `backspacing gave "${await players.inputValue()}", not "${expected}"`);
+  }
   assert.equal(await row.locator('[role="alert"]').count(), 0,
     'the row complained while the field still had focus');
+});
+
+await check('an empty turnout is the only thing the row complains about', async () => {
+  const row = page.locator('.plan-row').nth(1);
+  const players = row.getByLabel('Players');
   await players.blur();
   await row.locator('[role="alert"]').waitFor({ timeout: 4000 });
-  assert.match(await row.locator('[role="alert"]').innerText(), /cannot finish 9th in a field of 5/);
-  await players.fill('');
+  assert.match(await row.locator('[role="alert"]').innerText(), /how many players/i);
+  // A turnout that cannot hold the placement is a contradiction, but it scores 0
+  // for the right reason on its own, so it is not worth an error.
+  await players.fill('5');
   await players.blur();
+  await page.waitForTimeout(600);
+  assert.equal(await row.locator('[role="alert"]').count(), 0,
+    'a field smaller than the placement raised an error');
+  assert.match(await row.innerText(), /0 CP/);
+  await players.fill('705');
+  await players.blur();
+  await page.waitForTimeout(600);
+  assert.match(await row.innerText(), /200 CP/);
 });
 
 await check('there is no way to type a CP value', async () => {
