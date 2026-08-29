@@ -368,8 +368,12 @@ footer.site li { margin-bottom: 0.25rem; }
 .plan-inputs input.assumed { color: var(--text-muted); }
 
 /* The date input stays rendered so the picker has something to open, but it is
-   the button that is seen and pressed. */
-.field-date { position: relative; display: inline-flex; flex: none; }
+   the button that is seen and pressed. It sits inside the title and flows with
+   it, so it is sized by its own content rather than reserving a column. */
+.field-date {
+  position: relative; display: inline-flex; vertical-align: middle;
+  margin-left: 0.4rem;
+}
 .field-date input[type='date'] {
   position: absolute; inset: 0; width: 100%; height: 100%;
   opacity: 0; pointer-events: none; border: none; padding: 0;
@@ -380,7 +384,6 @@ footer.site li { margin-bottom: 0.25rem; }
   font-size: 0.76rem; font-variant-numeric: tabular-nums; color: var(--text-muted);
 }
 .date-btn:hover { color: var(--accent-text); }
-.field-date { width: 7.6rem; }
 .plan-inputs label, .field-date label { font-size: 0.62rem; margin-bottom: 0.08rem; }
 .plan-inputs input, .field-date input { padding: 0.22rem 0.3rem; }
 .plan-result { display: flex; align-items: center; gap: 0.35rem;
@@ -472,7 +475,6 @@ table.ladder .idle-note { font-size: 0.8rem; white-space: normal; }
   .plan-row { position: relative; }
   .plan-row .icon { position: absolute; top: 0.45rem; right: 0.6rem; }
   .plan-title { order: 1; flex: 1 1 auto; min-width: 0; padding-right: 2.2rem; }
-  .field-date { order: 2; flex: none; }
   .plan-main::after { content: ''; order: 4; flex-basis: 100%; height: 0; }
   .plan-inputs { order: 5; flex: 0 1 auto; }
   /* The earned CP is the row's answer: bottom right, and it stays there. */
@@ -483,7 +485,6 @@ table.ladder .idle-note { font-size: 0.8rem; white-space: normal; }
   .plan-result .badge { order: 1; }
   .plan-result .bfl { order: 2; }
   .plan-result strong { order: 3; }
-  .field-date { grid-column: 2; grid-row: 1; }
   table.ladder col.c-count { width: 4.6rem; }
   table.ladder col.c-finish { width: 6rem; }
   table.ladder col.c-cp { width: 4.2rem; }

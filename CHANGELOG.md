@@ -3,6 +3,19 @@
 All dates 2026-08-28 — the project was specified, built, reviewed and rebuilt in
 a single session.
 
+## 2.8.1
+
+- **A row holds its verdict until you stop typing.** Backspacing a turnout from
+  640 down passes through "6 players", which genuinely contradicts a 13th place,
+  so a red callout appeared under the row on every keystroke of a correction. The
+  error and the *Check this* badge now wait for the field to lose focus. Nothing
+  about what counts as valid changed.
+- **A Cup or Challenge carries its date beside its name**, on both mobile and
+  desktop, where a catalog event has always printed its own. The control was out
+  by the inputs, so one kind of row put its date beside the name and another put
+  it three columns away. It is inline now, so it wraps with the name instead of
+  reserving a column of its own.
+
 ## 2.8.0
 
 - **A result is a placement and a turnout. There is no CP field any more.** The

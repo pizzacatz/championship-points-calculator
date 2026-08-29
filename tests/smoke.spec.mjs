@@ -216,12 +216,22 @@ await check('the assumed turnout reads as an assumption until it is touched', as
   assert.equal(await row.getByLabel('Players').inputValue(), '705');
 });
 
-await check('a turnout smaller than the placement is rejected', async () => {
+await check('a turnout smaller than the placement is rejected, once editing stops', async () => {
   const row = page.locator('.plan-row').nth(1);
-  await row.getByLabel('Players').fill('5');
+  const players = row.getByLabel('Players');
+  await players.click();
+  await players.fill('5');
+  await page.waitForTimeout(600);
+  // Half-typed numbers are not mistakes: backspacing 705 down to 7 passes through
+  // states that contradict the placement, and firing on each would put a red
+  // callout under the row on every keystroke of a correction.
+  assert.equal(await row.locator('[role="alert"]').count(), 0,
+    'the row complained while the field still had focus');
+  await players.blur();
   await row.locator('[role="alert"]').waitFor({ timeout: 4000 });
   assert.match(await row.locator('[role="alert"]').innerText(), /cannot finish 9th in a field of 5/);
-  await row.getByLabel('Players').fill('');
+  await players.fill('');
+  await players.blur();
 });
 
 await check('there is no way to type a CP value', async () => {
@@ -568,6 +578,38 @@ await check('a result saved as CP survives as a placement and a turnout', async 
   assert.equal(await row.getByLabel('Placement').inputValue(), '9');
   assert.equal(await row.getByLabel('Players').inputValue(), '48');
   assert.match(await row.innerText(), /20 CP/);
+});
+
+await check("a local's date sits beside its name, not out by the inputs", async () => {
+  for (const width of [1280, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.waitForTimeout(400);
+    const m = await page.evaluate(() => {
+      const row = [...document.querySelectorAll('.plan-row')]
+        .find((r) => r.querySelector('.field-date'));
+      if (!row) return null;
+      const title = row.querySelector('.plan-title');
+      const chip = row.querySelector('.field-date');
+      // The end of the name itself, not of its box: the title stretches to fill
+      // the row, so its right edge says nothing about where the words stop.
+      const range = document.createRange();
+      range.selectNodeContents(title.firstChild);
+      const text = range.getBoundingClientRect();
+      const c = chip.getBoundingClientRect();
+      return {
+        insideTitle: title.contains(chip),
+        gap: Math.round(c.left - text.right),
+        sameLine: c.top < text.bottom && c.bottom > text.top,
+      };
+    });
+    assert.ok(m, 'no local row with a date control');
+    assert.ok(m.insideTitle, `at ${width}px the date control is not part of the title`);
+    assert.ok(m.sameLine, `at ${width}px the date control is not on the name's line`);
+    assert.ok(m.gap >= 0 && m.gap <= 14,
+      `at ${width}px the date control sits ${m.gap}px from the end of the name`);
+  }
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.waitForTimeout(400);
 });
 
 await check('the theme toggle is an icon and works', async () => {
