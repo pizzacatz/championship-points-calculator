@@ -3,6 +3,14 @@
 All dates 2026-08-28 — the project was specified, built, reviewed and rebuilt in
 a single session.
 
+## 2.8.5
+
+- **The Placement box sits in the same place on every row.** An event with no
+  field size to enter — a Global or Grand Challenge, or any row without a result
+  yet — rendered no Players box at all, so its Placement slid right and no two
+  rows lined up. The box is still laid out in those cases, just made invisible,
+  which also keeps it out of the tab order and the accessibility tree.
+
 ## 2.8.4
 
 - **A row missing its turnout asks a question and says where the answer is.** It

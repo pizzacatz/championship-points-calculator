@@ -274,8 +274,10 @@ await check('an unplayed row asks for the placement only', async () => {
   await cat.getByRole('button', { name: '+ League Challenge' }).click();
   await page.waitForTimeout(400);
   const row = page.locator('.plan-row', { hasText: 'League Challenge' }).last();
-  const labels = await row.locator('.plan-inputs label').allInnerTexts();
-  assert.deepEqual(labels, ['Placement'], 'turnout is asked for before there is a finish');
+  assert.equal(await row.getByLabel('Players').isVisible(), false,
+    'turnout is asked for before there is a finish');
+  // It is hidden, not absent: the box still holds the column open.
+  assert.equal(await row.locator('.plan-inputs .field').count(), 2);
   await row.getByRole('button', { name: /Remove/ }).click();
   await page.waitForTimeout(400);
 });
@@ -656,10 +658,27 @@ await check('a Global Challenge never asks for a turnout, or complains about one
   // Pokémon Champions has 10M+ downloads, so its kickers are taken as met and
   // there is no field size to ask for. A row with no input to fill must not then
   // complain that it is empty.
-  assert.equal(await row.getByLabel('Players').count(), 0, 'an online event asked for a turnout');
+  assert.equal(await row.getByLabel('Players').isVisible(), false,
+    'an online event asked for a turnout');
   assert.equal(await row.locator('[role="alert"]').count(), 0,
     `an online event raised: ${await row.locator('[role="alert"]').innerText().catch(() => '')}`);
   assert.match(await row.innerText(), /13 CP/);
+
+  // The hidden box still holds the column open, so Placement lands in the same
+  // place as on a row that does ask for a turnout.
+  const xs = await page.evaluate(() => {
+    const at = (r) => Math.round(
+      r.querySelector('.plan-inputs .field input').getBoundingClientRect().left);
+    const rows = [...document.querySelectorAll('.plan-row')];
+    const online = rows.find((r) => /Global Challenge/.test(r.textContent));
+    const other = rows.find((r) => r !== online
+      && r.querySelectorAll('.plan-inputs .field').length === 2
+      && !r.querySelector('.field-hidden'));
+    return other ? { online: at(online), other: at(other) } : null;
+  });
+  assert.ok(xs, 'no row with a visible turnout to compare against');
+  assert.equal(xs.online, xs.other,
+    `Placement starts at ${xs.online}px on an online row and ${xs.other}px elsewhere`);
 });
 
 await check('the theme toggle is an icon and works', async () => {

@@ -363,6 +363,11 @@ footer.site li { margin-bottom: 0.25rem; }
 .plan-inputs .field input { width: 2.9rem; }
 /* Turnout runs to four digits at a large TCG International. */
 .plan-inputs .field:nth-child(2) input { width: 3.4rem; }
+/* Kept in the layout, taken out of sight: an event with no field size to enter
+   still has to hold the column open, or its Placement box slides right and no
+   two rows line up. visibility also takes it out of the tab order and the
+   accessibility tree, which is the whole point of using it over opacity. */
+.plan-inputs .field-hidden { visibility: hidden; }
 /* An untouched default is the app's assumption, not something the player said.
    Muting it is the whole signal: a figure in full contrast has been confirmed. */
 .plan-inputs input.assumed { color: var(--text-muted); }

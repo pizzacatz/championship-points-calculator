@@ -168,23 +168,25 @@ export function PlanRow({
               onChange={(ev) => onChange({ placement: intOrNull(ev.target.value) })} />
           </span>
           {/* Turnout only matters once there is a finish to price, and only where
-              a field size exists at all — an online event has none. Blanking it
-              falls back to the default rather than leaving the row unscoreable. */}
-          {showsTurnout && (
-            <span className="field">
-              <label htmlFor={`at-${e.id}`}>Players</label>
-              <input id={`at-${e.id}`} type="number" min={1} step={1} inputMode="numeric" maxLength={5}
-                className={draft == null && entered == null ? 'assumed' : ''}
-                title={entered == null
-                  ? `Assumed turnout. Change it if ${title} was a different size.`
-                  : 'Turnout you entered.'}
-                value={shown}
-                onChange={(ev) => {
-                  setDraft(ev.target.value);
-                  onChange({ attendance: intOrNull(ev.target.value) });
-                }} />
-            </span>
-          )}
+              a field size exists at all — a Global or Grand Challenge has none.
+              The field is still laid out in those cases, just made invisible, so
+              the Placement box sits in the same place on every row. Rendering
+              nothing let it slide right and broke the column. */}
+          <span className={`field${showsTurnout ? '' : ' field-hidden'}`}
+            aria-hidden={showsTurnout ? undefined : true}>
+            <label htmlFor={`at-${e.id}`}>Players</label>
+            <input id={`at-${e.id}`} type="number" min={1} step={1} inputMode="numeric" maxLength={5}
+              className={draft == null && entered == null ? 'assumed' : ''}
+              title={entered == null
+                ? `Assumed turnout. Change it if ${title} was a different size.`
+                : 'Turnout you entered.'}
+              disabled={!showsTurnout} tabIndex={showsTurnout ? undefined : -1}
+              value={showsTurnout ? shown : ''}
+              onChange={(ev) => {
+                setDraft(ev.target.value);
+                onChange({ attendance: intOrNull(ev.target.value) });
+              }} />
+          </span>
         </span>
 
         <span className="plan-result">
