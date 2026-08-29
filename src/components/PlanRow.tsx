@@ -13,7 +13,14 @@ const BADGE: Partial<Record<EvaluatedResult['reason'], { text: string; cls: stri
   'invalid': { text: 'Check this', cls: 'danger' },
 };
 
-/** Play! Pokémon event history. Behind a Trainer Club sign-in. */
+/**
+ * Play! Pokémon event history — where a player looks up how big an event was.
+ *
+ * It is behind a Pokémon Trainer Club sign-in, so a logged-out player lands on a
+ * login page rather than their results. That is deliberate and was confirmed: it
+ * is the player's own official record, which is the point. Do not swap it for a
+ * public listing like rk9 or Limitless on the assumption the redirect is a bug.
+ */
 const STATS_HISTORY =
   'https://op-legacy.pokemon.com/us/pokemon-trainer-club/play-pokemon-stats/history/';
 
@@ -203,9 +210,8 @@ export function PlanRow({
         </p>
       )}
 
-      {/* The player's own event history is behind a Pokémon Trainer Club sign-in,
-          so this is a signpost rather than a lookup: it says where the number
-          lives, not what it is. */}
+      {/* A signpost rather than a lookup: it says where the number lives, not
+          what it is. See STATS_HISTORY for why the destination needs a sign-in. */}
       {asking && (
         <p className="callout danger row-error" role="alert">
           What was the total number of competitors at this tournament?{' '}
