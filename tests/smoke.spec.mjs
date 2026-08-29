@@ -241,7 +241,14 @@ await check('an empty turnout is the only thing the row complains about', async 
   const players = row.getByLabel('Players');
   await players.blur();
   await row.locator('[role="alert"]').waitFor({ timeout: 4000 });
-  assert.match(await row.locator('[role="alert"]').innerText(), /how many players/i);
+  const alert = row.locator('[role="alert"]');
+  assert.match(await alert.innerText(), /total number of competitors at this tournament/i);
+  // It has to say where the number lives, not just that one is missing.
+  const link = alert.locator('a');
+  assert.equal(await link.count(), 1, 'the question offers nowhere to find the answer');
+  assert.match(await link.getAttribute('href'), /play-pokemon-stats\/history/);
+  assert.equal(await link.getAttribute('target'), '_blank');
+  assert.match(await link.getAttribute('rel'), /noopener/);
   // A turnout that cannot hold the placement is a contradiction, but it scores 0
   // for the right reason on its own, so it is not worth an error.
   await players.fill('5');

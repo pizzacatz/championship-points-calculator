@@ -401,6 +401,10 @@ footer.site li { margin-bottom: 0.25rem; }
 .bfl.out { opacity: 0.6; }
 .plan-row .plan-explain { margin: 0.3rem 0 0; font-size: 0.78rem; }
 .row-error { margin: 0.4rem 0 0; }
+/* The link has to read as a link inside a red callout, where the callout's own
+   colour would otherwise swallow it. */
+.row-error a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.row-error a:hover { text-decoration-thickness: 2px; }
 
 /* the one state worth colouring: past, and nothing entered */
 .plan-row.overdue { border-color: var(--warn-border); background: var(--warn-bg); }

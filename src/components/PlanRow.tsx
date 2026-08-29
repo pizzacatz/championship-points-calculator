@@ -13,6 +13,10 @@ const BADGE: Partial<Record<EvaluatedResult['reason'], { text: string; cls: stri
   'invalid': { text: 'Check this', cls: 'danger' },
 };
 
+/** Play! Pokémon event history. Behind a Trainer Club sign-in. */
+const STATS_HISTORY =
+  'https://op-legacy.pokemon.com/us/pokemon-trainer-club/play-pokemon-stats/history/';
+
 const intOrNull = (v: string): number | null => {
   const t = v.trim();
   if (!t) return null;
@@ -78,9 +82,8 @@ export function PlanRow({
 
   // Half-typed numbers are not mistakes, so the row holds its verdict until the
   // player has stopped editing it.
-  const held = editing ? null
-    : blank ? 'Enter how many players were in the field.'
-      : result.error;
+  const asking = !editing && blank;
+  const held = editing || blank ? null : result.error;
   const badge = editing || blank ? undefined : BADGE[result.reason];
 
   // showPicker is the supported way to open the native calendar on demand;
@@ -104,7 +107,7 @@ export function PlanRow({
   };
 
   return (
-    <li className={`plan-row ${held ? 'invalid' : ''} ${overdue ? 'overdue' : ''}`}>
+    <li className={`plan-row ${held || asking ? 'invalid' : ''} ${overdue ? 'overdue' : ''}`}>
       <div className="plan-main">
         <span className="plan-title">
           {wrapTitle(title)}
@@ -197,6 +200,19 @@ export function PlanRow({
       {overdue && (
         <p className="plan-explain overdue-note">
           This event has passed. Enter your result, or remove it. It is not counted.
+        </p>
+      )}
+
+      {/* The player's own event history is behind a Pokémon Trainer Club sign-in,
+          so this is a signpost rather than a lookup: it says where the number
+          lives, not what it is. */}
+      {asking && (
+        <p className="callout danger row-error" role="alert">
+          What was the total number of competitors at this tournament?{' '}
+          <a href={STATS_HISTORY} target="_blank" rel="noopener noreferrer"
+            aria-label="Find your event history on the Play! Pokémon stats site, which opens in a new tab">
+            Click here to find out.
+          </a>
         </p>
       )}
 

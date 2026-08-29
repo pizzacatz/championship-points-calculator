@@ -118,7 +118,12 @@ A stored `awardedPoints` is converted at load:
 
 ## Validation
 
-One rule: a played row needs a turnout, and an empty one says so.
+One rule: a played row needs a turnout, and an empty one asks for it — "What was
+the total number of competitors at this tournament?", linking to the Play!
+Pokémon event history at `op-legacy.pokemon.com`. Phrased as a question about the
+tournament rather than an instruction about the form, and pointed at somewhere
+the answer might actually be, since the player has to go and find it. The
+destination is behind a Trainer Club sign-in.
 
 The obvious second rule — that the turnout must be at least the placement — was
 written and then removed, because it can never change an answer. Every band's

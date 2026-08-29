@@ -3,6 +3,15 @@
 All dates 2026-08-28 — the project was specified, built, reviewed and rebuilt in
 a single session.
 
+## 2.8.4
+
+- **A row missing its turnout asks a question and says where the answer is.** It
+  read *Enter how many players were in the field*, which is an instruction about
+  a form rather than a question about a tournament. It now asks "What was the
+  total number of competitors at this tournament?" and links to the Play! Pokémon
+  event history. The link opens in a new tab, and the destination is behind a
+  Pokémon Trainer Club sign-in.
+
 ## 2.8.3
 
 - **A Global or Grand Challenge no longer asks for players it never showed a
