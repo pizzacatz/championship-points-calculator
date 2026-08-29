@@ -634,6 +634,27 @@ await check("a local's date sits beside its name, not out by the inputs", async 
   await page.waitForTimeout(400);
 });
 
+await check('a Global Challenge never asks for a turnout, or complains about one', async () => {
+  const gc = page.locator('.zone', { hasText: 'Global & Grand' });
+  if (!(await gc.locator('.zone-list').count())) {
+    await gc.locator('.zone-toggle').click();
+    await page.waitForTimeout(300);
+  }
+  await gc.locator('.zone-list input[type=checkbox]').first().check();
+  await page.waitForTimeout(500);
+  const row = page.locator('.plan-row', { hasText: 'Global Challenge' }).first();
+  await row.getByLabel('Placement').fill('20');
+  await row.getByLabel('Placement').blur();
+  await page.waitForTimeout(700);
+  // Pokémon Champions has 10M+ downloads, so its kickers are taken as met and
+  // there is no field size to ask for. A row with no input to fill must not then
+  // complain that it is empty.
+  assert.equal(await row.getByLabel('Players').count(), 0, 'an online event asked for a turnout');
+  assert.equal(await row.locator('[role="alert"]').count(), 0,
+    `an online event raised: ${await row.locator('[role="alert"]').innerText().catch(() => '')}`);
+  assert.match(await row.innerText(), /13 CP/);
+});
+
 await check('the theme toggle is an icon and works', async () => {
   const t = page.locator('.theme-toggle');
   assert.equal(await t.locator('svg').count(), 1);

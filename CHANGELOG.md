@@ -3,6 +3,15 @@
 All dates 2026-08-28 — the project was specified, built, reviewed and rebuilt in
 a single session.
 
+## 2.8.3
+
+- **A Global or Grand Challenge no longer asks for players it never showed a
+  field for.** These events have no field size to enter: Pokémon Champions has
+  10M+ downloads and the GO Battle League is ranked globally, so every kicker is
+  taken as met and the input is not rendered at all. The blank-turnout check
+  added in 2.8.2 did not know that, so it read the absent input as an empty one
+  and put *Enter how many players were in the field* under every online result.
+
 ## 2.8.2
 
 - **The turnout field can be emptied.** It refilled itself with the default the

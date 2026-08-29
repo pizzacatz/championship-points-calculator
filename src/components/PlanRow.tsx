@@ -67,7 +67,14 @@ export function PlanRow({
    */
   const [draft, setDraft] = useState<string | null>(null);
   const shown = draft ?? String(entered ?? defaultAttendance ?? '');
-  const blank = shown === '';
+  /**
+   * A Global or Grand Challenge has no field size to ask for: Pokémon Champions
+   * has 10M+ downloads and the GO Battle League is ranked globally, so every
+   * kicker is taken as met and the input is never rendered. The row must not
+   * then complain that it is empty — there is nothing there to fill in.
+   */
+  const showsTurnout = e.placement != null && defaultAttendance != null;
+  const blank = showsTurnout && shown === '';
 
   // Half-typed numbers are not mistakes, so the row holds its verdict until the
   // player has stopped editing it.
@@ -153,7 +160,7 @@ export function PlanRow({
           {/* Turnout only matters once there is a finish to price, and only where
               a field size exists at all — an online event has none. Blanking it
               falls back to the default rather than leaving the row unscoreable. */}
-          {e.placement != null && defaultAttendance != null && (
+          {showsTurnout && (
             <span className="field">
               <label htmlFor={`at-${e.id}`}>Players</label>
               <input id={`at-${e.id}`} type="number" min={1} step={1} inputMode="numeric" maxLength={5}
