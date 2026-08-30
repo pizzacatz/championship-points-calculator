@@ -3,6 +3,29 @@
 All dates 2026-08-28 — the project was specified, built, reviewed and rebuilt in
 a single session.
 
+## 2.9.0
+
+- **A Global or Grand Challenge is now treated as being as hard as a Regional.**
+  Internationals, Regionals, Specials and the online Challenges form one tier,
+  relaxed in lockstep: every type in it is asked for the same finishing bracket,
+  never a deeper one. Previously they were relaxed one type at a time, and
+  whichever came first drained the whole concession, which is how a plan came to
+  ask for **Top 512 at an International and Top 8 at a Global Challenge in the
+  same breath**.
+- **This makes online Challenges much less valuable, on purpose.** At the same
+  bracket a Global Challenge pays 7 CP where a Regional pays 80. They were cheap
+  points only because the old order let them be squeezed hardest; declaring them
+  equally hard removes that.
+- **The ladder is now checked against brute force.** Four plans — the PRD worked
+  example, a plan with more majors than the Best Finish Limit, a plan carrying
+  banked results, and a small one — have every legal combination of demands
+  enumerated and scored by the same engine the app uses. The solver's answer has
+  to be the easiest one that reaches, and one bracket easier has to genuinely
+  fall short. The claim on the panel is no longer taken on trust.
+- **Lockstep is a ceiling, not a requirement.** A type whose own field cannot pay
+  that deep stops at the deepest band it does reach rather than dropping out of
+  the tier.
+
 ## 2.8.5
 
 - **The Placement box sits in the same place on every row.** An event with no

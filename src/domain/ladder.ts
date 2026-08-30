@@ -13,13 +13,29 @@ import type {
   QualificationPath, SeasonRules,
 } from './types';
 
-/** Relax the hardest events first; whatever is last absorbs the residual demand. */
-const RELAX_ORDER = [
-  'international',
-  'regional', 'special',
-  'vgc-global-challenge', 'go-leaderboard-challenge',
-  'league-cup',
-  'league-challenge',
+/**
+ * Concessions are handed out a tier at a time, hardest tier first, and every
+ * event type inside a tier is relaxed in lockstep — asked for the same finishing
+ * bracket as its neighbours, never a deeper one.
+ *
+ * The first tier holds the Internationals, Regionals, Specials and the online
+ * Challenges together, because a Global or Grand Challenge is taken to be as
+ * hard as a Regional. Relaxing them one type at a time is what produced plans
+ * asking for Top 512 at an International and Top 8 at a Global Challenge in the
+ * same breath: whichever type came first drained the whole concession and left
+ * the next one holding the target up.
+ *
+ * "The same finishing bracket" is the operational reading of equally hard, and
+ * it is exact here: `major`, `international` and `onlineChallenge` share
+ * identical bracket boundaries (1, 2, 4, 8 … 1024), so Top 64 means Top 64
+ * everywhere in the tier. It is a placement measure, not a percentile one — if a
+ * Global Challenge fields far more players than a Regional, this asks less of it
+ * than parity would.
+ */
+const RELAX_TIERS = [
+  ['international', 'regional', 'special', 'vgc-global-challenge', 'go-leaderboard-challenge'],
+  ['league-cup'],
+  ['league-challenge'],
 ];
 
 export type LadderRow = {
@@ -82,6 +98,19 @@ const applyBand = (events: PlannedEvent[], ids: Set<string>, band: PlacementBand
     : e));
 
 /**
+ * The band a "no worse than Nth" demand resolves to for one event type: the
+ * deepest band it can actually be paid at that is no deeper than N.
+ *
+ * A type whose field is too small to pay at N stops at the deepest band its
+ * field does reach, rather than dropping out of the tier.
+ */
+const bandAtDepth = (bands: PlacementBand[], depth: number): PlacementBand | null => {
+  let found: PlacementBand | null = null;
+  for (const b of bands) if (b.maxPlace <= depth) found = b;
+  return found ?? bands[0] ?? null;
+};
+
+/**
  * Solve the ladder. Events the player left blank are the unknowns; anything with
  * a placement already entered is a fixed constraint the solver works around.
  */
@@ -97,10 +126,13 @@ export function solveLadder(
     (e) => !isResult(e) && !(e.date != null && e.date < today),
   );
 
-  const groups = RELAX_ORDER
-    .map((id) => ({ rule: ruleFor(rules, id), events: unsolved.filter((e) => e.eventTypeId === id) }))
-    .filter((g): g is { rule: EventTypeRule; events: PlannedEvent[] } =>
-      g.rule != null && g.events.length > 0);
+  const tiers = RELAX_TIERS
+    .map((ids) => ids
+      .map((id) => ({ rule: ruleFor(rules, id), events: unsolved.filter((e) => e.eventTypeId === id) }))
+      .filter((g): g is { rule: EventTypeRule; events: PlannedEvent[] } =>
+        g.rule != null && g.events.length > 0))
+    .filter((t) => t.length > 0);
+  const groups = tiers.flat();
 
   const totalWith = (assign: Map<string, PlacementBand | null>): number => {
     let events = path.events;
@@ -113,23 +145,31 @@ export function solveLadder(
 
   const payable = new Map(groups.map((g) => [g.rule.id, payableBands(g.rule, rules, path, baselines)]));
 
-  // Start everything at its best finish, then relax each type as far as it will
-  // go while the target still holds. Order is what makes this meaningful.
+  // Start everything at its best finish, then relax a tier at a time. Order is
+  // what makes this meaningful, and lockstep inside a tier is what keeps one
+  // event type from spending the whole concession on its own behalf.
   const assign = new Map<string, PlacementBand | null>();
   for (const g of groups) assign.set(g.rule.id, payable.get(g.rule.id)!.bands[0] ?? null);
 
   const maxAttainable = totalWith(assign);
 
   if (target != null) {
-    for (const g of groups) {
-      const bands = payable.get(g.rule.id)!.bands;
-      let best = assign.get(g.rule.id) ?? null;
-      for (const band of bands) {
+    for (const tier of tiers) {
+      // Every bracket any member of this tier can be asked for, shallowest first.
+      const depths = [...new Set(tier.flatMap((g) =>
+        payable.get(g.rule.id)!.bands.map((b) => b.maxPlace)))].sort((a, b) => a - b);
+      const best = new Map(tier.map((g) => [g.rule.id, assign.get(g.rule.id) ?? null]));
+      for (const depth of depths) {
         const trial = new Map(assign);
-        trial.set(g.rule.id, band);
-        if (totalWith(trial) >= target) best = band;   // deeper band = easier finish
+        for (const g of tier) {
+          trial.set(g.rule.id, bandAtDepth(payable.get(g.rule.id)!.bands, depth));
+        }
+        // A deeper bracket is an easier finish, so keep going while it still holds.
+        if (totalWith(trial) >= target) {
+          for (const g of tier) best.set(g.rule.id, trial.get(g.rule.id) ?? null);
+        }
       }
-      assign.set(g.rule.id, best);
+      for (const [id, band] of best) assign.set(id, band);
     }
   }
 

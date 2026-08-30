@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { solveLadder, payableBands } from '../src/domain/ladder';
-import { ruleFor } from '../src/domain/calculate';
+import { evaluatePath, isResult, ruleFor } from '../src/domain/calculate';
+import type { PlannedEvent } from '../src/domain/types';
 import { baselines, ev, path, rules } from './helpers';
 
 const solve = (events: Parameters<typeof path>[0], target: number | null, over = {}) =>
@@ -41,11 +42,26 @@ describe('the ladder', () => {
     expect(row(l, 'regional')!.band!.minPlace).toBeGreaterThanOrEqual(9);
   });
 
-  it('relaxes Internationals before Regionals', () => {
-    const l = solve([blank('international'), blank('regional'), blank('regional')], 700);
-    const ic = row(l, 'international')!, reg = row(l, 'regional')!;
-    // The IC should be pushed deeper into its table than the Regionals are.
-    expect(ic.band!.minPlace).toBeGreaterThan(reg.band!.minPlace);
+  it('asks the same finish of every event in the top tier', () => {
+    // Internationals, Regionals, Specials and the online Challenges are taken to
+    // be equally hard, so none of them may be relaxed further than its
+    // neighbours. Relaxing one type at a time produced plans that wanted Top 512
+    // at an International and Top 8 at a Global Challenge at once.
+    const l = solve([
+      blank('international'), blank('regional'), blank('special'),
+      blank('vgc-global-challenge'),
+    ], 700);
+    const depths = ['international', 'regional', 'special', 'vgc-global-challenge']
+      .map((id) => row(l, id)!.band!.maxPlace);
+    expect(new Set(depths).size).toBe(1);
+  });
+
+  it('lets a type stop short when its own field cannot pay that deep', () => {
+    // Lockstep is a ceiling, not a requirement: a Cup assumed at 32 players
+    // cannot pay below 5th-8th, so it stops there rather than leaving the tier.
+    const l = solve([blank('league-cup'), blank('league-challenge')], 20);
+    const cup = row(l, 'league-cup')!;
+    expect(cup.band!.kicker).toBeLessThanOrEqual(cup.projectedField!);
   });
 
   it('pushes residual demand onto the smallest events', () => {
@@ -109,8 +125,12 @@ describe('the ladder', () => {
     const l = solve(events, 842);
     expect(l.feasible).toBe(true);
     expect(l.projectedTotal).toBeGreaterThanOrEqual(842);
-    // Hardest events relaxed first: the IC sits at its deepest payable band.
-    expect(row(l, 'international')!.band).toEqual(row(l, 'international')!.deepestPayable);
+    // The International, the Regionals and the Global Challenges are one tier, so
+    // they are all asked for the same bracket rather than the International being
+    // relaxed to Top 512 while the Challenges are held at Top 8.
+    const depths = ['international', 'regional', 'vgc-global-challenge']
+      .map((id) => row(l, id)!.band!.maxPlace);
+    expect(new Set(depths).size).toBe(1);
   });
 });
 
@@ -157,4 +177,119 @@ describe('v2.1 — counting, locals and past events', () => {
     const l = solve([played, blank('regional')], 400);
     expect(l.projectedTotal).toBeGreaterThanOrEqual(400);
   });
+});
+
+/**
+ * The ladder's answer is a claim: no easier set of finishes reaches the target.
+ * These check it against brute force rather than against itself — every legal
+ * combination of demands is enumerated and scored by the same engine the app
+ * uses, and the solver's answer has to be the easiest one that reaches.
+ *
+ * "Easiest" is the stated policy, made precise: relax the top tier as deep as it
+ * will go, then the Cups, then the Challenges, with every event type inside a
+ * tier held to the same bracket.
+ */
+describe('the ladder is provably the easiest plan that reaches', () => {
+  const TIERS = [
+    ['international', 'regional', 'special', 'vgc-global-challenge'],
+    ['league-cup'],
+    ['league-challenge'],
+  ];
+
+  /** Score one plan directly, with each type's demand set to a bracket. */
+  const scoreAt = (events: PlannedEvent[], depths: number[]): number => {
+    const applied = events.map((e) => {
+      const tier = TIERS.findIndex((t) => t.includes(e.eventTypeId));
+      if (tier < 0 || isResult(e)) return e;
+      const rule = ruleFor(rules, e.eventTypeId)!;
+      const bands = payableBands(rule, rules, path(events), baselines).bands;
+      let band = bands[0];
+      for (const b of bands) if (b.maxPlace <= depths[tier]) band = b;
+      return { ...e, placement: band.minPlace };
+    });
+    return evaluatePath(path(applied), rules, baselines).projectedTotal;
+  };
+
+  const BRACKETS = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024];
+
+  /** Every reachable plan, ordered easiest first by the stated policy. */
+  const bestByBruteForce = (events: PlannedEvent[], target: number): number[] | null => {
+    const all: number[][] = [];
+    for (const a of BRACKETS) for (const b of BRACKETS) for (const c of BRACKETS) {
+      if (scoreAt(events, [a, b, c]) >= target) all.push([a, b, c]);
+    }
+    if (!all.length) return null;
+    all.sort((x, y) => (y[0] - x[0]) || (y[1] - x[1]) || (y[2] - x[2]));
+    return all[0];
+  };
+
+  const cases: [string, PlannedEvent[], number][] = [
+    ['the PRD example', [
+      ev({ eventTypeId: 'regional', placement: 9 }), ev({ eventTypeId: 'league-cup', placement: 3 }),
+      blank('international'),
+      ...Array.from({ length: 3 }, () => blank('regional')),
+      ...Array.from({ length: 2 }, () => blank('vgc-global-challenge')),
+      ...Array.from({ length: 2 }, () => blank('league-cup')),
+      ...Array.from({ length: 2 }, () => blank('league-challenge')),
+    ], 842],
+    ['a plan with more majors than the limit', [
+      ...Array.from({ length: 8 }, () => blank('regional')),
+      ...Array.from({ length: 3 }, () => blank('international')),
+      ...Array.from({ length: 4 }, () => blank('vgc-global-challenge')),
+      blank('league-cup'), blank('league-challenge'),
+    ], 842],
+    ['a plan carrying banked results', [
+      ev({ eventTypeId: 'regional', placement: 17 }), ev({ eventTypeId: 'regional', placement: 17 }),
+      ...Array.from({ length: 3 }, () => blank('international')),
+      ...Array.from({ length: 6 }, () => blank('regional')),
+      ...Array.from({ length: 9 }, () => blank('vgc-global-challenge')),
+      blank('league-cup'), blank('league-challenge'), blank('league-challenge'),
+    ], 842],
+    ['a modest target', [
+      blank('regional'), blank('regional'), blank('league-cup'),
+    ], 400],
+  ];
+
+  for (const [label, events, target] of cases) {
+    it(`finds the easiest reaching plan: ${label}`, () => {
+      const l = solveLadder(path(events), rules, baselines, target);
+      const truth = bestByBruteForce(events, target);
+      expect(truth).not.toBeNull();
+      expect(l.feasible).toBe(true);
+
+      // What the solver asks of each tier, as a bracket. A type whose own field
+      // cannot pay that deep stops short, so take the deepest in the tier.
+      const asked = TIERS.map((ids) => {
+        const depths = ids.map((id) => row(l, id)?.band?.maxPlace).filter((d): d is number => d != null);
+        return depths.length ? Math.max(...depths) : null;
+      });
+
+      // It reaches.
+      expect(l.projectedTotal).toBeGreaterThanOrEqual(target);
+      // And it asks no more than the easiest reaching plan brute force can find.
+      // Brute force counts in raw brackets, which run past what some tables can
+      // pay — a Cup assumed at 32 players stops at 5th-8th however deep it is
+      // asked to go — so the demand is clamped to what the tier can actually
+      // reach before the two are compared.
+      const reachable = (i: number) => {
+        const all = TIERS[i].flatMap((id) => {
+          const rule = ruleFor(rules, id);
+          const has = events.some((e) => e.eventTypeId === id && !isResult(e));
+          return rule && has ? payableBands(rule, rules, path(events), baselines).bands : [];
+        });
+        return all.length ? Math.max(...all.map((b) => b.maxPlace)) : null;
+      };
+      for (const [i, want] of truth!.entries()) {
+        const cap = reachable(i);
+        if (asked[i] == null || cap == null) continue;
+        expect(asked[i]).toBe(Math.min(want, cap));
+      }
+      // And one bracket harder at the top tier is not merely unnecessary — going
+      // one bracket easier there genuinely falls short.
+      const easier = BRACKETS[BRACKETS.indexOf(truth![0]) + 1];
+      if (easier != null) {
+        expect(scoreAt(events, [easier, truth![1], truth![2]])).toBeLessThan(target);
+      }
+    });
+  }
 });
