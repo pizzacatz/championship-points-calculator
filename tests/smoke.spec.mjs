@@ -161,8 +161,8 @@ await check('a blank major is solved for by the ladder', async () => {
 await check('the ladder never demands a band the field cannot pay', async () => {
   const ladder = page.locator('section', { has: page.getByRole('heading', { name: 'What you need' }) });
   const text = await ladder.innerText();
-  // NA majors project from 705 players, so the 257-512 band cannot pay.
-  assert.doesNotMatch(text, /Top 512|Top 1024/);
+  // VGC majors are stated at 500 players, so the 129-256 band cannot pay.
+  assert.doesNotMatch(text, /Top 256|Top 512|Top 1024/);
 });
 
 await check('the ladder reports how many events can actually count', async () => {
@@ -193,14 +193,14 @@ await check('winning a Regional is recognised as a direct invitation', async () 
   assert.match(await page.locator('.plan-row').first().innerText(), /Direct invite/);
 });
 
-await check('a placement is priced against the zone median until it is changed', async () => {
+await check('a placement is priced against the stated field until it is changed', async () => {
   const row = page.locator('.plan-row').nth(1);
   await row.getByLabel('Placement').fill('9');
   await page.waitForFunction(() =>
     document.querySelectorAll('.plan-row')[1]?.textContent?.includes('200 CP'));
   assert.match(await row.innerText(), /200 CP/);
-  // The assumption has to be visible, not implied: 705 is the VGC NA median.
-  assert.equal(await row.getByLabel('Players').inputValue(), '705');
+  // The assumption has to be visible, not implied: VGC majors are stated at 500.
+  assert.equal(await row.getByLabel('Players').inputValue(), '500');
 });
 
 await check('the assumed turnout reads as an assumption until it is touched', async () => {
@@ -215,7 +215,7 @@ await check('the assumed turnout reads as an assumption until it is touched', as
   await row.getByLabel('Players').fill('');
   await page.waitForTimeout(500);
   assert.equal(await row.getByLabel('Players').inputValue(), '');
-  await row.getByLabel('Players').fill('705');
+  await row.getByLabel('Players').fill('500');
   await row.getByLabel('Players').blur();
 });
 
@@ -225,8 +225,9 @@ await check('the turnout can be emptied one digit at a time', async () => {
   await players.click();
   await page.keyboard.press('End');
   // The whole complaint: the field used to refill itself with the default the
-  // instant it went empty, so the last digit could not be deleted.
-  for (const expected of ['70', '7', '']) {
+  // instant it went empty, so the last digit could not be deleted. Starts at the
+  // stated 500 for a VGC major.
+  for (const expected of ['50', '5', '']) {
     await page.keyboard.press('Backspace');
     await page.waitForTimeout(250);
     assert.equal(await players.inputValue(), expected,
@@ -257,7 +258,7 @@ await check('an empty turnout is the only thing the row complains about', async 
   assert.equal(await row.locator('[role="alert"]').count(), 0,
     'a field smaller than the placement raised an error');
   assert.match(await row.innerText(), /0 CP/);
-  await players.fill('705');
+  await players.fill('500');
   await players.blur();
   await page.waitForTimeout(600);
   assert.match(await row.innerText(), /200 CP/);

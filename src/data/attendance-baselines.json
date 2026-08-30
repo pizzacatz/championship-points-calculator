@@ -158,5 +158,14 @@
       "attendance": 32,
       "deepestPaying": "5th-8th"
     }
+  },
+  "assumedField": {
+    "note": "Flat field sizes stated by the repository owner, overriding the observed baselines below for the games listed. They are assumptions, not measurements: what they decide is which kickers a planned finish can clear, so a deliberate figure beats a median that happens to sit on the wrong side of one. Games absent here keep their observed medians; a TCG Regional really does run about 2,270.",
+    "VGC": {
+      "regional": 500,
+      "special": 500,
+      "international": 1000,
+      "vgc-global-challenge": 3000
+    }
   }
 }

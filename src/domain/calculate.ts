@@ -26,13 +26,23 @@ export const tableFor = (rules: SeasonRules, rule: EventTypeRule): PlacementBand
  * Projected field size for a planned major, used only to decide which payout
  * bands its kicker unlocks.
  *
- * Regionals and Specials share their rating zone's median; each International
- * carries the median of its own last three seasons. Online events have no
- * baseline at all and assume every kicker is met.
+ * A game may state a flat figure per event type, which wins. Failing that,
+ * Regionals and Specials share their rating zone's median and each International
+ * carries the median of its own last three seasons, while an online Challenge
+ * has no baseline at all and assumes every kicker is met.
  */
 export function projectedField(
   baselines: AttendanceBaselines, game: Game, rule: EventTypeRule, path: QualificationPath,
 ): number | null {
+  // A stated figure wins over an observed one. What a field size decides here is
+  // which kickers a planned finish clears, and a median can sit on the wrong
+  // side of one — so a deliberate number is worth more than a measured average.
+  const stated = baselines.assumedField?.[game];
+  if (typeof stated === 'object' && stated[rule.id] != null) return stated[rule.id];
+
+  // Otherwise an online Challenge has no published field size at all, and every
+  // kicker is taken as met.
+  if (rule.scale === 'online') return null;
   // Cups and Challenges are unlisted, so a turnout is assumed rather than looked
   // up. Assuming one lets a placement be scored instead of the app refusing to
   // and asking for the CP — which the player can still supply as evidence.
@@ -151,20 +161,26 @@ export function evaluateResult(
   const bandText = `${placed} → ${bandLabel(band)} band`;
   const directInvite = band.maxPlace <= rule.directInvitePlacesThrough;
 
-  // Online events publish no field size at all — Pokémon Champions has 10M+
-  // downloads and the GO Battle League leaderboard is ranked globally — so every
-  // kicker is taken as met and no turnout is asked for.
-  if (rule.scale === 'online' || band.kicker === 0) {
+  if (band.kicker === 0) {
     return {
       ...base, band, rawPoints: band.points, directInvite, reason: 'counts',
-      explanation: band.kicker === 0
-        ? `${bandText}, worth ${band.points} CP. This band has no kicker.`
-        : `${bandText}, worth ${band.points} CP.`,
+      explanation: `${bandText}, worth ${band.points} CP. This band has no kicker.`,
       error: null,
     };
   }
 
   const fallback = defaultAttendance(baselines, path.game, rule, path);
+
+  // An online Challenge with no assumed field publishes no size at all and is
+  // taken to meet every kicker — the GO Battle League leaderboard is ranked
+  // globally, so there is no number to argue with. Where a figure has been
+  // chosen it is used like any other, and the kicker is checked against it.
+  if (rule.scale === 'online' && fallback == null) {
+    return {
+      ...base, band, rawPoints: band.points, directInvite, reason: 'counts',
+      explanation: `${bandText}, worth ${band.points} CP.`, error: null,
+    };
+  }
   const turnout = event.attendance ?? fallback;
   const source = event.attendance != null ? 'entered' as const : 'baseline' as const;
 

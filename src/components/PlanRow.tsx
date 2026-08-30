@@ -79,12 +79,13 @@ export function PlanRow({
   const [draft, setDraft] = useState<string | null>(null);
   const shown = draft ?? String(entered ?? defaultAttendance ?? '');
   /**
-   * A Global or Grand Challenge has no field size to ask for: Pokémon Champions
-   * has 10M+ downloads and the GO Battle League is ranked globally, so every
-   * kicker is taken as met and the input is never rendered. The row must not
-   * then complain that it is empty — there is nothing there to fill in.
+   * A Global or Grand Challenge does not ask for a field size. Nobody publishes
+   * one, so it is scored against a flat season-wide assumption instead of
+   * something the player could be expected to know, and the input is never
+   * rendered. The row must not then complain that it is empty.
    */
-  const showsTurnout = e.placement != null && defaultAttendance != null;
+  const showsTurnout = e.placement != null && defaultAttendance != null
+    && rule.scale !== 'online';
   const blank = showsTurnout && shown === '';
 
   // Half-typed numbers are not mistakes, so the row holds its verdict until the

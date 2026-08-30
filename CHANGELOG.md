@@ -3,6 +3,27 @@
 All dates 2026-08-28 — the project was specified, built, reviewed and rebuilt in
 a single session.
 
+## 2.10.0
+
+- **VGC field sizes are now stated rather than derived.** Regionals and Specials
+  at 500, Internationals at 1,000, Global and Grand Challenges at 3,000. These
+  replace the observed medians (705, 1,096, and "assume every kicker is met") for
+  VGC only. What a field size decides is which kickers a planned finish can
+  clear, and a median can sit on the wrong side of one, so a deliberate figure is
+  worth more than a measured average.
+- **The override is per game, and only VGC has one.** TCG and Pokémon GO keep
+  their observed baselines — a TCG NA Regional really does run about 2,270, and a
+  flat 500 would be badly wrong there.
+- **VGC Regionals now stop paying below Top 128.** At 500 players the 129th-256th
+  band needs 513 and cannot pay, where the old 705 median reached it. The ladder
+  will not ask for a finish that would score nothing.
+- **The same figure is used for planning and for scoring**, so the panel can
+  never ask for a finish that a logged result of that shape would then score
+  zero for. It is also what a major's Players field pre-fills with.
+- **Global and Grand Challenges still show no Players box.** Nobody publishes a
+  field size for them, so 3,000 is a season-wide assumption rather than something
+  a player could be expected to know and correct.
+
 ## 2.9.0
 
 - **A Global or Grand Challenge is now treated as being as hard as a Regional.**

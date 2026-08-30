@@ -82,6 +82,13 @@ export type AttendanceBaselines = {
   observations: Record<string, Record<string, { events: number; min: number; max: number }>>;
   /** Assumed turnout at a Cup or Challenge, for the ladder and for scoring. */
   assumedLocalField?: Record<string, { attendance: number; deepestPaying: string }>;
+  /**
+   * Stated field sizes, by game and then event type id, overriding the observed
+   * baselines. An online type with no entry here meets every kicker instead —
+   * there is no number to argue with, which is how the globally ranked GO
+   * leaderboard is treated.
+   */
+  assumedField?: Record<string, Record<string, number> | string>;
   baselines: Record<Game, {
     zones: Partial<Record<RatingZoneId, ZoneBaseline>>;
     internationals: Record<string, IcBaseline>;

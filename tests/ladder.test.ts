@@ -10,26 +10,54 @@ const blank = (id: string) => ev({ eventTypeId: id });
 const row = (l: ReturnType<typeof solve>, id: string) => l.rows.find((r) => r.eventTypeId === id);
 
 describe('payable bands', () => {
-  it('offers only bands whose kicker the projected field meets', () => {
-    // NA VGC majors project from a 705-player median, so the 257-512 band
-    // (kicker 1,025) cannot pay and must never be offered.
+  it('offers only bands whose kicker the stated field meets', () => {
+    // VGC Regionals are stated at 500, so the 129-256 band (kicker 513) cannot
+    // pay and must never be offered.
     const p = payableBands(ruleFor(rules, 'regional')!, rules, path([]), baselines);
-    expect(p.field).toBe(705);
-    expect(p.bands.at(-1)).toMatchObject({ minPlace: 129, maxPlace: 256 });
-    expect(p.bands.some((b) => b.kicker > 705)).toBe(false);
+    expect(p.field).toBe(500);
+    expect(p.bands.at(-1)).toMatchObject({ minPlace: 65, maxPlace: 128 });
+    expect(p.bands.some((b) => b.kicker > 500)).toBe(false);
   });
 
-  it('assumes every kicker is met for online events', () => {
-    // No published field size, and Pokémon Champions has 10M+ downloads.
+  it('leaves a game with no stated figure on its observed median', () => {
+    // The whole reason the override is per game: a TCG Regional really does run
+    // about 2,270, so a flat 500 would be wrong there.
+    const p = payableBands(ruleFor(rules, 'regional')!, rules, path([], { game: 'TCG' }), baselines);
+    expect(p.field).toBe(2270);
+    expect(p.assumed).toBe(false);
+  });
+
+  it('holds a VGC Global Challenge to its stated 3,000-player field', () => {
+    // Nobody publishes a field size for these. At 3,000 every kicker in the
+    // table is met, including the 2,049 the last band needs.
     const p = payableBands(ruleFor(rules, 'vgc-global-challenge')!, rules, path([]), baselines);
     expect(p.assumed).toBe(true);
+    expect(p.field).toBe(3000);
+    expect(p.bands.at(-1)).toMatchObject({ minPlace: 513, maxPlace: 1024, points: 3 });
+  });
+
+  it('still assumes every kicker is met where no figure is stated', () => {
+    // The GO Battle League leaderboard is ranked globally: there is no field
+    // size to hold it back, so its whole table stays payable.
+    const p = payableBands(ruleFor(rules, 'go-leaderboard-challenge')!, rules,
+      path([], { game: 'GO' }), baselines);
+    expect(p.field).toBe(null);
     expect(p.bands.at(-1)).toMatchObject({ minPlace: 513 });
   });
 
-  it('projects an International from itself, not from the zone', () => {
+  it('scores a placement against the same figure the ladder plans with', () => {
+    // The assumption has to be one number, or the panel would ask for a finish
+    // that then scores nothing.
+    const gc = ev({ eventTypeId: 'vgc-global-challenge', placement: 600 });   // needs 2049
+    const reg = ev({ eventTypeId: 'regional', placement: 200 });              // needs 513, has 500
+    expect(evaluatePath(path([gc]), rules, baselines).currentTotal).toBe(3);
+    expect(evaluatePath(path([reg]), rules, baselines).currentTotal).toBe(0);
+  });
+
+  it('projects an International from its own figure, not the Regional one', () => {
     const p = payableBands(ruleFor(rules, 'international')!, rules, path([]), baselines);
-    expect(p.field).toBe(1096);                       // NAIC three-season median
-    expect(p.bands.at(-1)).toMatchObject({ minPlace: 257, maxPlace: 512 });
+    expect(p.field).toBe(1000);                       // stated for VGC
+    expect(p.bands.at(-1)).toMatchObject({ minPlace: 129, maxPlace: 256 });
   });
 });
 

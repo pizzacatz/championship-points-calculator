@@ -73,10 +73,14 @@ export function payableBands(
   rule: EventTypeRule, rules: SeasonRules, path: QualificationPath, baselines: AttendanceBaselines,
 ): { bands: PlacementBand[]; field: number | null; assumed: boolean } {
   const table = tableFor(rules, rule);
-  // Online events publish no field size and are not regional. Every kicker is
-  // assumed met: Pokémon Champions has 10M+ downloads and the GO Battle League
-  // leaderboard is ranked globally.
-  if (rule.scale === 'online') return { bands: table, field: null, assumed: true };
+  // An online Challenge uses a stated assumption where one has been chosen, and
+  // otherwise meets every kicker: the GO Battle League leaderboard is ranked
+  // globally, so there is no field size to hold it back.
+  if (rule.scale === 'online') {
+    const assumed = projectedField(baselines, path.game, rule, path);
+    if (assumed == null) return { bands: table, field: null, assumed: true };
+    return { bands: table.filter((b) => b.kicker <= assumed), field: assumed, assumed: true };
+  }
 
   // Locals are unlisted, so both the ladder and scoring work from an assumed
   // turnout — the same figure, so what the ladder asks for is what a result of
