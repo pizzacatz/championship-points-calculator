@@ -38,7 +38,7 @@ in it:
 | Result, major not yet scraped | zone or IC median | yes, editable |
 | Result, local | 32 (Cup) or 16 (Challenge) | yes, editable |
 | Result, online | — no field size exists | no |
-| Planned event | ladder assumption, not per-row | no |
+| Planned event | the same assumption, per row | yes, editable (from v2.10.1) |
 
 The field can be emptied like any other, and an empty one is the single thing a
 row complains about. An earlier build had it refill itself with the default the

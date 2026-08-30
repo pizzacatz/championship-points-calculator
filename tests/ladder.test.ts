@@ -19,6 +19,31 @@ describe('payable bands', () => {
     expect(p.bands.some((b) => b.kicker > 500)).toBe(false);
   });
 
+  it('lets one event override the season-wide figure for itself alone', () => {
+    // VGC Regionals are stated at 500, which cannot reach the 129-256 band. A
+    // player who knows one Regional will draw 900 says so on that row, and only
+    // that row is projected differently.
+    const big = ev({ eventTypeId: 'regional', attendance: 900 });
+    const p = payableBands(ruleFor(rules, 'regional')!, rules, path([big]), baselines, big);
+    expect(p.field).toBe(900);
+    expect(p.bands.at(-1)).toMatchObject({ minPlace: 129, maxPlace: 256 });
+    expect(p.assumed).toBe(false);
+  });
+
+  it('asks less of an event the player says will be bigger', () => {
+    // Two identical Regionals, declared at 900. A 900-player field reaches the
+    // 129-256 band that 500 cannot, so the ladder may ask for Top 256 there
+    // where the stated figure would have forced Top 128.
+    const plain = solve([ev({ eventTypeId: 'regional' }), ev({ eventTypeId: 'regional' })], 120);
+    const big = solve([
+      ev({ eventTypeId: 'regional', attendance: 900 }),
+      ev({ eventTypeId: 'regional', attendance: 900 }),
+    ], 120);
+    expect(plain.rows[0].projectedField).toBe(500);
+    expect(big.rows[0].projectedField).toBe(900);
+    expect(big.rows[0].band!.maxPlace).toBeGreaterThan(plain.rows[0].band!.maxPlace);
+  });
+
   it('leaves a game with no stated figure on its observed median', () => {
     // The whole reason the override is per game: a TCG Regional really does run
     // about 2,270, so a flat 500 would be wrong there.

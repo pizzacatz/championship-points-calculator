@@ -84,8 +84,7 @@ export function PlanRow({
    * something the player could be expected to know, and the input is never
    * rendered. The row must not then complain that it is empty.
    */
-  const showsTurnout = e.placement != null && defaultAttendance != null
-    && rule.scale !== 'online';
+  const showsTurnout = defaultAttendance != null && rule.scale !== 'online';
   const blank = showsTurnout && shown === '';
 
   // Half-typed numbers are not mistakes, so the row holds its verdict until the
@@ -168,11 +167,15 @@ export function PlanRow({
               value={e.placement ?? ''}
               onChange={(ev) => onChange({ placement: intOrNull(ev.target.value) })} />
           </span>
-          {/* Turnout only matters once there is a finish to price, and only where
-              a field size exists at all — a Global or Grand Challenge has none.
-              The field is still laid out in those cases, just made invisible, so
-              the Placement box sits in the same place on every row. Rendering
-              nothing let it slide right and broke the column. */}
+          {/* Shown on every row that has a field size, played or not. It is a
+              planning input as much as a scoring one: what the ladder can ask of
+              an event depends on how many people turn up to it, so a Regional the
+              player knows will be bigger than the season-wide assumption has to
+              be sayable before the event rather than only after it.
+
+              A Global or Grand Challenge has no field size to enter. The box is
+              still laid out there, just made invisible, so the Placement box sits
+              in the same place on every row. */}
           <span className={`field${showsTurnout ? '' : ' field-hidden'}`}
             aria-hidden={showsTurnout ? undefined : true}>
             <label htmlFor={`at-${e.id}`}>Players</label>

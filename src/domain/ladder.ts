@@ -68,11 +68,24 @@ export type Ladder = {
   notes: string[];
 };
 
-/** Bands this event type can actually pay at its projected field size. */
+/**
+ * Bands this event type can actually pay at its projected field size.
+ *
+ * `event` narrows that to one row: a turnout the player has entered on an event
+ * they have not played yet is a statement about that event, and it overrides the
+ * season-wide figure for it alone. Two Regionals in the same plan can then be
+ * projected differently, which is the point of the field being editable before
+ * the event rather than only after it.
+ */
 export function payableBands(
   rule: EventTypeRule, rules: SeasonRules, path: QualificationPath, baselines: AttendanceBaselines,
+  event?: PlannedEvent,
 ): { bands: PlacementBand[]; field: number | null; assumed: boolean } {
   const table = tableFor(rules, rule);
+
+  if (event?.attendance != null) {
+    return { bands: table.filter((b) => b.kicker <= event.attendance!), field: event.attendance, assumed: false };
+  }
   // An online Challenge uses a stated assumption where one has been chosen, and
   // otherwise meets every kicker: the GO Battle League leaderboard is ranked
   // globally, so there is no field size to hold it back.
@@ -96,17 +109,12 @@ export function payableBands(
   return { bands: table.filter((b) => b.kicker <= field), field, assumed: false };
 }
 
-const applyBand = (events: PlannedEvent[], ids: Set<string>, band: PlacementBand | null): PlannedEvent[] =>
-  events.map((e) => (ids.has(e.id)
-    ? { ...e, placement: band ? band.minPlace : null }
-    : e));
-
 /**
- * The band a "no worse than Nth" demand resolves to for one event type: the
- * deepest band it can actually be paid at that is no deeper than N.
+ * The band a "no worse than Nth" demand resolves to for one event: the deepest
+ * band it can actually be paid at that is no deeper than N.
  *
- * A type whose field is too small to pay at N stops at the deepest band its
- * field does reach, rather than dropping out of the tier.
+ * An event whose field is too small to pay at N stops at the deepest band its
+ * own field does reach, rather than dropping out of the tier.
  */
 const bandAtDepth = (bands: PlacementBand[], depth: number): PlacementBand | null => {
   let found: PlacementBand | null = null;
@@ -114,9 +122,26 @@ const bandAtDepth = (bands: PlacementBand[], depth: number): PlacementBand | nul
   return found ?? bands[0] ?? null;
 };
 
+/** The value occurring most often, ties going to the first seen. */
+function modal<T>(values: T[], key: (v: T) => string): T | null {
+  const counts = new Map<string, { n: number; v: T }>();
+  for (const v of values) {
+    const k = key(v);
+    counts.set(k, { n: (counts.get(k)?.n ?? 0) + 1, v: counts.get(k)?.v ?? v });
+  }
+  let best: { n: number; v: T } | null = null;
+  for (const c of counts.values()) if (!best || c.n > best.n) best = c;
+  return best?.v ?? null;
+}
+
 /**
  * Solve the ladder. Events the player left blank are the unknowns; anything with
  * a placement already entered is a fixed constraint the solver works around.
+ *
+ * Demands are made per tier as a finishing bracket, and each event resolves that
+ * bracket against its own field size. Two Regionals in one plan can therefore be
+ * worth different CP for the same finish, if the player has said one of them is
+ * bigger than the season-wide assumption.
  */
 export function solveLadder(
   path: QualificationPath, rules: SeasonRules, baselines: AttendanceBaselines, target: number | null,
@@ -138,54 +163,62 @@ export function solveLadder(
     .filter((t) => t.length > 0);
   const groups = tiers.flat();
 
-  const totalWith = (assign: Map<string, PlacementBand | null>): number => {
-    let events = path.events;
-    for (const g of groups) {
-      const ids = new Set(g.events.map((e) => e.id));
-      events = applyBand(events, ids, assign.get(g.rule.id) ?? null);
+  // What each individual event can be paid, at its own field size.
+  const payableOf = new Map<string, ReturnType<typeof payableBands>>();
+  const tierOf = new Map<string, number>();
+  tiers.forEach((tier, ti) => {
+    for (const g of tier) for (const e of g.events) {
+      payableOf.set(e.id, payableBands(g.rule, rules, path, baselines, e));
+      tierOf.set(e.id, ti);
     }
+  });
+
+  /** Resolve every unsolved event against a bracket per tier, and score it. */
+  const bandsAt = (depths: number[]): Map<string, PlacementBand | null> => {
+    const out = new Map<string, PlacementBand | null>();
+    for (const [id, p] of payableOf) {
+      out.set(id, bandAtDepth(p.bands, depths[tierOf.get(id)!]));
+    }
+    return out;
+  };
+  const totalAt = (depths: number[]): number => {
+    const bands = bandsAt(depths);
+    const events = path.events.map((e) =>
+      (bands.has(e.id) ? { ...e, placement: bands.get(e.id)?.minPlace ?? null } : e));
     return evaluatePath({ ...path, events }, rules, baselines).projectedTotal;
   };
-
-  const payable = new Map(groups.map((g) => [g.rule.id, payableBands(g.rule, rules, path, baselines)]));
 
   // Start everything at its best finish, then relax a tier at a time. Order is
   // what makes this meaningful, and lockstep inside a tier is what keeps one
   // event type from spending the whole concession on its own behalf.
-  const assign = new Map<string, PlacementBand | null>();
-  for (const g of groups) assign.set(g.rule.id, payable.get(g.rule.id)!.bands[0] ?? null);
-
-  const maxAttainable = totalWith(assign);
+  const depths = tiers.map(() => 1);
+  const maxAttainable = totalAt(depths);
 
   if (target != null) {
-    for (const tier of tiers) {
-      // Every bracket any member of this tier can be asked for, shallowest first.
-      const depths = [...new Set(tier.flatMap((g) =>
-        payable.get(g.rule.id)!.bands.map((b) => b.maxPlace)))].sort((a, b) => a - b);
-      const best = new Map(tier.map((g) => [g.rule.id, assign.get(g.rule.id) ?? null]));
-      for (const depth of depths) {
-        const trial = new Map(assign);
-        for (const g of tier) {
-          trial.set(g.rule.id, bandAtDepth(payable.get(g.rule.id)!.bands, depth));
-        }
-        // A deeper bracket is an easier finish, so keep going while it still holds.
-        if (totalWith(trial) >= target) {
-          for (const g of tier) best.set(g.rule.id, trial.get(g.rule.id) ?? null);
-        }
+    tiers.forEach((tier, ti) => {
+      // Every bracket any event in this tier can be asked for, shallowest first.
+      const options = [...new Set(tier.flatMap((g) => g.events.flatMap((e) =>
+        payableOf.get(e.id)!.bands.map((b) => b.maxPlace))))].sort((a, b) => a - b);
+      let best = depths[ti];
+      for (const depth of options) {
+        const trial = [...depths];
+        trial[ti] = depth;
+        // A deeper bracket is an easier finish, so keep going while it holds.
+        if (totalAt(trial) >= target) best = depth;
       }
-      for (const [id, band] of best) assign.set(id, band);
-    }
+      depths[ti] = best;
+    });
   }
 
-  const projectedTotal = totalWith(assign);
+  const solvedBands = bandsAt(depths);
+  const projectedTotal = totalAt(depths);
   const feasible = target != null && projectedTotal >= target;
 
   // How many of each type actually reach the total, once the Best Finish Limit
   // has taken its cut. Nine added Regionals sharing a bucket of five is five
   // contributions, not nine — saying "x9" asks for four finishes that cannot count.
   const solvedEvents = path.events.map((e) => {
-    const g = groups.find((x) => x.events.some((y) => y.id === e.id));
-    const band = g ? assign.get(g.rule.id) ?? null : null;
+    const band = solvedBands.get(e.id);
     return band ? { ...e, placement: band.minPlace } : e;
   });
   const counted = new Set(
@@ -194,8 +227,12 @@ export function solveLadder(
   );
 
   const rows: LadderRow[] = groups.map((g) => {
-    const p = payable.get(g.rule.id)!;
-    const band = assign.get(g.rule.id) ?? null;
+    // Events of one type usually share a field, so the row speaks for the common
+    // case and the individual rows carry any exception.
+    const resolved = g.events.map((e) => solvedBands.get(e.id)).filter((b): b is PlacementBand => b != null);
+    const band = modal(resolved, (b) => `${b.minPlace}`);
+    const fields = g.events.map((e) => payableOf.get(e.id)!);
+    const common = modal(fields, (p) => String(p.field));
     const counting = g.events.filter((e) => counted.has(e.id)).length;
     return {
       eventTypeId: g.rule.id,
@@ -205,10 +242,14 @@ export function solveLadder(
       band,
       bandLabel: band ? bandLabel(band) : null,
       pointsEach: band?.points ?? 0,
-      pointsTotal: counting * (band?.points ?? 0),
-      deepestPayable: p.bands[p.bands.length - 1] ?? null,
-      projectedField: p.field,
-      fieldAssumed: p.assumed,
+      // Summed over the events that actually count, so a plan mixing field sizes
+      // still adds up rather than multiplying one representative figure.
+      pointsTotal: g.events
+        .filter((e) => counted.has(e.id))
+        .reduce((sum, e) => sum + (solvedBands.get(e.id)?.points ?? 0), 0),
+      deepestPayable: common?.bands[common.bands.length - 1] ?? null,
+      projectedField: common?.field ?? null,
+      fieldAssumed: common?.assumed ?? true,
     };
   });
 

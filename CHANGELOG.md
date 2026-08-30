@@ -3,6 +3,22 @@
 All dates 2026-08-28 — the project was specified, built, reviewed and rebuilt in
 a single session.
 
+## 2.10.1
+
+- **The Players field is back on events you have not played yet.** It was only
+  ever shown once a row carried a placement, which meant a plan full of upcoming
+  events showed no turnout anywhere. That gate came from the v2.8 design notes
+  and was never asked for.
+- **The ladder now honours a turnout entered on an unplayed event.** It has to,
+  or the restored field would be a control that does nothing: what the ladder can
+  ask of an event depends on how many people turn up to it. A Regional declared
+  at 900 reaches the 129th-256th band that the stated 500 cannot, so the ladder
+  may ask Top 256 there while still asking Top 128 of its neighbours.
+- **Bands are resolved per event rather than per event type.** Two Regionals in
+  one plan can now be projected differently. The panel's row speaks for the
+  common case and its CP total is summed over the events that actually count, so
+  a plan mixing field sizes still adds up instead of multiplying one figure.
+
 ## 2.10.0
 
 - **VGC field sizes are now stated rather than derived.** Regionals and Specials

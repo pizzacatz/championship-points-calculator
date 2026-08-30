@@ -270,15 +270,17 @@ await check('there is no way to type a CP value', async () => {
   assert.deepEqual(labels, ['Placement', 'Players'], `row inputs are ${labels.join(', ')}`);
 });
 
-await check('an unplayed row asks for the placement only', async () => {
+await check('an unplayed row carries its turnout too', async () => {
   const cat = page.locator('section', { has: page.getByRole('heading', { name: 'Events' }) });
   await cat.getByRole('button', { name: '+ League Challenge' }).click();
   await page.waitForTimeout(400);
   const row = page.locator('.plan-row', { hasText: 'League Challenge' }).last();
-  assert.equal(await row.getByLabel('Players').isVisible(), false,
-    'turnout is asked for before there is a finish');
-  // It is hidden, not absent: the box still holds the column open.
-  assert.equal(await row.locator('.plan-inputs .field').count(), 2);
+  // The turnout is a planning input, not only a scoring one: what the ladder can
+  // ask of an event depends on how many people turn up to it, so it has to be
+  // sayable before the event and not only after.
+  assert.equal(await row.getByLabel('Players').isVisible(), true,
+    'an event not yet played cannot state its field size');
+  assert.equal(await row.getByLabel('Players').inputValue(), '16');
   await row.getByRole('button', { name: /Remove/ }).click();
   await page.waitForTimeout(400);
 });
