@@ -65,6 +65,15 @@ export type Ladder = {
   shortfall: number | null;
   /** Best total reachable if every unsolved event is won outright. */
   maxAttainable: number;
+  /**
+   * CP from results already logged, counted inside this projection.
+   *
+   * Not the same as the plan's current total: a banked result and a projected
+   * one compete for the same Best Finish Limit slots, so what a logged result is
+   * worth depends on what the projection puts beside it. Measured here so the
+   * panel's rows and its total describe the same arithmetic.
+   */
+  bankedTotal: number;
   notes: string[];
 };
 
@@ -221,10 +230,16 @@ export function solveLadder(
     const band = solvedBands.get(e.id);
     return band ? { ...e, placement: band.minPlace } : e;
   });
-  const counted = new Set(
-    evaluatePath({ ...path, events: solvedEvents }, rules, baselines)
-      .results.filter((r) => r.counted).map((r) => r.event.id),
-  );
+  const solvedResults = evaluatePath({ ...path, events: solvedEvents }, rules, baselines).results;
+  const counted = new Set(solvedResults.filter((r) => r.counted).map((r) => r.event.id));
+
+  // Everything counted that the player has already played. The ladder's rows
+  // cover only what it solved for, so without this the panel's column could not
+  // add up to its own total.
+  const logged = new Set(path.events.filter(isResult).map((e) => e.id));
+  const bankedTotal = solvedResults
+    .filter((r) => r.counted && logged.has(r.event.id))
+    .reduce((sum, r) => sum + r.rawPoints, 0);
 
   const rows: LadderRow[] = groups.map((g) => {
     // Events of one type usually share a field, so the row speaks for the common
@@ -268,6 +283,6 @@ export function solveLadder(
   return {
     rows, feasible, projectedTotal, target,
     shortfall: target == null ? null : Math.max(0, target - projectedTotal),
-    maxAttainable, notes,
+    maxAttainable, bankedTotal, notes,
   };
 }

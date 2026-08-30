@@ -684,6 +684,28 @@ await check('a Global Challenge never asks for a turnout, or complains about one
     `Placement starts at ${xs.online}px on an online row and ${xs.other}px elsewhere`);
 });
 
+await check("the ladder's CP column adds up to its own footer", async () => {
+  const sums = await page.evaluate(() => {
+    const table = document.querySelector('table.ladder');
+    if (!table) return null;
+    // Only a numeric last cell counts. An idle row ends in prose, and reading
+    // digits out of prose would make this pass for the wrong reason.
+    const cell = (row) => {
+      const tds = [...row.querySelectorAll('td')];
+      const last = tds[tds.length - 1];
+      if (!last?.classList.contains('num')) return 0;
+      const n = Number(last.textContent.replace(/[^0-9]/g, ''));
+      return Number.isFinite(n) ? n : 0;
+    };
+    const column = [...table.querySelectorAll('tbody tr')].reduce((s, r) => s + cell(r), 0);
+    const footer = cell(table.querySelector('tfoot tr'));
+    return { column, footer };
+  });
+  assert.ok(sums, 'no ladder table');
+  assert.equal(sums.column, sums.footer,
+    `the CP column sums to ${sums.column} under a footer reading ${sums.footer}`);
+});
+
 await check('the theme toggle is an icon and works', async () => {
   const t = page.locator('.theme-toggle');
   assert.equal(await t.locator('svg').count(), 1);

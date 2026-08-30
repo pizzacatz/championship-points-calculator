@@ -242,6 +242,41 @@ describe('v2.1 — counting, locals and past events', () => {
  * will go, then the Cups, then the Challenges, with every event type inside a
  * tier held to the same bracket.
  */
+describe('the panel adds up', () => {
+  // The footer prints the projected total under the CP total column, so that
+  // column has to sum to it. It did not: rows cover only what the ladder solved
+  // for, and CP already banked had no row at all, so a plan with any played
+  // event showed a total hundreds larger than its own column.
+  const plans: [string, PlannedEvent[], number][] = [
+    ['nothing played', [
+      blank('regional'), blank('regional'), blank('league-cup'),
+    ], 400],
+    ['two majors banked', [
+      ev({ eventTypeId: 'regional', placement: 17 }), ev({ eventTypeId: 'regional', placement: 17 }),
+      ...Array.from({ length: 3 }, () => blank('international')),
+      ...Array.from({ length: 9 }, () => blank('vgc-global-challenge')),
+      blank('league-cup'), blank('league-challenge'), blank('league-challenge'),
+    ], 842],
+    ['more banked majors than the limit', [
+      ...Array.from({ length: 6 }, () => ev({ eventTypeId: 'regional', placement: 3 })),
+      ...Array.from({ length: 4 }, () => blank('regional')),
+      blank('league-cup'),
+    ], 842],
+    ['banked locals only', [
+      ev({ eventTypeId: 'league-cup', placement: 1 }), ev({ eventTypeId: 'league-challenge', placement: 1 }),
+      blank('regional'), blank('regional'),
+    ], 300],
+  ];
+
+  for (const [label, events, target] of plans) {
+    it(`column equals footer: ${label}`, () => {
+      const l = solveLadder(path(events), rules, baselines, target);
+      const column = l.rows.reduce((sum, r) => sum + r.pointsTotal, 0) + l.bankedTotal;
+      expect(column).toBe(l.projectedTotal);
+    });
+  }
+});
+
 describe('the ladder is provably the easiest plan that reaches', () => {
   const TIERS = [
     ['international', 'regional', 'special', 'vgc-global-challenge'],

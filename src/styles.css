@@ -405,6 +405,7 @@ footer.site li { margin-bottom: 0.25rem; }
        border: 1px solid var(--border); border-radius: 999px; padding: 0.05rem 0.4rem; }
 .bfl.out { opacity: 0.6; }
 .plan-row .plan-explain { margin: 0.3rem 0 0; font-size: 0.78rem; }
+table.ladder tr.banked td { color: var(--text-muted); }
 .row-error { margin: 0.4rem 0 0; }
 /* The link has to read as a link inside a red callout, where the callout's own
    colour would otherwise swallow it. */

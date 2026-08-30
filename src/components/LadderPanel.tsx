@@ -68,8 +68,20 @@ export function LadderPanel({ ladder }: { ladder: Ladder }) {
                 </td>
               </tr>
             ))}
+            {/* Results already played have no finish to ask for, but they are
+                part of the total, and a column that does not add up to its own
+                footer is worse than a column with a dull row in it. */}
+            {ladder.bankedTotal > 0 && (
+              <tr className="banked">
+                <td>Already played</td>
+                <td className="num">-</td>
+                <td>counted</td>
+                <td className="num">-</td>
+                <td className="num">{fmt(ladder.bankedTotal)}</td>
+              </tr>
+            )}
           </tbody>
-          {live.length > 0 && (
+          {(live.length > 0 || ladder.bankedTotal > 0) && (
             <tfoot>
               <tr>
                 <th scope="row" colSpan={4}>Projected total</th>

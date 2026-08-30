@@ -3,6 +3,25 @@
 All dates 2026-08-28 — the project was specified, built, reviewed and rebuilt in
 a single session.
 
+## 2.10.2
+
+- **The ladder's CP column adds up to its own footer.** It printed the projected
+  total under a column of solved-event subtotals, and CP already banked had no
+  row at all — so a plan with any played event showed a footer hundreds larger
+  than the column above it. An *Already played* row now carries that figure.
+- **The banked figure is measured inside the projection, not beside it.** A
+  played result and a projected one compete for the same Best Finish Limit slots,
+  so what a logged result is worth depends on what the projection puts next to
+  it. Taking the plan's current total instead would have produced a row that
+  still did not reconcile.
+- Four plans assert the column equals the footer, and a browser check reads the
+  rendered table and does the same sum.
+- **TCG and Pokémon GO keep their scraped baselines.** The stated field sizes
+  from 2.10.0 remain VGC-only. Nothing changed here; recorded because it was
+  asked about. Pokémon GO has no baseline to keep — none was ever established,
+  so its majors still assume every kicker is met until the per-event scrape fills
+  one in.
+
 ## 2.10.1
 
 - **The Players field is back on events you have not played yet.** It was only
