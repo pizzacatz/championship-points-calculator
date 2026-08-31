@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useNumberField } from '../useNumberField';
 import type { EvaluatedResult, EventTypeRule, PlannedEvent } from '../domain/types';
 
 /**
@@ -23,13 +24,6 @@ const BADGE: Partial<Record<EvaluatedResult['reason'], { text: string; cls: stri
  */
 const STATS_HISTORY =
   'https://op-legacy.pokemon.com/us/pokemon-trainer-club/play-pokemon-stats/history/';
-
-const intOrNull = (v: string): number | null => {
-  const t = v.trim();
-  if (!t) return null;
-  const n = Number(t);
-  return Number.isFinite(n) ? Math.trunc(n) : null;
-};
 
 /**
  * Dates read as ISO throughout — one format, one width, ten characters — because
@@ -66,18 +60,15 @@ export function PlanRow({
   const dateInput = useRef<HTMLInputElement>(null);
   const [editing, setEditing] = useState(false);
 
-  /**
-   * What the turnout field is showing, when that differs from what is stored.
-   *
-   * Null means "show the stored value, or the default if there is none". A
-   * string means the player is holding something the store cannot represent —
-   * in practice the empty string, because clearing the field stores null, and
-   * null is also how "use the default" is stored. Without this the last digit
-   * could not be deleted: the field refilled itself with the default the instant
-   * it went empty.
-   */
-  const [draft, setDraft] = useState<string | null>(null);
-  const shown = draft ?? String(entered ?? defaultAttendance ?? '');
+  const place = useNumberField({
+    stored: e.placement, fallback: null,
+    commit: (v) => onChange({ placement: v }),
+  });
+  // An empty turnout stays empty: a played row genuinely needs one and says so.
+  const players = useNumberField({
+    stored: entered, fallback: defaultAttendance,
+    commit: (v) => onChange({ attendance: v }),
+  });
   /**
    * A Global or Grand Challenge does not ask for a field size. Nobody publishes
    * one, so it is scored against a flat season-wide assumption instead of
@@ -85,7 +76,7 @@ export function PlanRow({
    * rendered. The row must not then complain that it is empty.
    */
   const showsTurnout = defaultAttendance != null && rule.scale !== 'online';
-  const blank = showsTurnout && shown === '';
+  const blank = showsTurnout && players.blank;
 
   // Half-typed numbers are not mistakes, so the row holds its verdict until the
   // player has stopped editing it.
@@ -159,13 +150,11 @@ export function PlanRow({
         </span>
 
         <span className="plan-inputs"
-          onFocus={() => setEditing(true)}
-          onBlur={() => { setEditing(false); if (draft !== '') setDraft(null); }}>
+          onFocus={() => setEditing(true)} onBlur={() => setEditing(false)}>
           <span className="field">
             <label htmlFor={`pl-${e.id}`}>Placement</label>
             <input id={`pl-${e.id}`} type="number" min={1} step={1} inputMode="numeric" maxLength={4}
-              value={e.placement ?? ''}
-              onChange={(ev) => onChange({ placement: intOrNull(ev.target.value) })} />
+              {...place.inputProps} />
           </span>
           {/* Shown on every row that has a field size, played or not. It is a
               planning input as much as a scoring one: what the ladder can ask of
@@ -180,16 +169,13 @@ export function PlanRow({
             aria-hidden={showsTurnout ? undefined : true}>
             <label htmlFor={`at-${e.id}`}>Players</label>
             <input id={`at-${e.id}`} type="number" min={1} step={1} inputMode="numeric" maxLength={5}
-              className={draft == null && entered == null ? 'assumed' : ''}
+              className={players.isFallback ? 'assumed' : ''}
               title={entered == null
                 ? `Assumed turnout. Change it if ${title} was a different size.`
                 : 'Turnout you entered.'}
               disabled={!showsTurnout} tabIndex={showsTurnout ? undefined : -1}
-              value={showsTurnout ? shown : ''}
-              onChange={(ev) => {
-                setDraft(ev.target.value);
-                onChange({ attendance: intOrNull(ev.target.value) });
-              }} />
+              {...players.inputProps}
+              value={showsTurnout ? players.value : ''} />
           </span>
         </span>
 

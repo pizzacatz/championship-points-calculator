@@ -706,6 +706,49 @@ await check("the ladder's CP column adds up to its own footer", async () => {
     `the CP column sums to ${sums.column} under a footer reading ${sums.footer}`);
 });
 
+await check('the CP Goal can be emptied one digit at a time', async () => {
+  const goal = page.getByLabel('CP Goal:');
+  const start = await goal.inputValue();
+  await goal.click();
+  await page.keyboard.press('End');
+  // Same bug the turnout had: the field refilled itself with the derived figure
+  // the instant it went empty, so the last character could not be deleted.
+  for (let i = start.length; i > 0; i -= 1) {
+    await page.keyboard.press('Backspace');
+    await page.waitForTimeout(150);
+    assert.equal(await goal.inputValue(), start.slice(0, i - 1),
+      `backspacing gave "${await goal.inputValue()}"`);
+  }
+  // Clearing a goal means no override, and what no override looks like is the
+  // figure the season supplies, so that comes back once focus leaves.
+  await goal.blur();
+  await page.waitForTimeout(500);
+  assert.equal(await goal.inputValue(), start);
+});
+
+await check('every number field can be cleared', async () => {
+  // One rule, applied everywhere: no field may refuse a backspace.
+  const { stuck, seen } = await page.evaluate(async () => {
+    const bad = [];
+    let n = 0;
+    for (const el of document.querySelectorAll('input[type=number]')) {
+      if (el.disabled || !el.offsetParent || el.value === '') continue;
+      n += 1;
+      const before = el.value;
+      const setter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype, 'value').set;
+      setter.call(el, '');
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      await new Promise((r) => setTimeout(r, 60));
+      if (el.value !== '') bad.push(`${el.id || el.name}: "${before}" -> "${el.value}"`);
+    }
+    return { stuck: bad, seen: n };
+  });
+  // Guard against the sweep passing because it found nothing to sweep.
+  assert.ok(seen >= 3, `only ${seen} filled number fields on the page`);
+  assert.deepEqual(stuck, [], `fields refused to clear: ${stuck.join(', ')}`);
+});
+
 await check('the theme toggle is an icon and works', async () => {
   const t = page.locator('.theme-toggle');
   assert.equal(await t.locator('svg').count(), 1);

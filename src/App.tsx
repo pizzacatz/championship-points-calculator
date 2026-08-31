@@ -11,6 +11,7 @@ import type {
   LeaderboardSnapshot, RatingZoneId, SeasonRules,
 } from './domain/types';
 import { blankEvent, usePaths, useTheme } from './store';
+import { useNumberField } from './useNumberField';
 import { PlanRow } from './components/PlanRow';
 import { EventCatalog, keyOf } from './components/EventCatalog';
 import { LadderPanel } from './components/LadderPanel';
@@ -103,6 +104,16 @@ export default function App() {
   // The rank a boundary is read at is the invitation count, which differs by game
   // and zone: 90th for VGC in US and Canada, 140th for the TCG there.
   const invitationRank = rules.invitationSlots[path.game]?.[zone] ?? null;
+
+  // Clearing the goal means "no override", and what no override looks like is
+  // the figure the season supplies. So an empty field comes back to that once
+  // focus leaves it, rather than leaving the whole panel with nothing to aim at.
+  const goal = useNumberField({
+    stored: path.targetOverride,
+    fallback: target,
+    commit: (v) => store.update({ targetOverride: v == null ? null : Math.max(0, v) }),
+    resetWhenBlank: true,
+  });
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -314,11 +325,7 @@ export default function App() {
           <p className="goal-line">
             <label htmlFor="goal">CP Goal:</label>
             <input id="goal" type="number" min={0} step={1} inputMode="numeric"
-              value={path.targetOverride ?? target ?? ''}
-              onChange={(e) => {
-                const v = e.target.value.trim();
-                store.update({ targetOverride: v ? Math.max(0, Math.trunc(Number(v))) : null });
-              }} />
+              {...goal.inputProps} />
             <button type="button" className="ghost" disabled={previousCutoff == null}
               onClick={() => store.update({ targetOverride: previousCutoff })}
               title={previousCutoff == null

@@ -3,6 +3,24 @@
 All dates 2026-08-28 — the project was specified, built, reviewed and rebuilt in
 a single session.
 
+## 2.10.3
+
+- **The CP Goal field can be emptied.** It had the same bug the turnout field had
+  in 2.8.2: storing "cleared" as null, when null is also how "nothing entered,
+  use the derived figure" is stored, so blanking it brought last season's cutoff
+  straight back and the last character could not be deleted.
+- **Fixed once, in a shared place.** Placement, Players and CP Goal now go
+  through one hook rather than three copies of the workaround, so the next number
+  field added cannot reintroduce it.
+- **What an empty field means is now a stated choice per field.** An empty
+  turnout stays empty, because a played row genuinely needs one and reports it.
+  An empty goal returns to the season's figure once focus leaves, because
+  clearing an override means no override, and that is what no override looks
+  like.
+- A browser check sweeps every visible number field on the page and asserts none
+  of them refuses to clear. Both new checks were confirmed to fail against the
+  old build before being kept.
+
 ## 2.10.2
 
 - **The ladder's CP column adds up to its own footer.** It printed the projected
