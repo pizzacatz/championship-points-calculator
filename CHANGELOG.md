@@ -3,6 +3,14 @@
 All dates 2026-08-28 — the project was specified, built, reviewed and rebuilt in
 a single session.
 
+## 2.10.4
+
+- **The Target reached banner no longer takes itself back.** It read "Target
+  reached. That is not a Worlds qualification. The season-end cutoff moves, and
+  only a direct invitation guarantees a place." True, and gone: anyone setting a
+  CP goal already knows what a cutoff is, and a banner that congratulates and
+  then retracts is worse than either half alone.
+
 ## 2.10.3
 
 - **The CP Goal field can be emptied.** It had the same bug the turnout field had

@@ -345,11 +345,15 @@ export default function App() {
           </p>
 
           {/* Banked and projected are different claims. The green banner is only
-              earned once the CP is actually in hand. */}
+              earned once the CP is actually in hand.
+
+              It used to carry a caveat that reaching the target is not a Worlds
+              qualification, because the cutoff moves. True, and removed: anyone
+              setting a CP goal already knows what a cutoff is, and a banner that
+              congratulates and then takes it back is worse than either. */}
           {target != null && evaluation.currentTotal >= target && (
             <div className="callout ok" role="status">
-              <strong>Target reached.</strong> That is not a Worlds qualification. The season-end
-              cutoff moves, and only a direct invitation guarantees a place.
+              <strong>Target reached.</strong>
             </div>
           )}
           {evaluation.directInvites.length > 0 && (
