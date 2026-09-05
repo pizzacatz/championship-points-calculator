@@ -1,6 +1,6 @@
 {
   "season": 2027,
-  "retrievedAt": "2026-09-04T13:46:31.964Z",
+  "retrievedAt": "2026-09-05T13:02:07.272Z",
   "sources": {
     "season": "https://championships.pokemon.com/api/events.json",
     "tournamentIds": "https://rk9.gg/events/pokemon",
@@ -24,21 +24,6 @@
       }
     },
     {
-      "name": "Brisbane Pokémon Regional Championships",
-      "date": "2026-09-26",
-      "endDate": "2026-09-27",
-      "displayDate": "Sept. 26–27",
-      "location": "Brisbane, Australia",
-      "zone": "AP",
-      "category": "regional",
-      "status": "upcoming",
-      "rk9": {
-        "GO": "BR003-6CxLSFjQiTHuAh",
-        "TCG": "BR001-5YdU57MmWxTxaY",
-        "VGC": "BR002-IU5yO1W76UpdyA"
-      }
-    },
-    {
       "name": "Frankfurt Pokémon Regional Championships",
       "date": "2026-09-26",
       "endDate": "2026-09-27",
@@ -51,6 +36,21 @@
         "GO": "FR003-metsuLQs6Ef1M3",
         "TCG": "FR001-qWsas6LjddfVxo",
         "VGC": "FR002-fiunEHp9wx4mh4"
+      }
+    },
+    {
+      "name": "Brisbane Pokémon Regional Championships",
+      "date": "2026-09-26",
+      "endDate": "2026-09-27",
+      "displayDate": "Sept. 26–27",
+      "location": "Brisbane, Australia",
+      "zone": "AP",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {
+        "GO": "BR003-6CxLSFjQiTHuAh",
+        "TCG": "BR001-5YdU57MmWxTxaY",
+        "VGC": "BR002-IU5yO1W76UpdyA"
       }
     },
     {
