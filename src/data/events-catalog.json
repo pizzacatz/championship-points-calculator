@@ -1,6 +1,6 @@
 {
   "season": 2027,
-  "retrievedAt": "2026-09-20T13:41:08.652Z",
+  "retrievedAt": "2026-09-21T16:00:50.489Z",
   "sources": {
     "season": "https://championships.pokemon.com/api/events.json",
     "tournamentIds": "https://rk9.gg/events/pokemon",
@@ -8,21 +8,6 @@
   },
   "note": "rk9 exposes no past-events view, so completed majors come from Limitless, which is only days behind and carries Masters player counts. Global and Grand Challenges are published by month only and belong to no rating zone.",
   "upcoming": [
-    {
-      "name": "Baltimore Pokémon Regional Championships",
-      "date": "2026-09-18",
-      "endDate": "2026-09-20",
-      "displayDate": "Sept. 18–20",
-      "location": "Baltimore, MD",
-      "zone": "NA",
-      "category": "regional",
-      "status": "upcoming",
-      "rk9": {
-        "GO": "BA003-cfQnjLqUpqJEFq",
-        "TCG": "BA001-nEN1xl5ZJLGtFk",
-        "VGC": "BA002-JL3KVbvivVKNAc"
-      }
-    },
     {
       "name": "Brisbane Pokémon Regional Championships",
       "date": "2026-09-26",
@@ -475,5 +460,14 @@
       "rk9": {}
     }
   ],
-  "completed": []
+  "completed": [
+    {
+      "name": "Regional Baltimore, MD",
+      "date": "19 Sep 26",
+      "category": "regional",
+      "status": "completed",
+      "game": "VGC",
+      "attendance": 1081
+    }
+  ]
 }
