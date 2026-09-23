@@ -1,6 +1,6 @@
 {
   "season": 2027,
-  "retrievedAt": "2026-09-22T14:10:40.220Z",
+  "retrievedAt": "2026-09-23T14:25:36.679Z",
   "sources": {
     "season": "https://championships.pokemon.com/api/events.json",
     "tournamentIds": "https://rk9.gg/events/pokemon",
@@ -129,7 +129,11 @@
       "zone": "LA",
       "category": "international",
       "status": "upcoming",
-      "rk9": {}
+      "rk9": {
+        "GO": "LA003-8RQSJWyxibyrg7",
+        "TCG": "LA001-jHlXupaysix7HO",
+        "VGC": "LA002-m593TW3lr3apWb"
+      }
     },
     {
       "name": "Stuttgart Pokémon Regional Championships",
