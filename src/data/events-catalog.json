@@ -1,6 +1,6 @@
 {
   "season": 2027,
-  "retrievedAt": "2026-09-28T17:48:28.689Z",
+  "retrievedAt": "2026-09-29T16:06:48.969Z",
   "sources": {
     "season": "https://championships.pokemon.com/api/events.json",
     "tournamentIds": "https://rk9.gg/events/pokemon",
@@ -114,7 +114,11 @@
       "zone": "EU",
       "category": "regional",
       "status": "upcoming",
-      "rk9": {}
+      "rk9": {
+        "GO": "SG003-XQBbMkAHc3R6ZD",
+        "TCG": "SG001-9JttihqdIjqHBR",
+        "VGC": "SG002-Ib57cab14fzOGr"
+      }
     },
     {
       "name": "Las Vegas Pokémon Regional Championships",
@@ -436,12 +440,44 @@
   ],
   "completed": [
     {
+      "name": "Regional Brisbane",
+      "date": "26 Sep 26",
+      "category": "regional",
+      "status": "completed",
+      "game": "VGC",
+      "attendance": 327
+    },
+    {
+      "name": "Regional Frankfurt",
+      "date": "26 Sep 26",
+      "category": "regional",
+      "status": "completed",
+      "game": "VGC",
+      "attendance": 1129
+    },
+    {
       "name": "Regional Baltimore, MD",
       "date": "19 Sep 26",
       "category": "regional",
       "status": "completed",
       "game": "VGC",
       "attendance": 1081
+    },
+    {
+      "name": "Regional Brisbane",
+      "date": "26 Sep 26",
+      "category": "regional",
+      "status": "completed",
+      "game": "TCG",
+      "attendance": 817
+    },
+    {
+      "name": "Regional Frankfurt",
+      "date": "26 Sep 26",
+      "category": "regional",
+      "status": "completed",
+      "game": "TCG",
+      "attendance": 2793
     },
     {
       "name": "Regional Baltimore, MD",
