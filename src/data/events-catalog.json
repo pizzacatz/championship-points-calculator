@@ -1,6 +1,6 @@
 {
   "season": 2027,
-  "retrievedAt": "2026-10-04T14:58:25.346Z",
+  "retrievedAt": "2026-10-05T18:49:28.671Z",
   "sources": {
     "season": "https://championships.pokemon.com/api/events.json",
     "tournamentIds": "https://rk9.gg/events/pokemon",
@@ -8,21 +8,6 @@
   },
   "note": "rk9 exposes no past-events view, so completed majors come from Limitless, which is only days behind and carries Masters player counts. Global and Grand Challenges are published by month only and belong to no rating zone.",
   "upcoming": [
-    {
-      "name": "Recife Pokémon Regional Championships",
-      "date": "2026-10-03",
-      "endDate": "2026-10-04",
-      "displayDate": "Oct. 3–4",
-      "location": "Recife, Brazil",
-      "zone": "LA",
-      "category": "regional",
-      "status": "upcoming",
-      "rk9": {
-        "GO": "RE003-YRP659W5Tmy2BA",
-        "TCG": "RE001-a2hqIrDZOyenzQ",
-        "VGC": "RE002-wN97aUf4Psz0ZJ"
-      }
-    },
     {
       "name": "Louisville Pokémon Regional Championships",
       "date": "2026-10-09",
@@ -439,6 +424,14 @@
     }
   ],
   "completed": [
+    {
+      "name": "Regional Recife",
+      "date": "03 Oct 26",
+      "category": "regional",
+      "status": "completed",
+      "game": "VGC",
+      "attendance": 222
+    },
     {
       "name": "Regional Brisbane",
       "date": "26 Sep 26",
