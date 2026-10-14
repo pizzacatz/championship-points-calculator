@@ -1,6 +1,6 @@
 {
   "season": 2027,
-  "retrievedAt": "2026-10-13T17:07:32.558Z",
+  "retrievedAt": "2026-10-14T14:39:42.784Z",
   "sources": {
     "season": "https://championships.pokemon.com/api/events.json",
     "tournamentIds": "https://rk9.gg/events/pokemon",
@@ -414,7 +414,7 @@
   ],
   "completed": [
     {
-      "name": "Regional Lousville, KY",
+      "name": "Regional Louisville, KY",
       "date": "10 Oct 26",
       "category": "regional",
       "status": "completed",
@@ -454,7 +454,7 @@
       "attendance": 1081
     },
     {
-      "name": "Regional Lousville, KY",
+      "name": "Regional Louisville, KY",
       "date": "10 Oct 26",
       "category": "regional",
       "status": "completed",
