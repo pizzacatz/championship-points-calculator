@@ -1,6 +1,6 @@
 {
   "season": 2027,
-  "retrievedAt": "2026-10-15T14:24:14.918Z",
+  "retrievedAt": "2026-10-16T14:14:29.395Z",
   "sources": {
     "season": "https://championships.pokemon.com/api/events.json",
     "tournamentIds": "https://rk9.gg/events/pokemon",
@@ -161,6 +161,17 @@
       "rk9": {}
     },
     {
+      "name": "Seattle Pokémon Regional Championships",
+      "date": "2027-02-05",
+      "endDate": "2027-02-07",
+      "displayDate": "Feb. 5–7",
+      "location": null,
+      "zone": "NA",
+      "category": "regional",
+      "status": "upcoming",
+      "rk9": {}
+    },
+    {
       "name": "Pokémon Europe International Championships",
       "date": "2027-02-19",
       "endDate": "2027-02-21",
@@ -168,6 +179,17 @@
       "location": "London, UK",
       "zone": "EU",
       "category": "international",
+      "status": "upcoming",
+      "rk9": {}
+    },
+    {
+      "name": "San Antonio Pokémon Regional Championships",
+      "date": "2027-02-26",
+      "endDate": "2027-02-28",
+      "displayDate": "Feb. 26–28",
+      "location": "San Antonio, TX",
+      "zone": "NA",
+      "category": "regional",
       "status": "upcoming",
       "rk9": {}
     },
