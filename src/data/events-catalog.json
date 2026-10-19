@@ -1,6 +1,6 @@
 {
   "season": 2027,
-  "retrievedAt": "2026-10-18T13:32:23.906Z",
+  "retrievedAt": "2026-10-19T16:37:32.104Z",
   "sources": {
     "season": "https://championships.pokemon.com/api/events.json",
     "tournamentIds": "https://rk9.gg/events/pokemon",
@@ -8,21 +8,6 @@
   },
   "note": "rk9 exposes no past-events view, so completed majors come from Limitless, which is only days behind and carries Masters player counts. Global and Grand Challenges are published by month only and belong to no rating zone.",
   "upcoming": [
-    {
-      "name": "Nice Pokémon Regional Championships",
-      "date": "2026-10-17",
-      "endDate": "2026-10-18",
-      "displayDate": "Oct. 17–18",
-      "location": "Nice, France",
-      "zone": "EU",
-      "category": "regional",
-      "status": "upcoming",
-      "rk9": {
-        "GO": "NC003-UTcpkBmvfQW1G0",
-        "TCG": "NC001-2OXFgm7aAOcHKh",
-        "VGC": "NC002-zBMwK69ABS7RRV"
-      }
-    },
     {
       "name": "Puebla Pokémon Regional Championships",
       "date": "2026-10-24",
@@ -435,6 +420,14 @@
     }
   ],
   "completed": [
+    {
+      "name": "Regional Nice",
+      "date": "17 Oct 26",
+      "category": "regional",
+      "status": "completed",
+      "game": "VGC",
+      "attendance": 862
+    },
     {
       "name": "Regional Louisville, KY",
       "date": "10 Oct 26",
