@@ -1,6 +1,6 @@
 {
   "season": 2027,
-  "retrievedAt": "2026-10-19T16:37:32.104Z",
+  "retrievedAt": "2026-10-20T14:28:35.572Z",
   "sources": {
     "season": "https://championships.pokemon.com/api/events.json",
     "tournamentIds": "https://rk9.gg/events/pokemon",
@@ -467,6 +467,14 @@
       "status": "completed",
       "game": "VGC",
       "attendance": 1081
+    },
+    {
+      "name": "Regional Nice",
+      "date": "17 Oct 26",
+      "category": "regional",
+      "status": "completed",
+      "game": "TCG",
+      "attendance": 2336
     },
     {
       "name": "Regional Louisville, KY",
