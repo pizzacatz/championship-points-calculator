@@ -1,9 +1,32 @@
 {
   "season": 2027,
-  "periodPublished": false,
-  "boundaries": null,
-  "retrievedAt": null,
-  "lastAttemptAt": "2026-10-22T14:32:21.491Z",
+  "periodPublished": true,
+  "periodGuid": "fa1d67816019e1d561c1068daa406be0",
+  "sourceUrl": "https://championships.pokemon.com/en-us/competitors/leaderboards",
+  "retrievedAt": "2026-10-23T14:16:21.006Z",
+  "lastAttemptAt": "2026-10-23T14:16:21.006Z",
   "lastAttemptOk": true,
-  "note": "the 2027 qualification period is not published on the official leaderboard yet"
+  "boundaries": {
+    "VGC": {
+      "NA": null,
+      "EU": null,
+      "LA": null,
+      "AP": null,
+      "SO": null
+    },
+    "TCG": {
+      "NA": null,
+      "EU": null,
+      "LA": null,
+      "AP": null,
+      "SO": null
+    },
+    "GO": {
+      "NA": null,
+      "EU": null,
+      "LA": null,
+      "AP": null,
+      "SO": null
+    }
+  }
 }
