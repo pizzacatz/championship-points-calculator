@@ -4,8 +4,8 @@
   "periodGuid": "fa1d67816019e1d561c1068daa406be0",
   "sourceUrl": "https://championships.pokemon.com/en-us/competitors/leaderboards",
   "retrievedAt": "2026-10-23T14:16:21.006Z",
-  "lastAttemptAt": "2026-10-23T14:16:21.006Z",
-  "lastAttemptOk": true,
+  "lastAttemptAt": "2026-10-24T13:22:15.318Z",
+  "lastAttemptOk": false,
   "boundaries": {
     "VGC": {
       "NA": null,
@@ -28,5 +28,6 @@
       "AP": null,
       "SO": null
     }
-  }
+  },
+  "lastError": "all boundary lookups empty"
 }
