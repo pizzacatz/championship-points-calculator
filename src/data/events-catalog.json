@@ -1,6 +1,6 @@
 {
   "season": 2027,
-  "retrievedAt": "2026-10-26T16:18:05.946Z",
+  "retrievedAt": "2026-10-27T15:32:14.559Z",
   "sources": {
     "season": "https://championships.pokemon.com/api/events.json",
     "tournamentIds": "https://rk9.gg/events/pokemon",
@@ -406,6 +406,14 @@
   ],
   "completed": [
     {
+      "name": "Regional Puebla",
+      "date": "24 Oct 26",
+      "category": "regional",
+      "status": "completed",
+      "game": "VGC",
+      "attendance": 333
+    },
+    {
       "name": "Regional Nice",
       "date": "17 Oct 26",
       "category": "regional",
@@ -452,6 +460,14 @@
       "status": "completed",
       "game": "VGC",
       "attendance": 1081
+    },
+    {
+      "name": "Regional Puebla",
+      "date": "24 Oct 26",
+      "category": "regional",
+      "status": "completed",
+      "game": "TCG",
+      "attendance": 2234
     },
     {
       "name": "Regional Nice",
