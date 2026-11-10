@@ -1,6 +1,6 @@
 {
   "season": 2027,
-  "retrievedAt": "2026-11-09T20:04:07.740Z",
+  "retrievedAt": "2026-11-10T17:16:24.158Z",
   "sources": {
     "season": "https://championships.pokemon.com/api/events.json",
     "tournamentIds": "https://rk9.gg/events/pokemon",
@@ -73,7 +73,11 @@
       "zone": "NA",
       "category": "regional",
       "status": "upcoming",
-      "rk9": {}
+      "rk9": {
+        "GO": "AT003-x1pFATxuvx4ta9",
+        "TCG": "AT001-xMMB5juSw0l3ez",
+        "VGC": "AT002-mu2HGLWrnjfnBF"
+      }
     },
     {
       "name": "Sydney Pokémon Regional Championships",
@@ -84,7 +88,11 @@
       "zone": "AP",
       "category": "regional",
       "status": "upcoming",
-      "rk9": {}
+      "rk9": {
+        "GO": "SY003-Mh1o09id7e3JQ7",
+        "TCG": "SY001-s7xD5KcPFdnK4M",
+        "VGC": "SY002-jX5qUfUWDF0K0G"
+      }
     },
     {
       "name": "Mérida Pokémon Regional Championships",
