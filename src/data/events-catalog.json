@@ -1,6 +1,6 @@
 {
   "season": 2027,
-  "retrievedAt": "2026-11-15T16:34:50.473Z",
+  "retrievedAt": "2026-11-16T19:51:17.713Z",
   "sources": {
     "season": "https://championships.pokemon.com/api/events.json",
     "tournamentIds": "https://rk9.gg/events/pokemon",
@@ -8,17 +8,6 @@
   },
   "note": "rk9 exposes no past-events view, so completed majors come from Limitless, which is only days behind and carries Masters player counts. Global and Grand Challenges are published by month only and belong to no rating zone.",
   "upcoming": [
-    {
-      "name": "Buenos Aires Pokémon Special Championships",
-      "date": "2026-11-14",
-      "endDate": "2026-11-15",
-      "displayDate": "Nov. 14–15",
-      "location": "Buenos Aires, Argentina",
-      "zone": "LA",
-      "category": "special",
-      "status": "upcoming",
-      "rk9": {}
-    },
     {
       "name": "Pokémon Latin America International Championships",
       "date": "2026-11-20",
