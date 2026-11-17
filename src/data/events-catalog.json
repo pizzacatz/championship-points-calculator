@@ -1,6 +1,6 @@
 {
   "season": 2027,
-  "retrievedAt": "2026-11-16T19:51:17.713Z",
+  "retrievedAt": "2026-11-17T18:44:39.831Z",
   "sources": {
     "season": "https://championships.pokemon.com/api/events.json",
     "tournamentIds": "https://rk9.gg/events/pokemon",
@@ -518,6 +518,14 @@
       "status": "completed",
       "game": "TCG",
       "attendance": 3122
+    },
+    {
+      "name": "Special Event Buenos Aires",
+      "date": "14 Nov 26",
+      "category": "special",
+      "status": "completed",
+      "game": "TCG",
+      "attendance": 553
     }
   ]
 }
