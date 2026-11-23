@@ -1,6 +1,6 @@
 {
   "season": 2027,
-  "retrievedAt": "2026-11-22T17:22:25.884Z",
+  "retrievedAt": "2026-11-23T21:39:36.550Z",
   "sources": {
     "season": "https://championships.pokemon.com/api/events.json",
     "tournamentIds": "https://rk9.gg/events/pokemon",
@@ -8,21 +8,6 @@
   },
   "note": "rk9 exposes no past-events view, so completed majors come from Limitless, which is only days behind and carries Masters player counts. Global and Grand Challenges are published by month only and belong to no rating zone.",
   "upcoming": [
-    {
-      "name": "Pokémon Latin America International Championships",
-      "date": "2026-11-20",
-      "endDate": "2026-11-22",
-      "displayDate": "Nov. 20–22",
-      "location": "São Paulo, Brazil",
-      "zone": "LA",
-      "category": "international",
-      "status": "upcoming",
-      "rk9": {
-        "GO": "LA003-8RQSJWyxibyrg7",
-        "TCG": "LA001-jHlXupaysix7HO",
-        "VGC": "LA002-m593TW3lr3apWb"
-      }
-    },
     {
       "name": "Stuttgart Pokémon Regional Championships",
       "date": "2026-11-28",
@@ -92,7 +77,11 @@
       "zone": "LA",
       "category": "regional",
       "status": "upcoming",
-      "rk9": {}
+      "rk9": {
+        "GO": "ME003-RUdZQUjx9rVYft",
+        "TCG": "ME001-j7qH5NlO9Sbz5n",
+        "VGC": "ME002-zkBAuxCUeA3fHQ"
+      }
     },
     {
       "name": "Birmingham Pokémon Regional Championships",
@@ -467,6 +456,14 @@
       "attendance": 1081
     },
     {
+      "name": "LAIC 2026–27, São Paulo",
+      "date": "20 Nov 26",
+      "category": "international",
+      "status": "completed",
+      "game": "VGC",
+      "attendance": 652
+    },
+    {
       "name": "Regional Gdańsk",
       "date": "31 Oct 26",
       "category": "regional",
@@ -537,6 +534,14 @@
       "status": "completed",
       "game": "TCG",
       "attendance": 553
+    },
+    {
+      "name": "LAIC 2026–27, São Paulo",
+      "date": "20 Nov 26",
+      "category": "international",
+      "status": "completed",
+      "game": "TCG",
+      "attendance": 2646
     }
   ]
 }
